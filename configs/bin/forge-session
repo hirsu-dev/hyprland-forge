@@ -16,10 +16,10 @@ wl-paste --type text --watch cliphist store &
 forge_children+=("$!")
 wl-paste --type image --watch cliphist store &
 forge_children+=("$!")
+mako &
+forge_children+=("$!")
 if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
     quickshell -c forge &
-else
-    mako &
+    forge_children+=("$!")
 fi
-forge_children+=("$!")
 while hyprctl -j monitors >/dev/null 2>&1; do sleep 10; done

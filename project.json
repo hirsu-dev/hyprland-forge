@@ -61,11 +61,29 @@
         {"source": "configs/hypr/hypridle.conf", "target": ".config/hypr/hypridle.conf"},
         {"source": "configs/hypr/hyprlock.conf", "target": ".config/hypr/hyprlock.conf"},
         {"source": "configs/bin/forge-session", "target": ".local/bin/forge-session", "executable": true},
+        {"source": "configs/bin/forge-launcher", "target": ".local/bin/forge-launcher", "executable": true},
         {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true}
       ],
       "hardware_validation": "pending-on-device"
     },
-    {"id": "shell", "status": "pending", "requires": ["compositor"], "packages": [], "files": []},
+    {
+      "id": "shell",
+      "status": "pending",
+      "requires": ["compositor"],
+      "packages": ["quickshell", "blueman", "pavucontrol", "papirus-icon-theme"],
+      "files": [
+        {"source": "configs/quickshell/forge/shell.qml", "target": ".config/quickshell/forge/shell.qml"},
+        {"source": "configs/quickshell/forge/qmldir", "target": ".config/quickshell/forge/qmldir"},
+        {"source": "configs/quickshell/forge/Palette.qml", "target": ".config/quickshell/forge/Palette.qml"},
+        {"source": "configs/quickshell/forge/Desktop.qml", "target": ".config/quickshell/forge/Desktop.qml"},
+        {"source": "configs/quickshell/forge/ForgeButton.qml", "target": ".config/quickshell/forge/ForgeButton.qml"},
+        {"source": "configs/quickshell/forge/Bar.qml", "target": ".config/quickshell/forge/Bar.qml"},
+        {"source": "configs/quickshell/forge/Launcher.qml", "target": ".config/quickshell/forge/Launcher.qml"},
+        {"source": "configs/quickshell/forge/ControlCenter.qml", "target": ".config/quickshell/forge/ControlCenter.qml"},
+        {"source": "configs/mako/config", "target": ".config/mako/config"}
+      ],
+      "runtime_validation": "pending"
+    },
     {"id": "appearance", "status": "pending", "requires": ["shell"], "packages": [], "files": []},
     {"id": "release", "status": "pending", "requires": ["appearance"], "packages": [], "files": []}
   ]

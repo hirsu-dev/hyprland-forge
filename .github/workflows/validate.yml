@@ -20,14 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base
     steps:
-      - run: pacman -Syu --noconfirm --needed git python lua hyprland shellcheck
+      - run: pacman -Syu --noconfirm --needed git python lua hyprland shellcheck quickshell xorg-server-xvfb xorg-xauth ttf-jetbrains-mono-nerd
       - uses: actions/checkout@v4
       - run: python -m unittest discover -s tests -v
       - run: lua tests/test_layout.lua
       - run: shellcheck install.sh live.sh configs/bin/*
       - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-Si","--", *sorted({n for s in p["stages"] for n in s.get("packages",[])})],check=True)'
       - run: |
-          mkdir -p /tmp/forge-verify/.config/hypr
+          mkdir -p /tmp/forge-verify/.config/hypr /tmp/forge-verify/runtime
+          chmod 700 /tmp/forge-verify/runtime
           cp -r configs/hypr/. /tmp/forge-verify/.config/hypr/
           chown -R nobody:nobody /tmp/forge-verify
-          runuser -u nobody -- env HOME=/tmp/forge-verify XDG_CONFIG_HOME=/tmp/forge-verify/.config Hyprland --verify-config -c /tmp/forge-verify/.config/hypr/hyprland.lua
+          runuser -u nobody -- env HOME=/tmp/forge-verify XDG_RUNTIME_DIR=/tmp/forge-verify/runtime XDG_CONFIG_HOME=/tmp/forge-verify/.config Hyprland --verify-config -c /tmp/forge-verify/.config/hypr/hyprland.lua
+      - run: xvfb-run -a dbus-run-session -- bash tests/smoke-shell.sh
