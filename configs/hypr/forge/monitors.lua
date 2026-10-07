@@ -32,6 +32,7 @@ end
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 local function schedule(focus)
+    if not os.getenv("HYPRLAND_INSTANCE_SIGNATURE") then return end
     hl.timer(function() configure(focus) end, { timeout = 150, type = "oneshot" })
 end
 hl.on("hyprland.start", function() schedule(true) end)
