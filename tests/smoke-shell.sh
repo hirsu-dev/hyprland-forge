@@ -10,6 +10,11 @@ XDG_CONFIG_HOME="$(mktemp -d)"
 mkdir -p "$XDG_CONFIG_HOME/forge"
 cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
 mkdir -p test-results
+forge_fixture="$(mktemp -d)"
+cp tests/brightness-fixture "$forge_fixture/brightnessctl"
+chmod +x "$forge_fixture/brightnessctl"
+export PATH="$forge_fixture:$PATH"
+export FORGE_BRIGHTNESS_STATE="$forge_fixture/brightness.json"
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
 forge_pid=$!
 forge_tray=""
@@ -56,6 +61,20 @@ sleep 1
 if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/launcher.png; fi
 quickshell -p "$forge_config" ipc call forge controls
 forge_status false true
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_backlight="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["backlight"])')"
+    if [[ "$forge_backlight" == True ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_backlight" == True ]]
+quickshell -p "$forge_config" ipc call forge brightness 35
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_light="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["brightness"])')"
+    if [[ "$forge_light" == 35 ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_light" == 35 ]]
+python -c 'import os,json; from pathlib import Path; state=json.loads(Path(os.environ["FORGE_BRIGHTNESS_STATE"]).read_text()); assert state["updates"] == [35]'
 sleep 1
 if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/controls.png; fi
 quickshell -p "$forge_config" ipc call forge close

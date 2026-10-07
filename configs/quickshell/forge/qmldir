@@ -4,3 +4,5 @@ Bar 1.0 Bar.qml
 ControlCenter 1.0 ControlCenter.qml
 ForgeButton 1.0 ForgeButton.qml
 Launcher 1.0 Launcher.qml
+singleton Laptop 1.0 Laptop.qml
+ForgeSlider 1.0 ForgeSlider.qml

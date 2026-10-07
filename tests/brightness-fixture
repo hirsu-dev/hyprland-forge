@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+from pathlib import Path
+
+path = Path(os.environ["FORGE_BRIGHTNESS_STATE"])
+state = json.loads(path.read_text()) if path.exists() else {"value": 60, "updates": []}
+if "set" in sys.argv:
+    value = int(sys.argv[sys.argv.index("set") + 1].removesuffix("%"))
+    assert 2 <= value <= 100
+    state["value"] = value
+    state["updates"].append(value)
+    path.write_text(json.dumps(state))
+print(f'forge-backlight,backlight,{state["value"]},{state["value"]}%,100')

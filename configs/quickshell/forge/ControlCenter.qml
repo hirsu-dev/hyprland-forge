@@ -12,7 +12,7 @@ PanelWindow {
     anchors { top: true; right: true }
     margins { top: 64; right: 14 }
     implicitWidth: Math.min(392, screen ? screen.width - 28 : 392)
-    implicitHeight: Math.min(610, screen ? screen.height - 90 : 610)
+    implicitHeight: Math.min(800, screen ? screen.height - 90 : 800)
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
@@ -60,27 +60,12 @@ PanelWindow {
                                 onClicked: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.muted = !Desktop.sink.audio.muted }
                             }
                         }
-                        Slider {
+                        ForgeSlider {
                             Layout.fillWidth: true
                             from: 0; to: 1
                             value: Desktop.sink && Desktop.sink.audio ? Desktop.sink.audio.volume : 0
                             enabled: Desktop.sink !== null
                             onMoved: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.volume = value }
-                            background: Rectangle {
-                                x: parent.leftPadding
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                width: parent.availableWidth
-                                height: 5
-                                radius: 3
-                                color: ForgeTheme.raised
-                                Rectangle { width: parent.width * (parent.parent.visualPosition); height: parent.height; radius: 3; color: ForgeTheme.accent }
-                            }
-                            handle: Rectangle {
-                                x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                width: 16; height: 16; radius: 8
-                                color: ForgeTheme.accent
-                            }
                         }
                     }
                 }
@@ -138,6 +123,28 @@ PanelWindow {
                             Layout.fillWidth: true
                             text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
                             onClicked: Desktop.exec([Quickshell.env("HOME") + "/.local/bin/forge-appearance", "--preset", modelData, "--apply"])
+                        }
+                    }
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 80
+                    radius: 18
+                    color: ForgeTheme.surface
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 14
+                        RowLayout {
+                            Text { text: "Laptop brightness"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 12 }
+                            Item { Layout.fillWidth: true }
+                            Text { text: Laptop.available ? Laptop.brightness + "%" : "Unavailable"; color: ForgeTheme.muted; font.pixelSize: 12 }
+                        }
+                        ForgeSlider {
+                            Layout.fillWidth: true
+                            from: 2; to: 100
+                            value: Laptop.brightness
+                            enabled: Laptop.available
+                            onMoved: Laptop.setBrightness(value)
                         }
                     }
                 }
