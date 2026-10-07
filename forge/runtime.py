@@ -161,6 +161,8 @@ def restore(transaction_id, user_root, state_root):
 def show_plan(plan):
     print(f"Hyprland Forge {plan['release']}")
     print("Stages: " + ", ".join(plan["stages"]))
+    if plan.get("profile") == "virtual-machine":
+        print("Virtual-machine test profile: NVIDIA, physical monitors and laptop power behavior are not qualified.")
     for command in plan["commands"]:
         print(shlex.join(command))
     for item in plan["files"]:

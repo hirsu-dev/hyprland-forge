@@ -22,6 +22,7 @@ def main(argv=None):
     parser.add_argument("--stage", action="append")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--login", choices=("auto", "sddm", "keep"), default="auto")
+    parser.add_argument("--profile", choices=("laptop", "virtual-machine"), default="laptop")
     args = parser.parse_args(argv)
     source_root = Path(__file__).resolve().parent.parent
     try:
@@ -38,7 +39,7 @@ def main(argv=None):
         if args.apply:
             preflight()
         if not args.rollback:
-            plan = resolve_plan(plan, apply=args.apply)
+            plan = resolve_plan(plan, apply=args.apply, profile=args.profile)
             plan = resolve_login(plan, mode=args.login, apply=args.apply)
         if not args.apply and not args.rollback:
             print(json.dumps(plan, indent=2)) if args.json else show_plan(plan)

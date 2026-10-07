@@ -52,21 +52,33 @@ def verify_services(runner=subprocess.run):
         raise ForgeError("Resolve existing service configuration before installing: " + ", ".join(conflicts))
 
 
-def resolve_plan(plan, apply=False):
+def resolve_plan(plan, apply=False, profile="laptop"):
+    if profile not in ("laptop", "virtual-machine"):
+        raise ForgeError("Unknown hardware profile")
+    plan["profile"] = profile
     if "hardware" not in plan["stages"]:
         return plan
+    virtual = profile == "virtual-machine"
+    if virtual and apply:
+        result = subprocess.run(["systemd-detect-virt", "--vm"], capture_output=True, text=True, timeout=10)
+        if result.returncode != 0 or result.stdout.strip() in ("", "none"):
+            raise ForgeError("The virtual-machine profile requires a detected virtual machine")
     if platform.system() == "Linux" and Path("/etc/arch-release").is_file():
         data = inventory()
-        headers = hardware_packages(data) if apply else [f"{k}-headers" for k in data["kernels"] or ["linux"]]
+        headers = [] if virtual else hardware_packages(data) if apply else [f"{k}-headers" for k in data["kernels"] or ["linux"]]
         if apply:
             verify_services()
         plan["hardware"] = data
     else:
-        headers = ["linux-headers"]
+        headers = [] if virtual else ["linux-headers"]
         plan["hardware"] = {"preview_only": True, "kernels": ["linux"]}
+    if virtual:
+        excluded = {"amd-ucode", "nvidia-open-dkms", "nvidia-utils", "nvidia-prime", "egl-wayland", "vulkan-radeon"}
+        plan["packages"] = [package for package in plan["packages"] if package not in excluded]
+        plan["hardware"]["validation_scope"] = "virtual-hardware-only"
     plan["packages"] = list(dict.fromkeys([*plan["packages"], *headers]))
     plan["commands"] = [["sudo", "pacman", "-Syu", "--needed", "--", *plan["packages"]]]
-    plan["services"] = list(SERVICES)
+    plan["services"] = ["NetworkManager.service", "fstrim.timer"] if virtual else list(SERVICES)
     plan["reboot_required"] = True
     return plan
 

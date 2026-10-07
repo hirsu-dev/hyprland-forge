@@ -3,8 +3,10 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from forge.hardware import hardware_packages, inventory, verify_services
+from forge.hardware import hardware_packages, inventory, verify_services, resolve_plan
+from forge.manifest import load_manifest, make_plan
 from forge.manifest import ForgeError
 from forge.runtime import execute
 
@@ -15,6 +17,28 @@ class HardwareTests(unittest.TestCase):
 
     def test_headers_for_every_installed_kernel(self):
         self.assertEqual(hardware_packages(self.data), ["linux-headers", "linux-lts-headers"])
+
+    def test_vm_plan_excludes_physical_gpu_drivers(self):
+        plan = make_plan(load_manifest(Path(__file__).resolve().parent.parent), None)
+        with patch("forge.hardware.platform.system", return_value="Windows"):
+            result = resolve_plan(plan, profile="virtual-machine")
+        self.assertFalse(any(package.startswith("nvidia") for package in result["packages"]))
+        self.assertNotIn("linux-headers", result["packages"])
+        self.assertIn("mesa", result["packages"])
+        self.assertEqual(result["services"], ["NetworkManager.service", "fstrim.timer"])
+        self.assertEqual(result["hardware"]["validation_scope"], "virtual-hardware-only")
+
+    def test_vm_profile_refuses_physical_machine(self):
+        with patch("forge.hardware.subprocess.run", return_value=subprocess.CompletedProcess([], 1, "none")):
+            with self.assertRaisesRegex(ForgeError, "detected virtual machine"):
+                resolve_plan({"stages": ["hardware"]}, apply=True, profile="virtual-machine")
+
+    def test_laptop_remains_default_profile(self):
+        plan = make_plan(load_manifest(Path(__file__).resolve().parent.parent), None)
+        with patch("forge.hardware.platform.system", return_value="Windows"):
+            result = resolve_plan(plan)
+        self.assertEqual(result["profile"], "laptop")
+        self.assertIn("nvidia-open-dkms", result["packages"])
 
     def test_gpu_required(self):
         self.data["gpus"] = [{"vendor": "0x1002"}]
