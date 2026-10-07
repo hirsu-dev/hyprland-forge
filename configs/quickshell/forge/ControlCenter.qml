@@ -57,7 +57,7 @@ PanelWindow {
                             Item { Layout.fillWidth: true }
                             ForgeButton {
                                 text: Desktop.muted ? "Muted" : Desktop.volume + "%"
-                                onClicked: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.muted = !Desktop.sink.audio.muted }
+                                onClicked: Desktop.toggleMute()
                             }
                         }
                         ForgeSlider {
@@ -65,7 +65,7 @@ PanelWindow {
                             from: 0; to: 1
                             value: Desktop.sink && Desktop.sink.audio ? Desktop.sink.audio.volume : 0
                             enabled: Desktop.sink !== null
-                            onMoved: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.volume = value }
+                            onMoved: Desktop.setVolume(value)
                         }
                     }
                 }
@@ -93,9 +93,9 @@ PanelWindow {
                             Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackArtist : "Your next soundtrack"; textFormat: Text.PlainText; elide: Text.ElideRight; color: ForgeTheme.muted; font.pixelSize: 11 }
                             Row {
                                 spacing: 5
-                                ForgeButton { text: "󰒮"; onClicked: { if (Desktop.player && Desktop.player.canGoPrevious) Desktop.player.previous() } }
-                                ForgeButton { text: "󰐎"; selected: true; onClicked: { if (Desktop.player && Desktop.player.canTogglePlaying) Desktop.player.togglePlaying() } }
-                                ForgeButton { text: "󰒭"; onClicked: { if (Desktop.player && Desktop.player.canGoNext) Desktop.player.next() } }
+                                ForgeButton { text: "󰒮"; onClicked: Desktop.media("previous") }
+                                ForgeButton { text: "󰐎"; selected: true; onClicked: Desktop.media("toggle") }
+                                ForgeButton { text: "󰒭"; onClicked: Desktop.media("next") }
                             }
                         }
                     }

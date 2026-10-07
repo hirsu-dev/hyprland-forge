@@ -8,7 +8,10 @@ export QT_QUICK_BACKEND=software
 export XDG_CONFIG_HOME
 XDG_CONFIG_HOME="$(mktemp -d)"
 mkdir -p "$XDG_CONFIG_HOME/forge"
+mkdir -p "$XDG_CONFIG_HOME/qt6ct"
 cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
+cp configs/qt6ct/qt6ct.conf "$XDG_CONFIG_HOME/qt6ct/qt6ct.conf"
+export QT_QPA_PLATFORMTHEME=qt6ct
 mkdir -p test-results
 forge_fixture="$(mktemp -d)"
 cp tests/brightness-fixture "$forge_fixture/brightnessctl"
@@ -44,6 +47,22 @@ for ((attempt = 0; attempt < 50; attempt++)); do
     sleep 0.2
 done
 [[ "$forge_count" == 1 ]]
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_track="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["track"])')"
+    if [[ "$forge_track" == Orbit ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_track" == Orbit ]]
+quickshell -p "$forge_config" ipc call forge media next
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["track"] == "Dawn" and d["playing"]'
+quickshell -p "$forge_config" ipc call forge media toggle
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; assert not json.load(sys.stdin)["playing"]'
+quickshell -p "$forge_config" ipc call forge media previous
+quickshell -p "$forge_config" ipc call forge media toggle
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["track"] == "Orbit" and d["playing"]'
 forge_accent="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["accent"])')"
 python -c 'import os; from pathlib import Path; from forge.theme import PRESETS,render; from forge.storage import atomic_write; atomic_write(Path(os.environ["XDG_CONFIG_HOME"])/"forge/theme.json",render(PRESETS["ocean"])[".config/forge/theme.json"].encode())'
 for ((attempt = 0; attempt < 50; attempt++)); do
