@@ -39,6 +39,9 @@ Singleton {
         function launcher(): void { root.toggleLauncher(null) }
         function controls(): void { root.toggleControls(null) }
         function close(): void { root.closePanels() }
+        function screen(name: string): void {
+            if (Quickshell.screens.some(s => s.name === name)) root.selectedScreen = name
+        }
         function status(): string {
             return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length })
         }

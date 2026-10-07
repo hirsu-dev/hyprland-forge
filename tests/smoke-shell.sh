@@ -2,8 +2,8 @@
 set -euo pipefail
 forge_config="$(pwd)/configs/quickshell/forge/shell.qml"
 export XDG_RUNTIME_DIR
-XDG_RUNTIME_DIR="$(mktemp -d)"
-export QT_QPA_PLATFORM=xcb
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$(mktemp -d)}"
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-xcb}"
 export QT_QUICK_BACKEND=software
 mkdir -p test-results
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
@@ -27,10 +27,21 @@ forge_status false false
 quickshell -p "$forge_config" ipc call forge launcher
 forge_status true false
 sleep 1
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/launcher.png; fi
 quickshell -p "$forge_config" ipc call forge controls
 forge_status false true
 sleep 1
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/controls.png; fi
 quickshell -p "$forge_config" ipc call forge close
 forge_status false false
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
+    quickshell -p "$forge_config" ipc call forge screen HEADLESS-2
+    quickshell -p "$forge_config" ipc call forge controls
+    quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-2" and d["screens"] == 2'
+    swaymsg output HEADLESS-2 disable
+    sleep 1
+    quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-1" and d["screens"] == 1'
+    quickshell -p "$forge_config" ipc call forge close
+fi
 kill -0 "$forge_pid"
 python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|ReferenceError|TypeError|SyntaxError|Binding loop)",s)'
