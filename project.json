@@ -97,6 +97,7 @@
       {"source": "configs/gtk-3.0/settings.ini", "target": ".config/gtk-3.0/settings.ini"},
       {"source": "configs/gtk-4.0/settings.ini", "target": ".config/gtk-4.0/settings.ini"},
       {"source": "configs/qt6ct/qt6ct.conf", "target": ".config/qt6ct/qt6ct.conf"},
+      {"source": "configs/kitty/kitty.conf", "target": ".config/kitty/kitty.conf"},
       {"source": "configs/fuzzel/fuzzel.ini", "target": ".config/fuzzel/fuzzel.ini"}
     ]},
     {"id": "release", "status": "pending", "requires": ["appearance"], "packages": [], "files": []}
