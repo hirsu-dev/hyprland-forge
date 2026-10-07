@@ -36,7 +36,11 @@ def palette(accent):
 
 def sample_image(path):
     from PIL import Image, ImageOps
-    with Image.open(path) as source:
+    try:
+        source = Image.open(path)
+    except Image.DecompressionBombError as exc:
+        raise ForgeError("Wallpaper exceeds the sampling safety limit") from exc
+    with source:
         if source.width * source.height > 40_000_000:
             raise ForgeError("Wallpaper exceeds the 40-megapixel sampling limit")
         source.draft("RGB", (256, 256))

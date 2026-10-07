@@ -23,8 +23,11 @@ def collect(sys_root=Path("/sys"), runner=subprocess.run):
     checks = {}
     checks["nvidia_gpu"] = {"status": "passed" if any(gpu["vendor"] == "0x10de" for gpu in data["gpus"]) else "failed"}
     parameter = sys_root / "module/nvidia_drm/parameters/modeset"
-    value = parameter.read_text().strip() if parameter.is_file() else "not-loaded"
-    checks["nvidia_modeset"] = {"status": "passed" if value in ("Y", "1") else "failed", "value": value}
+    try:
+        value = parameter.read_text().strip() if parameter.is_file() else "not-loaded"
+    except OSError:
+        value = "unreadable"
+    checks["nvidia_modeset"] = {"status": "passed" if value in ("Y", "1") else "warning" if value == "unreadable" else "failed", "value": value}
     checks["secure_boot"] = {"status": "warning" if data["secure_boot"] else "passed", "enabled": data["secure_boot"]}
     data["services"] = {service: probe(["systemctl", "is-enabled", service], runner) for service in SERVICES}
     checks["system_services"] = {"status": "passed" if all(item["ok"] and item["output"] == "enabled" for item in data["services"].values()) else "failed"}
@@ -39,7 +42,7 @@ def collect(sys_root=Path("/sys"), runner=subprocess.run):
         errors = probe(["hyprctl", "-j", "configerrors"], runner)
         try:
             data["monitors"] = json.loads(monitors["output"]) if monitors["ok"] else []
-            if not isinstance(data["monitors"], list):
+            if not isinstance(data["monitors"], list) or any(not isinstance(monitor, dict) or not isinstance(monitor.get("name"), str) or not isinstance(monitor.get("refreshRate", 0), (int, float)) for monitor in data["monitors"]):
                 raise ValueError("Expected monitor list")
             config_errors = json.loads(errors["output"]) if errors["ok"] else [errors["error"] or "Unavailable"]
         except (ValueError, TypeError):

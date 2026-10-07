@@ -80,3 +80,21 @@ jobs:
           path: |
             test-results/bundle/*.tar.gz
             test-results/bundle/*.sha256
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: bundle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: hyprland-forge-installer
+          path: test-results/bundle
+      - run: |
+          python -c 'import json,os; assert os.environ["FORGE_TAG"] == "v" + json.load(open("project.json"))["release"]'
+          gh release create "$FORGE_TAG" test-results/bundle/*.tar.gz test-results/bundle/*.sha256 --prerelease --title "Hyprland Forge $FORGE_TAG" --notes 'Arch installer candidate. NVIDIA, HDMI 120 Hz and suspend/resume require on-device validation.'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORGE_TAG: ${{ github.ref_name }}

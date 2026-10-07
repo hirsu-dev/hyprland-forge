@@ -80,6 +80,22 @@ class DiagnosticsTests(unittest.TestCase):
         with patch("forge.diagnostics.platform.system", return_value="Windows"), self.assertRaises(ForgeError):
             collect(self.sys, self.runner)
 
+    def test_bad_monitor_data_is_contained(self):
+        for response in ("[1]", '[{"name":"HDMI-A-1","refreshRate":"bad"}]'):
+            self.responses["monitors"] = response
+            self.assertEqual(self.collect()["checks"]["hyprland_config"]["status"], "failed")
+
+    def test_unreadable_modeset_does_not_hide_remaining_checks(self):
+        original = Path.read_text
+        def read(path, *args, **kwargs):
+            if path.name == "modeset":
+                raise PermissionError("read denied")
+            return original(path, *args, **kwargs)
+        with patch.object(Path, "read_text", read):
+            report = self.collect()
+        self.assertEqual(report["checks"]["nvidia_modeset"]["status"], "warning")
+        self.assertEqual(report["checks"]["audio"]["status"], "passed")
+
 
 if __name__ == "__main__":
     unittest.main()
