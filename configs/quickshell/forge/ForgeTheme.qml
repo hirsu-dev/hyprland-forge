@@ -9,7 +9,7 @@ Singleton {
     readonly property color text: "#e1e7ea"
     readonly property color muted: "#9daab3"
     readonly property color accent: "#b5c9a8"
-    readonly property color onAccent: "#20301f"
+    readonly property color accentText: "#20301f"
     readonly property color line: "#39454d"
     readonly property string font: "JetBrainsMono Nerd Font"
 }

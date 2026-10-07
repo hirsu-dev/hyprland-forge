@@ -26,7 +26,7 @@ Rectangle {
         textFormat: Text.PlainText
         font.family: ForgeTheme.font
         font.pixelSize: 12
-        color: root.selected ? ForgeTheme.onAccent : ForgeTheme.text
+        color: root.selected ? ForgeTheme.accentText : ForgeTheme.text
     }
     MouseArea {
         id: pointer

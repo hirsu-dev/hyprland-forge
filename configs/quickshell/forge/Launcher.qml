@@ -63,7 +63,7 @@ PanelWindow {
                         anchors.margins: 10
                         spacing: 14
                         Image { source: Quickshell.iconPath(modelData.icon, "application-x-executable"); sourceSize.width: 28; sourceSize.height: 28; Layout.preferredWidth: 28; Layout.preferredHeight: 28 }
-                        Text { Layout.fillWidth: true; text: modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: index === apps.currentIndex ? ForgeTheme.onAccent : ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 13 }
+                        Text { Layout.fillWidth: true; text: modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: index === apps.currentIndex ? ForgeTheme.accentText : ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 13 }
                     }
                     MouseArea { id: mouse; anchors.fill: parent; hoverEnabled: true; onClicked: { apps.currentIndex = parent.index; launcher.launchCurrent() } }
                 }
