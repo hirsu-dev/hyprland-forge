@@ -8,12 +8,22 @@ export QT_QUICK_BACKEND=software
 mkdir -p test-results
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
 forge_pid=$!
-trap 'kill "$forge_pid" 2>/dev/null || true' EXIT
-sleep 4
+forge_stop() {
+    kill "$forge_pid" 2>/dev/null || true
+    wait "$forge_pid" 2>/dev/null || true
+    cat test-results/quickshell.log
+}
+trap forge_stop EXIT
+for ((attempt = 0; attempt < 50; attempt++)); do
+    kill -0 "$forge_pid"
+    if quickshell -p "$forge_config" ipc call forge close 2>/dev/null; then break; fi
+    sleep 0.2
+done
 kill -0 "$forge_pid"
 quickshell -p "$forge_config" ipc call forge launcher
 sleep 1
 quickshell -p "$forge_config" ipc call forge controls
 sleep 1
 quickshell -p "$forge_config" ipc call forge close
-python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); print(s); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|ReferenceError|TypeError|SyntaxError)",s)'
+kill -0 "$forge_pid"
+python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|ReferenceError|TypeError|SyntaxError|Binding loop)",s)'

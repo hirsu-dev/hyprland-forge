@@ -18,6 +18,7 @@ jobs:
       - run: bash install.sh --plan --json
   arch:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container: archlinux:base
     steps:
       - run: pacman -Syu --noconfirm --needed git python lua hyprland shellcheck quickshell xorg-server-xvfb xorg-xauth ttf-jetbrains-mono-nerd
@@ -30,3 +31,8 @@ jobs:
           luac -p configs/hypr/hyprland.lua configs/hypr/forge/layout.lua configs/hypr/forge/monitors.lua
           Hyprland --version
       - run: xvfb-run -a dbus-run-session -- bash tests/smoke-shell.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shell-runtime-logs
+          path: test-results/

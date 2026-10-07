@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-wallpaper="${1:-${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/forge.png}"
-[[ -f "$wallpaper" ]] || exit 0
-command -v swww >/dev/null || exit 0
-if ! pgrep -x swww-daemon >/dev/null; then
-    swww-daemon >/dev/null 2>&1 &
-    sleep 1
+wallpaper="${1:-${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/forge.svg}"
+if [[ -f "$wallpaper" ]]; then
+    exec swaybg --image "$wallpaper" --mode fill --color '#11171f'
 fi
-swww img "$wallpaper" --transition-type grow --transition-duration 0.8 --transition-fps 60
+exec swaybg --color '#11171f'

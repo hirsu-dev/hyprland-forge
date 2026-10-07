@@ -53,7 +53,7 @@
       "id": "compositor",
       "status": "ready",
       "requires": ["hardware"],
-      "packages": ["hyprland", "hyprland-guiutils", "hyprshutdown", "hypridle", "hyprlock", "hyprpolkitagent", "xdg-desktop-portal-hyprland", "xdg-desktop-portal-gtk", "qt6ct", "kitty", "thunar", "firefox", "fuzzel", "mako", "wl-clipboard", "cliphist", "grim", "slurp", "libnotify", "playerctl", "noto-fonts", "ttf-jetbrains-mono-nerd", "swww"],
+      "packages": ["hyprland", "hyprland-guiutils", "hyprshutdown", "hypridle", "hyprlock", "hyprpolkitagent", "xdg-desktop-portal-hyprland", "xdg-desktop-portal-gtk", "qt6ct", "kitty", "thunar", "firefox", "fuzzel", "mako", "wl-clipboard", "cliphist", "grim", "slurp", "libnotify", "playerctl", "noto-fonts", "ttf-jetbrains-mono-nerd", "swaybg", "librsvg"],
       "files": [
         {"source": "configs/hypr/hyprland.lua", "target": ".config/hypr/hyprland.lua"},
         {"source": "configs/hypr/forge/layout.lua", "target": ".config/hypr/forge/layout.lua"},
@@ -62,8 +62,9 @@
         {"source": "configs/hypr/hyprlock.conf", "target": ".config/hypr/hyprlock.conf"},
         {"source": "configs/bin/forge-session", "target": ".local/bin/forge-session", "executable": true},
         {"source": "configs/bin/forge-launcher", "target": ".local/bin/forge-launcher", "executable": true},
-        {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true}
-        ,{"source": "configs/bin/forge-wallpaper", "target": ".local/bin/forge-wallpaper", "executable": true}
+        {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true},
+        {"source": "configs/bin/forge-wallpaper", "target": ".local/bin/forge-wallpaper", "executable": true},
+        {"source": "configs/backgrounds/forge.svg", "target": ".local/share/backgrounds/forge.svg"}
       ],
       "hardware_validation": "pending-on-device"
     },
