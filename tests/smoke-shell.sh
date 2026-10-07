@@ -24,6 +24,7 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then quickshell -p "$forge_config" ipc call forge screen HEADLESS-1; fi
 quickshell -p "$forge_config" ipc call forge launcher
 forge_status true false
 sleep 1
@@ -35,6 +36,7 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/con
 quickshell -p "$forge_config" ipc call forge close
 forge_status false false
 if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
+    python -c 'from pathlib import Path; assert Path("test-results/launcher.png").read_bytes() != Path("test-results/controls.png").read_bytes()'
     quickshell -p "$forge_config" ipc call forge screen HEADLESS-2
     quickshell -p "$forge_config" ipc call forge controls
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-2" and d["screens"] == 2'
