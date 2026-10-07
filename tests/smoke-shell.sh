@@ -18,6 +18,28 @@ cp tests/brightness-fixture "$forge_fixture/brightnessctl"
 chmod +x "$forge_fixture/brightnessctl"
 export PATH="$forge_fixture:$PATH"
 export FORGE_BRIGHTNESS_STATE="$forge_fixture/brightness.json"
+forge_audio_children=()
+forge_audio_stop() {
+    for forge_audio_pid in "${forge_audio_children[@]}"; do kill "$forge_audio_pid" 2>/dev/null || true; done
+    for forge_audio_pid in "${forge_audio_children[@]}"; do wait "$forge_audio_pid" 2>/dev/null || true; done
+}
+trap forge_audio_stop EXIT
+pipewire >test-results/pipewire.log 2>&1 &
+forge_audio_children+=("$!")
+for ((attempt = 0; attempt < 50; attempt++)); do
+    if pw-cli info 0 >/dev/null 2>&1; then break; fi
+    sleep 0.2
+done
+pw-cli info 0 >/dev/null
+wireplumber >test-results/wireplumber.log 2>&1 &
+forge_audio_children+=("$!")
+pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name=ForgeTestSink node.description="Forge test sink" media.class=Audio/Sink object.linger=true audio.position=[ FL FR ] }'
+forge_sink="$(pw-dump | python -c 'import json,sys; print(next(n["id"] for n in json.load(sys.stdin) if n.get("info",{}).get("props",{}).get("node.name") == "ForgeTestSink"))')"
+for ((attempt = 0; attempt < 50; attempt++)); do
+    if wpctl set-default "$forge_sink"; then break; fi
+    sleep 0.2
+done
+wpctl set-default "$forge_sink"
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
 forge_pid=$!
 forge_tray=""
@@ -25,6 +47,7 @@ forge_stop() {
     if [[ -n "$forge_tray" ]]; then kill "$forge_tray" 2>/dev/null || true; wait "$forge_tray" 2>/dev/null || true; fi
     kill "$forge_pid" 2>/dev/null || true
     wait "$forge_pid" 2>/dev/null || true
+    forge_audio_stop
     cat test-results/quickshell.log
 }
 trap forge_stop EXIT
@@ -38,6 +61,19 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_audio="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["audio"])')"
+    if [[ "$forge_audio" == True ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_audio" == True ]]
+quickshell -p "$forge_config" ipc call forge volume 0.4
+quickshell -p "$forge_config" ipc call forge mute
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["volume"] == 40 and d["muted"]'
+quickshell -p "$forge_config" ipc call forge mute
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; assert not json.load(sys.stdin)["muted"]'
 python tests/tray-fixture.py >test-results/tray.log 2>&1 &
 forge_tray=$!
 for ((attempt = 0; attempt < 50; attempt++)); do
