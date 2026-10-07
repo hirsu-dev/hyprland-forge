@@ -7,17 +7,18 @@ end
 local function external_mode(monitor)
     local selected, distance = nil, math.huge
     local preferred_width = monitor.width or 1920
+    local preferred_height = monitor.height or 1080
     for _, mode in ipairs(monitor.available_modes or {}) do
-        if mode.preferred then preferred_width = mode.width end
+        if mode.preferred then preferred_width, preferred_height = mode.width, mode.height end
         local delta = math.abs(mode.refresh_rate - 120)
         if mode.width == 1920 and mode.height == 1080 and delta <= 1 and delta < distance then
             selected, distance = mode, delta
         end
     end
     if selected then
-        return string.format("1920x1080@%.3f", selected.refresh_rate), 1920
+        return string.format("1920x1080@%.3f", selected.refresh_rate), 1920, 1080
     end
-    return "preferred", preferred_width
+    return "preferred", preferred_width, preferred_height
 end
 
 function M.plan(monitors, options)
@@ -40,17 +41,26 @@ function M.plan(monitors, options)
     local primary = external or panel
     if not primary then return { monitors = {}, workspaces = {} } end
     local result = { monitors = {}, workspaces = {}, primary = primary.name }
-    local width = 0
+    local width, height = 0, external and 1080 or 0
     if external then
         local mode
-        mode, width = external_mode(external)
+        mode, width, height = external_mode(external)
         table.insert(result.monitors, { output = external.name, mode = mode, position = "0x0", scale = 1 })
     end
     if panel then
+        local scale = tonumber(options.internal_scale) or panel.scale or 1
+        local panel_width, panel_height = panel.width or 1920, panel.height or 1080
+        for _, mode in ipairs(panel.available_modes or {}) do
+            if mode.preferred then panel_width, panel_height = mode.width, mode.height end
+        end
+        local x, y = width, 0
+        if options.internal_position == "left" then x = -math.ceil(panel_width / scale)
+        elseif options.internal_position == "above" then x, y = 0, -math.ceil(panel_height / scale)
+        elseif options.internal_position == "below" then x, y = 0, height end
         table.insert(result.monitors, {
             output = panel.name,
             mode = "preferred",
-            position = external and (tostring(width) .. "x0") or "0x0",
+            position = external and (tostring(x) .. "x" .. tostring(y)) or "0x0",
             scale = options.internal_scale or "auto",
             disabled = false,
         })

@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.home() / ".local/lib/hyprland-forge"))
+from forge.diagnostics import collect
+from forge.manifest import ForgeError
+
+try:
+    report = collect()
+    print(json.dumps(report, indent=2))
+    raise SystemExit(0 if report["runtime_ready"] else 1)
+except (ForgeError, OSError, ValueError, subprocess.SubprocessError) as exc:
+    print("Forge doctor: " + str(exc), file=sys.stderr)
+    raise SystemExit(1)

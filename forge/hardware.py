@@ -23,7 +23,7 @@ def inventory(sys_root=Path("/sys"), runner=subprocess.run):
     for variable in (sys_root / "firmware/efi/efivars").glob("SecureBoot-*"):
         value = variable.read_bytes()
         secure_boot = secure_boot or len(value) >= 5 and value[4] == 1
-    installed = runner(["pacman", "-Qq"], capture_output=True, text=True, check=True).stdout.splitlines()
+    installed = runner(["pacman", "-Qq"], capture_output=True, text=True, check=True, timeout=10).stdout.splitlines()
     return {"gpus": devices, "kernels": [k for k in KERNELS if k in installed], "secure_boot": secure_boot}
 
 
@@ -72,15 +72,5 @@ def resolve_plan(plan, apply=False):
 
 
 def doctor():
-    if platform.system() != "Linux":
-        raise ForgeError("Hardware diagnostics require Linux")
-    data = inventory()
-    parameter = Path("/sys/module/nvidia_drm/parameters/modeset")
-    data["nvidia_drm_modeset"] = parameter.read_text().strip() if parameter.exists() else "not-loaded"
-    data["services"] = {}
-    for service in SERVICES:
-        result = subprocess.run(["systemctl", "is-enabled", service], capture_output=True, text=True)
-        data["services"][service] = result.stdout.strip()
-    result = subprocess.run(["dkms", "status"], capture_output=True, text=True, check=True)
-    data["dkms"] = result.stdout.splitlines()
-    return data
+    from .diagnostics import collect
+    return collect()

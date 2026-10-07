@@ -71,8 +71,7 @@ def render(accent):
     }
 
 
-def apply_theme(accent, user_root, state_root):
-    payload = render(accent)
+def apply_files(payload, user_root, state_root):
     safe_target(user_root, ".local/state/hyprland-forge/install.lock")
     for target in payload:
         safe_target(user_root, target)
@@ -85,6 +84,10 @@ def apply_theme(accent, user_root, state_root):
             files.append({"source": source, "target": target})
         with lock(user_root / ".local/state/hyprland-forge"):
             return execute({"commands": [], "files": files}, source_root, user_root, state_root)
+
+
+def apply_theme(accent, user_root, state_root):
+    return apply_files(render(accent), user_root, state_root)
 
 
 def main(argv=None):

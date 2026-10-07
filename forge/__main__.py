@@ -24,8 +24,9 @@ def main(argv=None):
     source_root = Path(__file__).resolve().parent.parent
     try:
         if args.doctor:
-            print(json.dumps(doctor(), indent=2))
-            return 0
+            report = doctor()
+            print(json.dumps(report, indent=2))
+            return 0 if report["runtime_ready"] else 1
         manifest = load_manifest(source_root)
         plan = make_plan(manifest, args.stage)
         if args.json and (args.apply or args.rollback):
