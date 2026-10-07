@@ -5,6 +5,10 @@ export XDG_RUNTIME_DIR
 XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$(mktemp -d)}"
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-xcb}"
 export QT_QUICK_BACKEND=software
+export XDG_CONFIG_HOME
+XDG_CONFIG_HOME="$(mktemp -d)"
+mkdir -p "$XDG_CONFIG_HOME/forge"
+cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
 mkdir -p test-results
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
 forge_pid=$!
@@ -24,6 +28,16 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+forge_accent="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["accent"])')"
+python -c 'import os; from pathlib import Path; from forge.theme import PRESETS,render; from forge.storage import atomic_write; atomic_write(Path(os.environ["XDG_CONFIG_HOME"])/"forge/theme.json",render(PRESETS["ocean"])[".config/forge/theme.json"].encode())'
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_next="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["accent"])')"
+    if [[ "$forge_next" != "$forge_accent" ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_next" != "$forge_accent" ]]
+cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
+sleep 0.5
 if [[ "$QT_QPA_PLATFORM" == wayland ]]; then quickshell -p "$forge_config" ipc call forge screen HEADLESS-1; fi
 quickshell -p "$forge_config" ipc call forge launcher
 forge_status true false

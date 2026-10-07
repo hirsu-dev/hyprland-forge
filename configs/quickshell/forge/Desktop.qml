@@ -43,7 +43,7 @@ Singleton {
             if (Quickshell.screens.some(s => s.name === name)) root.selectedScreen = name
         }
         function status(): string {
-            return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length })
+            return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length, accent: ForgeTheme.accent.toString() })
         }
     }
 }

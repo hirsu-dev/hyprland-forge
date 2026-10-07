@@ -39,8 +39,8 @@ def load_manifest(root):
         for item in stage.get("files", []):
             source = relative_path(item["source"])
             target = relative_path(item["target"])
-            if source.parts[0] != "configs":
-                raise ForgeError("Config source must be inside configs/")
+            if source.parts[0] not in ("configs", "forge"):
+                raise ForgeError("Source must be inside configs/ or forge/")
             if target.parts[0] not in (".config", ".local") or len(target.parts) < 2:
                 raise ForgeError("Config destination must be inside .config/ or .local/")
             if str(target) in targets:

@@ -25,8 +25,8 @@ jobs:
       - uses: actions/checkout@v4
       - run: python -m unittest discover -s tests -v
       - run: lua tests/test_layout.lua
-      - run: shellcheck install.sh live.sh configs/bin/* tests/*.sh
-      - run: fuzzel --check-config --config configs/fuzzel/fuzzel.ini
+      - run: shellcheck install.sh live.sh configs/bin/forge-session configs/bin/forge-wallpaper configs/bin/forge-launcher configs/bin/forge-screenshot tests/*.sh
+      - run: bash tests/validate-fuzzel.sh
       - run: kitty +runpy 'import runpy; runpy.run_path("tests/validate-appearance.py")'
       - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-Si","--", *sorted({n for s in p["stages"] for n in s.get("packages",[])})],check=True)'
       - run: |
