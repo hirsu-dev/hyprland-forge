@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.3.0",
+  "release": "0.4.0",
   "ready_for_daily_use": false,
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
   "visibility": "private",
@@ -53,7 +53,7 @@
       "id": "compositor",
       "status": "ready",
       "requires": ["hardware"],
-      "packages": ["hyprland", "hyprland-guiutils", "hyprshutdown", "hypridle", "hyprlock", "hyprpolkitagent", "xdg-desktop-portal-hyprland", "xdg-desktop-portal-gtk", "qt6ct", "kitty", "thunar", "firefox", "fuzzel", "mako", "wl-clipboard", "cliphist", "grim", "slurp", "libnotify", "playerctl", "noto-fonts", "ttf-jetbrains-mono-nerd"],
+      "packages": ["hyprland", "hyprland-guiutils", "hyprshutdown", "hypridle", "hyprlock", "hyprpolkitagent", "xdg-desktop-portal-hyprland", "xdg-desktop-portal-gtk", "qt6ct", "kitty", "thunar", "firefox", "fuzzel", "mako", "wl-clipboard", "cliphist", "grim", "slurp", "libnotify", "playerctl", "noto-fonts", "ttf-jetbrains-mono-nerd", "swww"],
       "files": [
         {"source": "configs/hypr/hyprland.lua", "target": ".config/hypr/hyprland.lua"},
         {"source": "configs/hypr/forge/layout.lua", "target": ".config/hypr/forge/layout.lua"},
@@ -63,6 +63,7 @@
         {"source": "configs/bin/forge-session", "target": ".local/bin/forge-session", "executable": true},
         {"source": "configs/bin/forge-launcher", "target": ".local/bin/forge-launcher", "executable": true},
         {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true}
+        ,{"source": "configs/bin/forge-wallpaper", "target": ".local/bin/forge-wallpaper", "executable": true}
       ],
       "hardware_validation": "pending-on-device"
     },
@@ -84,7 +85,12 @@
       ],
       "runtime_validation": "pending"
     },
-    {"id": "appearance", "status": "pending", "requires": ["shell"], "packages": [], "files": []},
+    {"id": "appearance", "status": "pending", "requires": ["shell"], "packages": ["papirus-icon-theme"], "files": [
+      {"source": "configs/gtk-3.0/settings.ini", "target": ".config/gtk-3.0/settings.ini"},
+      {"source": "configs/gtk-4.0/settings.ini", "target": ".config/gtk-4.0/settings.ini"},
+      {"source": "configs/qt6ct/qt6ct.conf", "target": ".config/qt6ct/qt6ct.conf"},
+      {"source": "configs/fuzzel/fuzzel.ini", "target": ".config/fuzzel/fuzzel.ini"}
+    ]},
     {"id": "release", "status": "pending", "requires": ["appearance"], "packages": [], "files": []}
   ]
 }

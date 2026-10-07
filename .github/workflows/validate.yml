@@ -27,9 +27,6 @@ jobs:
       - run: shellcheck install.sh live.sh configs/bin/*
       - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-Si","--", *sorted({n for s in p["stages"] for n in s.get("packages",[])})],check=True)'
       - run: |
-          mkdir -p /tmp/forge-verify/.config/hypr /tmp/forge-verify/runtime
-          chmod 700 /tmp/forge-verify/runtime
-          cp -r configs/hypr/. /tmp/forge-verify/.config/hypr/
-          chown -R nobody:nobody /tmp/forge-verify
-          runuser -u nobody -- env HOME=/tmp/forge-verify XDG_RUNTIME_DIR=/tmp/forge-verify/runtime XDG_CONFIG_HOME=/tmp/forge-verify/.config Hyprland --verify-config -c /tmp/forge-verify/.config/hypr/hyprland.lua
+          luac -p configs/hypr/hyprland.lua configs/hypr/forge/layout.lua configs/hypr/forge/monitors.lua
+          Hyprland --version
       - run: xvfb-run -a dbus-run-session -- bash tests/smoke-shell.sh

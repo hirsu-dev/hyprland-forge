@@ -18,6 +18,7 @@ wl-paste --type image --watch cliphist store &
 forge_children+=("$!")
 mako &
 forge_children+=("$!")
+if command -v forge-wallpaper >/dev/null; then forge-wallpaper & forge_children+=("$!"); fi
 if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
     quickshell -c forge &
     forge_children+=("$!")
