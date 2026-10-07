@@ -29,8 +29,10 @@ class ManifestTests(unittest.TestCase):
         self.assertNotIn("--noconfirm", plan["commands"][0])
 
     def test_pending_stage_is_rejected(self):
+        manifest = copy.deepcopy(self.manifest)
+        next(stage for stage in manifest["stages"] if stage["id"] == "shell")["status"] = "pending"
         with self.assertRaisesRegex(ForgeError, "not released"):
-            select_stages(self.manifest, ["shell"])
+            select_stages(manifest, ["shell"])
 
     def test_unknown_stage_is_rejected(self):
         with self.assertRaisesRegex(ForgeError, "Unknown"):

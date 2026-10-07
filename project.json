@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.4.0",
+  "release": "0.5.0",
   "ready_for_daily_use": false,
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
   "visibility": "private",
@@ -70,7 +70,7 @@
     },
     {
       "id": "shell",
-      "status": "pending",
+      "status": "ready",
       "requires": ["compositor"],
       "packages": ["quickshell", "blueman", "pavucontrol", "papirus-icon-theme"],
       "files": [
@@ -84,7 +84,14 @@
         {"source": "configs/quickshell/forge/ControlCenter.qml", "target": ".config/quickshell/forge/ControlCenter.qml"},
         {"source": "configs/mako/config", "target": ".config/mako/config"}
       ],
-      "runtime_validation": "pending"
+      "runtime_validation": {
+        "result": "passed",
+        "commit": "8054c460559500eba79d15e991d0e687d3aaa702",
+        "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/37649605780",
+        "environments": ["Arch Xvfb", "Arch headless Sway Wayland"],
+        "checks": ["QML startup without binding errors", "launcher and control center IPC", "two 1920x1080 outputs", "panel recovery after output removal", "wallpaper process", "captured panel screenshots"],
+        "hardware_validation": "pending-on-device"
+      }
     },
     {"id": "appearance", "status": "pending", "requires": ["shell"], "packages": ["papirus-icon-theme"], "files": [
       {"source": "configs/gtk-3.0/settings.ini", "target": ".config/gtk-3.0/settings.ini"},
