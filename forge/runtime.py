@@ -54,6 +54,7 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
     transaction_root = state_root / "transactions" / transaction_id
     transaction_root.mkdir(parents=True, mode=0o700)
     record = {"id": transaction_id, "status": "started", "plan": plan, "commands_completed": []}
+    record["services_enabled"] = []
     record_path = transaction_root / "transaction.json"
     write_json(record_path, record)
     deployment = Deployment(user_root, transaction_root)
@@ -63,6 +64,15 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
             record["commands_completed"].append(command)
             write_json(record_path, record)
         deployment.apply(plan["files"], source_root)
+        for service in plan.get("services", []):
+            prior = runner(["systemctl", "is-enabled", service], capture_output=True, text=True)
+            if prior.stdout.strip() == "enabled":
+                continue
+            if prior.stdout.strip() not in ("disabled", "enabled-runtime"):
+                raise ForgeError(f"Cannot enable {service}: {prior.stdout.strip()}")
+            record["services_enabled"].append({"name": service, "previous": prior.stdout.strip()})
+            write_json(record_path, record)
+            runner(["sudo", "systemctl", "enable", service], check=True)
         record["status"] = "complete"
         write_json(record_path, record)
         write_json(state_root / "latest.json", {"id": transaction_id})
@@ -70,12 +80,25 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
     except BaseException as exc:
         record["status"] = "failed"
         record["error"] = type(exc).__name__
+        record["service_rollback_failures"] = undo_services(record["services_enabled"], runner)
         try:
             record["rollback_conflicts"] = deployment.rollback()
         except Exception as rollback_error:
             record["rollback_error"] = str(rollback_error)
         write_json(record_path, record)
         raise
+
+
+def undo_services(services, runner=subprocess.run):
+    failures = []
+    for service in reversed(services):
+        try:
+            runner(["sudo", "systemctl", "disable", service["name"]], check=True)
+            if service["previous"] == "enabled-runtime":
+                runner(["sudo", "systemctl", "enable", "--runtime", service["name"]], check=True)
+        except (OSError, subprocess.CalledProcessError):
+            failures.append(service["name"])
+    return failures
 
 
 def restore(transaction_id, user_root, state_root):
@@ -101,6 +124,8 @@ def show_plan(plan):
         print(shlex.join(command))
     for item in plan["files"]:
         print(f"{item['source']} -> ~/{item['target']}")
+    for service in plan.get("services", []):
+        print(f"Enable on next boot: {service}")
     if plan["pending"]:
         print("Not released: " + ", ".join(plan["pending"]))
-    print("Package changes include a full Arch update. Config rollback does not downgrade packages.")
+    print("Package changes include a full Arch update. Config rollback leaves packages and services unchanged.")

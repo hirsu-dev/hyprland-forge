@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec 9>"${XDG_RUNTIME_DIR:?}/hyprland-forge-session.lock"
+flock -n 9 || exit 0
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
+systemctl --user start hyprpolkitagent.service
+forge_children=()
+forge_stop() {
+    for forge_pid in "${forge_children[@]}"; do kill "$forge_pid" 2>/dev/null || true; done
+}
+trap forge_stop EXIT
+trap 'exit 0' TERM INT
+hypridle &
+forge_children+=("$!")
+wl-paste --type text --watch cliphist store &
+forge_children+=("$!")
+wl-paste --type image --watch cliphist store &
+forge_children+=("$!")
+if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
+    quickshell -c forge &
+else
+    mako &
+fi
+forge_children+=("$!")
+while hyprctl -j monitors >/dev/null 2>&1; do sleep 10; done

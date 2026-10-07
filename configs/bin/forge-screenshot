@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+forge_region="$(slurp)" || exit 0
+[[ -n "$forge_region" ]] || exit 0
+grim -g "$forge_region" - | wl-copy --type image/png
+notify-send 'Hyprland Forge' 'Screenshot copied to clipboard'

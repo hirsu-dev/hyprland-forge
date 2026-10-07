@@ -16,3 +16,18 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: bash -n install.sh live.sh
       - run: bash install.sh --plan --json
+  arch:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python lua hyprland shellcheck
+      - uses: actions/checkout@v4
+      - run: python -m unittest discover -s tests -v
+      - run: lua tests/test_layout.lua
+      - run: shellcheck install.sh live.sh configs/bin/*
+      - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-Si","--", *sorted({n for s in p["stages"] for n in s.get("packages",[])})],check=True)'
+      - run: |
+          mkdir -p /tmp/forge-verify/.config/hypr
+          cp -r configs/hypr/. /tmp/forge-verify/.config/hypr/
+          chown -R nobody:nobody /tmp/forge-verify
+          runuser -u nobody -- env HOME=/tmp/forge-verify XDG_CONFIG_HOME=/tmp/forge-verify/.config Hyprland --verify-config -c /tmp/forge-verify/.config/hypr/hyprland.lua

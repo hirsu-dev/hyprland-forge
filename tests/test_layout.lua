@@ -1,0 +1,28 @@
+local layout = dofile("configs/hypr/forge/layout.lua")
+local laptop = { name = "eDP-1", width = 1920, height = 1080 }
+local hdmi = { name = "HDMI-A-1", width = 1920, available_modes = {
+    { width = 1920, height = 1080, refresh_rate = 60, preferred = true },
+    { width = 1920, height = 1080, refresh_rate = 119.88 },
+} }
+local plan = layout.plan({ laptop, hdmi })
+assert(plan.primary == "HDMI-A-1")
+assert(plan.monitors[1].mode == "1920x1080@119.880")
+assert(plan.monitors[2].position == "1920x0")
+assert(plan.workspaces[1].monitor == "HDMI-A-1")
+assert(plan.workspaces[6].monitor == "eDP-1")
+assert(plan.workspaces[6].default)
+plan = layout.plan({ laptop })
+assert(plan.primary == "eDP-1")
+assert(plan.monitors[1].position == "0x0")
+for _, workspace in ipairs(plan.workspaces) do assert(workspace.monitor == "eDP-1") end
+plan = layout.plan({ hdmi })
+assert(plan.workspaces[10].monitor == "HDMI-A-1")
+assert(not plan.workspaces[6].default)
+plan = layout.plan({ { name = "HDMI-A-2", width = 2560, available_modes = { { width = 2560, height = 1440, refresh_rate = 60, preferred = true } } }, laptop })
+assert(plan.monitors[1].mode == "preferred")
+assert(plan.monitors[2].position == "2560x0")
+plan = layout.plan({ laptop, hdmi, { name = "DP-1" } }, { external = "DP-1", internal_scale = 1.5 })
+assert(plan.primary == "DP-1")
+assert(plan.monitors[2].scale == 1.5)
+assert(#layout.plan({}).monitors == 0)
+print("Monitor layout scenarios passed")

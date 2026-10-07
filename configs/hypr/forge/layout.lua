@@ -1,0 +1,70 @@
+local M = {}
+
+local function internal(name)
+    return name:match("^eDP") or name:match("^LVDS") or name:match("^DSI")
+end
+
+local function external_mode(monitor)
+    local selected, distance = nil, math.huge
+    local preferred_width = monitor.width or 1920
+    for _, mode in ipairs(monitor.available_modes or {}) do
+        if mode.preferred then preferred_width = mode.width end
+        local delta = math.abs(mode.refresh_rate - 120)
+        if mode.width == 1920 and mode.height == 1080 and delta <= 1 and delta < distance then
+            selected, distance = mode, delta
+        end
+    end
+    if selected then
+        return string.format("1920x1080@%.3f", selected.refresh_rate), 1920
+    end
+    return "preferred", preferred_width
+end
+
+function M.plan(monitors, options)
+    options = options or {}
+    local panel, external, other = nil, nil, {}
+    for _, monitor in ipairs(monitors) do
+        if internal(monitor.name) then
+            panel = panel or monitor
+        else
+            table.insert(other, monitor)
+        end
+    end
+    table.sort(other, function(a, b)
+        local a_priority = a.name == options.external and 0 or a.name:match("^HDMI") and 1 or 2
+        local b_priority = b.name == options.external and 0 or b.name:match("^HDMI") and 1 or 2
+        if a_priority ~= b_priority then return a_priority < b_priority end
+        return a.name < b.name
+    end)
+    external = other[1]
+    local primary = external or panel
+    if not primary then return { monitors = {}, workspaces = {} } end
+    local result = { monitors = {}, workspaces = {}, primary = primary.name }
+    local width = 0
+    if external then
+        local mode
+        mode, width = external_mode(external)
+        table.insert(result.monitors, { output = external.name, mode = mode, position = "0x0", scale = 1 })
+    end
+    if panel then
+        table.insert(result.monitors, {
+            output = panel.name,
+            mode = "preferred",
+            position = external and (tostring(width) .. "x0") or "0x0",
+            scale = options.internal_scale or "auto",
+            disabled = false,
+        })
+    end
+    for _, monitor in ipairs(other) do
+        if monitor ~= external then
+            table.insert(result.monitors, { output = monitor.name, mode = "preferred", position = "auto", scale = "auto" })
+        end
+    end
+    for i = 1, 10 do
+        local target = i > 5 and panel or primary
+        result.workspaces[i] = { workspace = tostring(i), monitor = target.name, persistent = true, default = i == 1 or (i == 6 and panel ~= nil and external ~= nil) }
+    end
+    return result
+end
+
+return M

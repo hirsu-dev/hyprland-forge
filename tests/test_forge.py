@@ -51,6 +51,8 @@ class ManifestTests(unittest.TestCase):
     def test_invalid_package_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             manifest = copy.deepcopy(self.manifest)
+            for stage in manifest["stages"]:
+                stage["files"] = []
             manifest["stages"][0]["packages"].append("--overwrite=*")
             write_json(Path(folder) / "project.json", manifest)
             with self.assertRaisesRegex(ForgeError, "package"):
@@ -59,6 +61,8 @@ class ManifestTests(unittest.TestCase):
     def test_dependency_cycle_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             manifest = copy.deepcopy(self.manifest)
+            for stage in manifest["stages"]:
+                stage["files"] = []
             manifest["stages"][0]["requires"] = ["shell"]
             write_json(Path(folder) / "project.json", manifest)
             with self.assertRaisesRegex(ForgeError, "dependency"):
