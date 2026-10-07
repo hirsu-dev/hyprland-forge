@@ -76,7 +76,7 @@
       "files": [
         {"source": "configs/quickshell/forge/shell.qml", "target": ".config/quickshell/forge/shell.qml"},
         {"source": "configs/quickshell/forge/qmldir", "target": ".config/quickshell/forge/qmldir"},
-        {"source": "configs/quickshell/forge/Palette.qml", "target": ".config/quickshell/forge/Palette.qml"},
+        {"source": "configs/quickshell/forge/ForgeTheme.qml", "target": ".config/quickshell/forge/ForgeTheme.qml"},
         {"source": "configs/quickshell/forge/Desktop.qml", "target": ".config/quickshell/forge/Desktop.qml"},
         {"source": "configs/quickshell/forge/ForgeButton.qml", "target": ".config/quickshell/forge/ForgeButton.qml"},
         {"source": "configs/quickshell/forge/Bar.qml", "target": ".config/quickshell/forge/Bar.qml"},

@@ -15,8 +15,8 @@ Rectangle {
     implicitWidth: label.implicitWidth + 24
     implicitHeight: 36
     radius: 12
-    color: selected ? Palette.accent : pointer.containsMouse ? Palette.raised : Palette.surface
-    border.color: selected ? Palette.accent : Palette.line
+    color: selected ? ForgeTheme.accent : pointer.containsMouse ? ForgeTheme.raised : ForgeTheme.surface
+    border.color: selected ? ForgeTheme.accent : ForgeTheme.line
     border.width: pointer.containsMouse || activeFocus ? 1 : 0
     Behavior on color { ColorAnimation { duration: 140 } }
     Text {
@@ -24,9 +24,9 @@ Rectangle {
         anchors.centerIn: parent
         text: root.text
         textFormat: Text.PlainText
-        font.family: Palette.font
+        font.family: ForgeTheme.font
         font.pixelSize: 12
-        color: root.selected ? Palette.onAccent : Palette.text
+        color: root.selected ? ForgeTheme.onAccent : ForgeTheme.text
     }
     MouseArea {
         id: pointer

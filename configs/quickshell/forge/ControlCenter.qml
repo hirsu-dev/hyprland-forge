@@ -21,8 +21,8 @@ PanelWindow {
         id: content
         anchors.fill: parent
         radius: 24
-        color: Palette.background
-        border.color: Palette.line
+        color: ForgeTheme.background
+        border.color: ForgeTheme.line
         focus: true
         Keys.onEscapePressed: Desktop.closePanels()
         ScrollView {
@@ -34,11 +34,11 @@ PanelWindow {
                 spacing: 16
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: Desktop.time; font.pixelSize: 46; font.family: Palette.font; color: Palette.text }
+                    Text { text: Desktop.time; font.pixelSize: 46; font.family: ForgeTheme.font; color: ForgeTheme.text }
                     Item { Layout.fillWidth: true }
                     ForgeButton { text: "×"; onClicked: Desktop.closePanels() }
                 }
-                Text { text: Desktop.date; color: Palette.muted; font.family: Palette.font; font.pixelSize: 12 }
+                Text { text: Desktop.date; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 12 }
                 RowLayout {
                     Layout.fillWidth: true
                     ForgeButton { Layout.fillWidth: true; text: "󰖩 Network"; onClicked: { Desktop.exec(["kitty", "-e", "nmtui"]); Desktop.closePanels() } }
@@ -48,12 +48,12 @@ PanelWindow {
                     Layout.fillWidth: true
                     implicitHeight: 88
                     radius: 18
-                    color: Palette.surface
+                    color: ForgeTheme.surface
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 14
                         RowLayout {
-                            Text { text: "Output volume"; color: Palette.text; font.family: Palette.font; font.pixelSize: 12 }
+                            Text { text: "Output volume"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 12 }
                             Item { Layout.fillWidth: true }
                             ForgeButton {
                                 text: Desktop.muted ? "Muted" : Desktop.volume + "%"
@@ -66,14 +66,14 @@ PanelWindow {
                             value: Desktop.sink && Desktop.sink.audio ? Desktop.sink.audio.volume : 0
                             enabled: Desktop.sink !== null
                             onMoved: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.volume = value }
-                            palette.highlight: Palette.accent
+                            palette.highlight: ForgeTheme.accent
                         }
                     }
                 }
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: 128
-                    color: Palette.surface
+                    color: ForgeTheme.surface
                     radius: 18
                     RowLayout {
                         anchors.fill: parent
@@ -81,17 +81,17 @@ PanelWindow {
                         spacing: 16
                         Rectangle {
                             width: 72; height: 72; radius: 36
-                            color: Palette.raised
-                            border.color: Palette.accent
+                            color: ForgeTheme.raised
+                            border.color: ForgeTheme.accent
                             border.width: 2
-                            Rectangle { anchors.centerIn: parent; width: 24; height: 24; radius: 12; color: Palette.accent }
-                            Rectangle { x: 33; y: 5; width: 6; height: 13; radius: 3; color: Palette.muted }
+                            Rectangle { anchors.centerIn: parent; width: 24; height: 24; radius: 12; color: ForgeTheme.accent }
+                            Rectangle { x: 33; y: 5; width: 6; height: 13; radius: 3; color: ForgeTheme.muted }
                             RotationAnimator on rotation { from: 0; to: 360; duration: 14000; loops: Animation.Infinite; running: panel.visible && Desktop.player !== null && Desktop.player.playbackState === MprisPlaybackState.Playing }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackTitle || "Untitled" : "Nothing playing"; textFormat: Text.PlainText; elide: Text.ElideRight; font.bold: true; color: Palette.text; font.pixelSize: 13 }
-                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackArtist : "Your next soundtrack"; textFormat: Text.PlainText; elide: Text.ElideRight; color: Palette.muted; font.pixelSize: 11 }
+                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackTitle || "Untitled" : "Nothing playing"; textFormat: Text.PlainText; elide: Text.ElideRight; font.bold: true; color: ForgeTheme.text; font.pixelSize: 13 }
+                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackArtist : "Your next soundtrack"; textFormat: Text.PlainText; elide: Text.ElideRight; color: ForgeTheme.muted; font.pixelSize: 11 }
                             Row {
                                 spacing: 5
                                 ForgeButton { text: "󰒮"; onClicked: { if (Desktop.player && Desktop.player.canGoPrevious) Desktop.player.previous() } }
@@ -107,7 +107,7 @@ PanelWindow {
                     ForgeButton { Layout.fillWidth: true; text: "󰒓 Audio"; onClicked: { Desktop.exec(["pavucontrol"]); Desktop.closePanels() } }
                     ForgeButton { Layout.fillWidth: true; text: "󰆴 Alerts"; onClicked: Desktop.exec(["makoctl", "dismiss", "--all"]) }
                 }
-                Text { text: "Power profile"; color: Palette.muted; font.family: Palette.font; font.pixelSize: 12 }
+                Text { text: "Power profile"; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 12 }
                 RowLayout {
                     Layout.fillWidth: true
                     ForgeButton { Layout.fillWidth: true; text: "Saver"; selected: PowerProfiles.profile === PowerProfile.PowerSaver; onClicked: PowerProfiles.profile = PowerProfile.PowerSaver }

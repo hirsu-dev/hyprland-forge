@@ -44,4 +44,4 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
     quickshell -p "$forge_config" ipc call forge close
 fi
 kill -0 "$forge_pid"
-python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|ReferenceError|TypeError|SyntaxError|Binding loop)",s)'
+python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|Unable to assign|ReferenceError|TypeError|SyntaxError|Binding loop)",s)'

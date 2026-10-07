@@ -20,22 +20,22 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         radius: 24
-        color: Palette.background
-        border.color: Palette.line
+        color: ForgeTheme.background
+        border.color: ForgeTheme.line
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 14
-            Text { text: "F O R G E"; color: Palette.accent; font.family: Palette.font; font.pixelSize: 12 }
+            Text { text: "F O R G E"; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.pixelSize: 12 }
             TextField {
                 id: search
                 Layout.fillWidth: true
                 implicitHeight: 50
                 placeholderText: "Find an application…"
-                color: Palette.text
-                placeholderTextColor: Palette.muted
-                font.family: Palette.font
-                background: Rectangle { radius: 14; color: Palette.surface; border.color: Palette.line }
+                color: ForgeTheme.text
+                placeholderTextColor: ForgeTheme.muted
+                font.family: ForgeTheme.font
+                background: Rectangle { radius: 14; color: ForgeTheme.surface; border.color: ForgeTheme.line }
                 onTextChanged: apps.currentIndex = 0
                 onAccepted: launcher.launchCurrent()
                 Keys.onEscapePressed: Desktop.closePanels()
@@ -57,17 +57,17 @@ PanelWindow {
                     width: apps.width
                     height: 48
                     radius: 12
-                    color: ListView.isCurrentItem ? Palette.accent : mouse.containsMouse ? Palette.raised : "transparent"
+                    color: ListView.isCurrentItem ? ForgeTheme.accent : mouse.containsMouse ? ForgeTheme.raised : "transparent"
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 10
                         spacing: 14
                         Image { source: Quickshell.iconPath(modelData.icon, "application-x-executable"); sourceSize.width: 28; sourceSize.height: 28; Layout.preferredWidth: 28; Layout.preferredHeight: 28 }
-                        Text { Layout.fillWidth: true; text: modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: index === apps.currentIndex ? Palette.onAccent : Palette.text; font.family: Palette.font; font.pixelSize: 13 }
+                        Text { Layout.fillWidth: true; text: modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: index === apps.currentIndex ? ForgeTheme.onAccent : ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 13 }
                     }
                     MouseArea { id: mouse; anchors.fill: parent; hoverEnabled: true; onClicked: { apps.currentIndex = parent.index; launcher.launchCurrent() } }
                 }
-                Text { anchors.centerIn: parent; visible: apps.count === 0; text: "No matching applications"; color: Palette.muted }
+                Text { anchors.centerIn: parent; visible: apps.count === 0; text: "No matching applications"; color: ForgeTheme.muted }
             }
         }
     }

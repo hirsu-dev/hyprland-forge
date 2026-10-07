@@ -16,8 +16,8 @@ PanelWindow {
         anchors.fill: parent
         anchors.margins: 7
         radius: 15
-        color: Palette.background
-        border.color: Palette.line
+        color: ForgeTheme.background
+        border.color: ForgeTheme.line
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 8
@@ -36,7 +36,7 @@ PanelWindow {
                         height: 13
                         anchors.verticalCenter: parent.verticalCenter
                         radius: 7
-                        color: active ? Palette.accent : Palette.raised
+                        color: active ? ForgeTheme.accent : ForgeTheme.raised
                         Behavior on width { NumberAnimation { duration: 190; easing.type: Easing.OutCubic } }
                         Behavior on color { ColorAnimation { duration: 190 } }
                         MouseArea { anchors.fill: parent; onClicked: Desktop.workspace(parent.index + 1) }
@@ -49,8 +49,8 @@ PanelWindow {
                 text: Desktop.player ? "♫  " + Desktop.player.trackTitle : "FORGE"
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                color: Palette.muted
-                font.family: Palette.font
+                color: ForgeTheme.muted
+                font.family: ForgeTheme.font
                 font.pixelSize: 11
             }
             Item { Layout.fillWidth: true }

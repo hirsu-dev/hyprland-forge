@@ -36,6 +36,7 @@ jobs:
           mkdir -p /tmp/forge-wayland/runtime test-results
           chmod 700 /tmp/forge-wayland/runtime
           chown -R nobody:nobody /tmp/forge-wayland test-results
+          setcap -r /usr/bin/sway
           runuser -u nobody -- env HOME=/tmp/forge-wayland XDG_RUNTIME_DIR=/tmp/forge-wayland/runtime dbus-run-session -- bash tests/smoke-wayland.sh
       - uses: actions/upload-artifact@v4
         if: always()

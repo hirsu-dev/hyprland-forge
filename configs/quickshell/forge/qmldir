@@ -1,4 +1,4 @@
-singleton Palette 1.0 Palette.qml
+singleton ForgeTheme 1.0 ForgeTheme.qml
 singleton Desktop 1.0 Desktop.qml
 Bar 1.0 Bar.qml
 ControlCenter 1.0 ControlCenter.qml
