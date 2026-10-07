@@ -10,6 +10,11 @@ if name in ("systemctl", "dbus-update-activation-environment"):
     sys.exit(1)
 if name == "hyprctl":
     sys.exit(0 if (root / "active").exists() else 1)
+if name == "systemd-detect-virt":
+    print("oracle")
+    sys.exit(0)
+if name == "quickshell":
+    (root / "renderer").write_text(os.environ.get("QT_QUICK_BACKEND", ""))
 try:
     os.fstat(9)
 except OSError:

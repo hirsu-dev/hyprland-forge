@@ -22,7 +22,7 @@ class SessionTests(unittest.TestCase):
             config.parent.mkdir(parents=True)
             config.touch()
             (root / "active").touch()
-            for name in ("systemctl", "dbus-update-activation-environment", "hyprctl", "hypridle", "wl-paste", "mako", "forge-wallpaper", "quickshell"):
+            for name in ("systemctl", "dbus-update-activation-environment", "systemd-detect-virt", "hyprctl", "hypridle", "wl-paste", "mako", "forge-wallpaper", "quickshell"):
                 target = binaries / name
                 shutil.copyfile(ROOT / "tests/session-fixture", target)
                 target.chmod(0o755)
@@ -34,6 +34,7 @@ class SessionTests(unittest.TestCase):
                     self.assertIsNone(process.poll())
                     time.sleep(0.05)
                 self.assertEqual(len(list(root.glob("*.pid"))), 6)
+                self.assertEqual((root / "renderer").read_text(), "software")
                 self.assertFalse((root / "leaked-lock").exists())
                 duplicate = subprocess.run(["bash", str(ROOT / "configs/bin/forge-session")], env=env, capture_output=True, timeout=3)
                 self.assertEqual(duplicate.returncode, 0)

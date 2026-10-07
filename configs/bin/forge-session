@@ -21,7 +21,11 @@ forge_start wl-paste --type image --watch cliphist store
 forge_start mako
 forge_start "$HOME/.local/bin/forge-wallpaper"
 if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
-    forge_start quickshell -c forge
+    if systemd-detect-virt --vm >/dev/null 2>&1; then
+        forge_start env QT_QUICK_BACKEND=software quickshell -c forge
+    else
+        forge_start quickshell -c forge
+    fi
 fi
 while hyprctl -j monitors >/dev/null 2>&1; do
     sleep 10 9>&- &
