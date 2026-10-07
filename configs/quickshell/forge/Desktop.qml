@@ -32,7 +32,7 @@ Singleton {
         else if (action === "next" && player.canGoNext) player.next()
         else if (action === "previous" && player.canGoPrevious) player.previous()
     }
-    function setVolume(value) { if (sink && sink.audio) sink.audio.volume = Math.max(0, Math.min(1, value)) }
+    function setVolume(value) { if (Number.isFinite(value) && sink && sink.audio) sink.audio.volume = Math.max(0, Math.min(1, value)) }
     function toggleMute() { if (sink && sink.audio) sink.audio.muted = !sink.audio.muted }
     function toggleControls(screen) {
         if (screen) selectedScreen = screen.name

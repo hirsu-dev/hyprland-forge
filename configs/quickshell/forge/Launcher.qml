@@ -19,6 +19,10 @@ PanelWindow {
     }
     Rectangle {
         anchors.fill: parent
+        opacity: launcher.visible ? 1 : 0
+        scale: launcher.visible ? 1 : 0.96
+        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         radius: 24
         color: ForgeTheme.background
         border.color: ForgeTheme.line
