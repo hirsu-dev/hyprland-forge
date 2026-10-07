@@ -57,7 +57,7 @@ def resolve_plan(plan, apply=False):
         return plan
     if platform.system() == "Linux" and Path("/etc/arch-release").is_file():
         data = inventory()
-        headers = hardware_packages(data)
+        headers = hardware_packages(data) if apply else [f"{k}-headers" for k in data["kernels"] or ["linux"]]
         if apply:
             verify_services()
         plan["hardware"] = data
