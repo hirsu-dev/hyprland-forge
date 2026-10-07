@@ -25,6 +25,7 @@ for forge_socket in "$XDG_RUNTIME_DIR"/sway-ipc.*.sock; do
     if [[ -S "$forge_socket" ]]; then export SWAYSOCK="$forge_socket"; break; fi
 done
 swaymsg -t get_outputs
+python tests/validate-clipboard.py
 bash configs/bin/forge-wallpaper "$(pwd)/configs/backgrounds/forge.svg" >test-results/wallpaper.log 2>&1 &
 forge_wallpaper=$!
 bash tests/smoke-shell.sh

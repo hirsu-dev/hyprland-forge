@@ -7,9 +7,11 @@ def choose(runner=subprocess.run):
     if not history.strip():
         return False
     selection = runner(["fuzzel", "--dmenu", "--prompt", "Clipboard > "], input=history, capture_output=True)
-    if selection.returncode == 1 or not selection.stdout.strip():
+    if selection.returncode == 1:
         return False
     selection.check_returncode()
+    if not selection.stdout.strip():
+        return False
     if selection.stdout.rstrip(b"\n") not in history.splitlines():
         raise ValueError("Choose an existing clipboard entry")
     content = runner(["cliphist", "decode"], input=selection.stdout, capture_output=True, check=True, timeout=10).stdout

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.7.0",
+  "release": "0.8.0",
   "ready_for_daily_use": false,
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
   "visibility": "private",
