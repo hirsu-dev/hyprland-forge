@@ -57,3 +57,25 @@ jobs:
         with:
           name: compositor-validation
           path: test-results/
+  bundle:
+    needs: [validation, arch, compositor]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m forge.bundle --output test-results/bundle
+      - run: |
+          cd test-results/bundle
+          sha256sum -c *.sha256
+          tar -xzf *.tar.gz
+          cd hyprland-forge
+          sha256sum -c SHA256SUMS
+          bash install.sh --plan --json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hyprland-forge-installer
+          path: |
+            test-results/bundle/*.tar.gz
+            test-results/bundle/*.sha256

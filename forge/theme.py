@@ -37,6 +37,9 @@ def palette(accent):
 def sample_image(path):
     from PIL import Image, ImageOps
     with Image.open(path) as source:
+        if source.width * source.height > 40_000_000:
+            raise ForgeError("Wallpaper exceeds the 40-megapixel sampling limit")
+        source.draft("RGB", (256, 256))
         image = ImageOps.exif_transpose(source).convert("RGB")
         image.thumbnail((128, 128))
         colors = image.quantize(colors=12).convert("RGB").getcolors(128 * 128) or []
@@ -70,7 +73,7 @@ def render(accent):
 
 def apply_theme(accent, user_root, state_root):
     payload = render(accent)
-    safe_target(user_root, ".local/state/hyprland-forge/themes/install.lock")
+    safe_target(user_root, ".local/state/hyprland-forge/install.lock")
     for target in payload:
         safe_target(user_root, target)
     with tempfile.TemporaryDirectory(prefix="forge-theme-") as directory:
@@ -80,7 +83,7 @@ def apply_theme(accent, user_root, state_root):
             source = f"configs/{index}"
             atomic_write(source_root / source, content.encode("utf-8"), 0o644)
             files.append({"source": source, "target": target})
-        with lock(state_root):
+        with lock(user_root / ".local/state/hyprland-forge"):
             return execute({"commands": [], "files": files}, source_root, user_root, state_root)
 
 
@@ -108,8 +111,8 @@ def main(argv=None):
         user_root = Path.home()
         state_root = user_root / ".local/state/hyprland-forge/themes"
         if args.rollback:
-            safe_target(user_root, ".local/state/hyprland-forge/themes/install.lock")
-            with lock(state_root):
+            safe_target(user_root, ".local/state/hyprland-forge/install.lock")
+            with lock(user_root / ".local/state/hyprland-forge"):
                 conflicts = restore(args.rollback, user_root, state_root)
             if conflicts:
                 raise ForgeError("Kept edited files: " + ", ".join(conflicts))

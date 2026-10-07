@@ -128,6 +128,19 @@ PanelWindow {
                     ForgeButton { Layout.fillWidth: true; text: "Balanced"; selected: PowerProfiles.profile === PowerProfile.Balanced; onClicked: PowerProfiles.profile = PowerProfile.Balanced }
                     ForgeButton { Layout.fillWidth: true; text: "Performance"; enabled: PowerProfiles.hasPerformanceProfile; selected: PowerProfiles.profile === PowerProfile.Performance; onClicked: PowerProfiles.profile = PowerProfile.Performance }
                 }
+                Text { text: "Accent"; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 12 }
+                RowLayout {
+                    Layout.fillWidth: true
+                    Repeater {
+                        model: ["sage", "ocean", "plum", "ember"]
+                        ForgeButton {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                            onClicked: Desktop.exec([Quickshell.env("HOME") + "/.local/bin/forge-appearance", "--preset", modelData, "--apply"])
+                        }
+                    }
+                }
             }
         }
     }
