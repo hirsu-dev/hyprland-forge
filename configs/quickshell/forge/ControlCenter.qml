@@ -12,7 +12,7 @@ PanelWindow {
     anchors { top: true; right: true }
     margins { top: 64; right: 14 }
     implicitWidth: Math.min(392, screen ? screen.width - 28 : 392)
-    implicitHeight: Math.min(540, screen ? screen.height - 90 : 540)
+    implicitHeight: Math.min(610, screen ? screen.height - 90 : 610)
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
@@ -66,7 +66,21 @@ PanelWindow {
                             value: Desktop.sink && Desktop.sink.audio ? Desktop.sink.audio.volume : 0
                             enabled: Desktop.sink !== null
                             onMoved: { if (Desktop.sink && Desktop.sink.audio) Desktop.sink.audio.volume = value }
-                            palette.highlight: ForgeTheme.accent
+                            background: Rectangle {
+                                x: parent.leftPadding
+                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                                width: parent.availableWidth
+                                height: 5
+                                radius: 3
+                                color: ForgeTheme.raised
+                                Rectangle { width: parent.width * (parent.parent.visualPosition); height: parent.height; radius: 3; color: ForgeTheme.accent }
+                            }
+                            handle: Rectangle {
+                                x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
+                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                                width: 16; height: 16; radius: 8
+                                color: ForgeTheme.accent
+                            }
                         }
                     }
                 }
