@@ -63,6 +63,8 @@
         {"source": "configs/bin/forge-session", "target": ".local/bin/forge-session", "executable": true},
         {"source": "configs/bin/forge-launcher", "target": ".local/bin/forge-launcher", "executable": true},
         {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true},
+        {"source": "configs/bin/forge-clipboard", "target": ".local/bin/forge-clipboard", "executable": true},
+        {"source": "forge/clipboard.py", "target": ".local/lib/hyprland-forge/forge/clipboard.py"},
         {"source": "configs/bin/forge-wallpaper", "target": ".local/bin/forge-wallpaper", "executable": true},
         {"source": "configs/backgrounds/forge.svg", "target": ".local/share/backgrounds/forge.svg"}
       ],

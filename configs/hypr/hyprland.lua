@@ -44,6 +44,7 @@ local commands = {
     ["SUPER + Space"] = "~/.local/bin/forge-launcher",
     ["SUPER + A"] = "quickshell -c forge ipc call forge controls",
     ["SUPER + L"] = "hyprlock",
+    ["SUPER + CTRL + V"] = "~/.local/bin/forge-clipboard",
     ["SUPER + SHIFT + R"] = "hyprctl reload",
     ["Print"] = "~/.local/bin/forge-screenshot",
     ["SUPER + SHIFT + Escape"] = "hyprshutdown",

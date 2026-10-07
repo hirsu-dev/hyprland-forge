@@ -2,26 +2,28 @@
 set -euo pipefail
 exec 9>"${XDG_RUNTIME_DIR:?}/hyprland-forge-session.lock"
 flock -n 9 || exit 0
-dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
-systemctl --user start hyprpolkitagent.service
-forge_children=()
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE || printf '%s\n' 'Forge: session environment activation failed' >&2
+systemctl --user start hyprpolkitagent.service || printf '%s\n' 'Forge: authentication agent unavailable' >&2
+forge_start() {
+    "$@" 9>&- &
+}
 forge_stop() {
-    for forge_pid in "${forge_children[@]}"; do kill "$forge_pid" 2>/dev/null || true; done
+    local forge_pid
+    while read -r forge_pid; do
+        kill "$forge_pid" 2>/dev/null || true
+    done < <(jobs -pr)
 }
 trap forge_stop EXIT
 trap 'exit 0' TERM INT
-hypridle &
-forge_children+=("$!")
-wl-paste --type text --watch cliphist store &
-forge_children+=("$!")
-wl-paste --type image --watch cliphist store &
-forge_children+=("$!")
-mako &
-forge_children+=("$!")
-"$HOME/.local/bin/forge-wallpaper" &
-forge_children+=("$!")
+forge_start hypridle
+forge_start wl-paste --type text --watch cliphist store
+forge_start wl-paste --type image --watch cliphist store
+forge_start mako
+forge_start "$HOME/.local/bin/forge-wallpaper"
 if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
-    quickshell -c forge &
-    forge_children+=("$!")
+    forge_start quickshell -c forge
 fi
-while hyprctl -j monitors >/dev/null 2>&1; do sleep 10; done
+while hyprctl -j monitors >/dev/null 2>&1; do
+    sleep 10 9>&- &
+    wait "$!" || true
+done
