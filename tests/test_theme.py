@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from forge.manifest import ForgeError
 from forge.runtime import restore
+from forge.runtime import lock
 from forge.theme import PRESETS, apply_theme, main, palette, render, rgb, sample_image
 
 
@@ -117,6 +118,15 @@ class ThemeTests(unittest.TestCase):
             with self.assertRaises(ForgeError):
                 apply_theme(PRESETS["sage"], user, state)
             self.assertEqual(list(outside.iterdir()), [])
+
+    @unittest.skipUnless(sys.platform == "linux", "Linux file locking required")
+    def test_appearance_obeys_shared_installer_lock(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            state = user / ".local/state/hyprland-forge/themes"
+            with lock(state.parent), self.assertRaises(ForgeError):
+                apply_theme(PRESETS["sage"], user, state)
+            self.assertFalse((user / ".config/forge/theme.json").exists())
 
 
 if __name__ == "__main__":

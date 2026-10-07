@@ -96,6 +96,20 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(plan["pending"], [])
         self.assertIn("appearance", plan["stages"])
 
+    @unittest.skipUnless(sys.platform == "linux", "Linux installer shell required")
+    def test_installer_rejects_modified_bundle(self):
+        archive_path = build_bundle(self.source_copy(), self.root / "output", "a" * 40)
+        unpacked = self.root / "unpacked"
+        with tarfile.open(archive_path) as archive:
+            archive.extractall(unpacked, filter="data")
+        bundle = unpacked / "hyprland-forge"
+        clean = subprocess.run(["bash", "install.sh", "--plan", "--json"], cwd=bundle, capture_output=True, text=True)
+        self.assertEqual(clean.returncode, 0, clean.stderr)
+        (bundle / "configs/forge/theme.json").write_text("changed")
+        modified = subprocess.run(["bash", "install.sh", "--plan", "--json"], cwd=bundle, capture_output=True, text=True)
+        self.assertNotEqual(modified.returncode, 0)
+        self.assertIn("integrity verification failed", modified.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
