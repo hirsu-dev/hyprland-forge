@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Services.Mpris
+import Quickshell.Services.UPower
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -15,7 +16,9 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
+    onVisibleChanged: if (visible) content.forceActiveFocus()
     Rectangle {
+        id: content
         anchors.fill: parent
         radius: 24
         color: Palette.background
@@ -102,7 +105,14 @@ PanelWindow {
                     Layout.fillWidth: true
                     ForgeButton { Layout.fillWidth: true; text: "󰌾 Lock"; onClicked: { Desktop.exec(["hyprlock"]); Desktop.closePanels() } }
                     ForgeButton { Layout.fillWidth: true; text: "󰒓 Audio"; onClicked: { Desktop.exec(["pavucontrol"]); Desktop.closePanels() } }
-                    ForgeButton { Layout.fillWidth: true; text: "󰁹 Power"; onClicked: { Desktop.exec(["kitty", "-e", "powerprofilesctl", "list"]); Desktop.closePanels() } }
+                    ForgeButton { Layout.fillWidth: true; text: "󰆴 Alerts"; onClicked: Desktop.exec(["makoctl", "dismiss", "--all"]) }
+                }
+                Text { text: "Power profile"; color: Palette.muted; font.family: Palette.font; font.pixelSize: 12 }
+                RowLayout {
+                    Layout.fillWidth: true
+                    ForgeButton { Layout.fillWidth: true; text: "Saver"; selected: PowerProfiles.profile === PowerProfile.PowerSaver; onClicked: PowerProfiles.profile = PowerProfile.PowerSaver }
+                    ForgeButton { Layout.fillWidth: true; text: "Balanced"; selected: PowerProfiles.profile === PowerProfile.Balanced; onClicked: PowerProfiles.profile = PowerProfile.Balanced }
+                    ForgeButton { Layout.fillWidth: true; text: "Performance"; enabled: PowerProfiles.hasPerformanceProfile; selected: PowerProfiles.profile === PowerProfile.Performance; onClicked: PowerProfiles.profile = PowerProfile.Performance }
                 }
             }
         }

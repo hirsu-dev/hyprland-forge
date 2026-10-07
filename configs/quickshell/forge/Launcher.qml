@@ -48,6 +48,8 @@ PanelWindow {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 5
+                highlightMoveDuration: 120
+                onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
                 model: launcher.entries
                 delegate: Rectangle {
                     required property var modelData

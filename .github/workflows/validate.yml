@@ -29,7 +29,7 @@ jobs:
       - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-Si","--", *sorted({n for s in p["stages"] for n in s.get("packages",[])})],check=True)'
       - run: |
           luac -p configs/hypr/hyprland.lua configs/hypr/forge/layout.lua configs/hypr/forge/monitors.lua
-          Hyprland --version
+          pacman -Q hyprland quickshell
       - run: xvfb-run -a dbus-run-session -- bash tests/smoke-shell.sh
       - uses: actions/upload-artifact@v4
         if: always()
