@@ -12,7 +12,9 @@ cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
 mkdir -p test-results
 quickshell -p "$forge_config" >test-results/quickshell.log 2>&1 &
 forge_pid=$!
+forge_tray=""
 forge_stop() {
+    if [[ -n "$forge_tray" ]]; then kill "$forge_tray" 2>/dev/null || true; wait "$forge_tray" 2>/dev/null || true; fi
     kill "$forge_pid" 2>/dev/null || true
     wait "$forge_pid" 2>/dev/null || true
     cat test-results/quickshell.log
@@ -28,6 +30,15 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+python tests/tray-fixture.py >test-results/tray.log 2>&1 &
+forge_tray=$!
+for ((attempt = 0; attempt < 50; attempt++)); do
+    kill -0 "$forge_tray" || { cat test-results/tray.log; exit 1; }
+    forge_count="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["trayItems"])')"
+    if [[ "$forge_count" == 1 ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_count" == 1 ]]
 forge_accent="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["accent"])')"
 python -c 'import os; from pathlib import Path; from forge.theme import PRESETS,render; from forge.storage import atomic_write; atomic_write(Path(os.environ["XDG_CONFIG_HOME"])/"forge/theme.json",render(PRESETS["ocean"])[".config/forge/theme.json"].encode())'
 for ((attempt = 0; attempt < 50; attempt++)); do
@@ -60,4 +71,9 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
     quickshell -p "$forge_config" ipc call forge close
 fi
 kill -0 "$forge_pid"
+kill "$forge_tray"
+wait "$forge_tray"
+forge_tray=""
+sleep 0.5
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; assert json.load(sys.stdin)["trayItems"] == 0'
 python -c 'import pathlib,re; s=pathlib.Path("test-results/quickshell.log").read_text(); assert "Configuration Loaded" in s; assert not re.search(r"(Failed to load configuration|is not installed|Cannot assign|Unable to assign|ReferenceError|TypeError|SyntaxError|Binding loop)",s)'

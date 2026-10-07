@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import Quickshell.Services.UPower
+import Quickshell.Services.SystemTray
 import QtQuick
 
 Singleton {
@@ -43,7 +44,7 @@ Singleton {
             if (Quickshell.screens.some(s => s.name === name)) root.selectedScreen = name
         }
         function status(): string {
-            return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length, accent: ForgeTheme.accent.toString() })
+            return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length, accent: ForgeTheme.accent.toString(), trayItems: SystemTray.items.values.length })
         }
     }
 }
