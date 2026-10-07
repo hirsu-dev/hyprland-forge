@@ -90,6 +90,7 @@ PanelWindow {
             ForgeButton { text: Desktop.muted ? "󰝟" : "󰕾 " + Desktop.volume; onClicked: Desktop.toggleControls(bar.screen) }
             ForgeButton { text: "󰁹 " + Desktop.battery; onClicked: Desktop.toggleControls(bar.screen) }
             ForgeButton { text: "󰒓"; onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { text: "󰐥"; onClicked: Desktop.togglePower(bar.screen) }
         }
     }
 }

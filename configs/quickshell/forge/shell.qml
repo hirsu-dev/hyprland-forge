@@ -7,5 +7,6 @@ ShellRoot {
         Bar {}
     }
     ControlCenter {}
+    PowerMenu {}
     Launcher {}
 }

@@ -67,7 +67,7 @@ def main(argv=None):
         if plan.get("reboot_required"):
             print("Reboot when ready, then run bash install.sh --doctor")
         return 0
-    except (ForgeError, OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
+    except (ForgeError, OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         print(f"Forge: {exc}", file=sys.stderr)
         return 1
     except (KeyboardInterrupt, EOFError):

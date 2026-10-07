@@ -89,6 +89,13 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-1" and d["screens"] == 1'
     quickshell -p "$forge_config" ipc call forge close
 fi
+quickshell -p "$forge_config" ipc call forge power
+quickshell -p "$forge_config" ipc call forge powerChoice reboot
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["power"] and d["powerAction"] == "reboot" and not d["launcher"] and not d["controls"]'
+sleep 0.5
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/power.png; fi
+quickshell -p "$forge_config" ipc call forge close
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert not d["power"] and not d["powerAction"]'
 kill -0 "$forge_pid"
 kill "$forge_tray"
 wait "$forge_tray"
