@@ -98,8 +98,8 @@
       {"source": "configs/gtk-4.0/settings.ini", "target": ".config/gtk-4.0/settings.ini"},
       {"source": "configs/qt6ct/qt6ct.conf", "target": ".config/qt6ct/qt6ct.conf"},
       {"source": "configs/kitty/kitty.conf", "target": ".config/kitty/kitty.conf"},
-      {"source": "configs/fuzzel/fuzzel.ini", "target": ".config/fuzzel/fuzzel.ini"}
-      ,{"source": "configs/xdg-desktop-portal/hyprland-portals.conf", "target": ".config/xdg-desktop-portal/hyprland-portals.conf"}
+      {"source": "configs/fuzzel/fuzzel.ini", "target": ".config/fuzzel/fuzzel.ini"},
+      {"source": "configs/xdg-desktop-portal/hyprland-portals.conf", "target": ".config/xdg-desktop-portal/hyprland-portals.conf"}
     ]},
     {"id": "release", "status": "pending", "requires": ["appearance"], "packages": [], "files": []}
   ]
