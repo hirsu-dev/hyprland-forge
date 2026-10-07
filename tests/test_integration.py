@@ -85,6 +85,14 @@ class IntegrationTests(unittest.TestCase):
         with self.assertRaises(ForgeError):
             build_bundle(source, self.root / "output", "a" * 40)
 
+    def test_bundle_normalizes_windows_line_endings(self):
+        source = self.source_copy()
+        first = build_bundle(source, self.root / "one", "a" * 40)
+        script = source / "install.sh"
+        script.write_bytes(script.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        second = build_bundle(source, self.root / "two", "a" * 40)
+        self.assertEqual(first.read_bytes(), second.read_bytes())
+
     def test_bundle_restages_without_git(self):
         archive_path = build_bundle(self.source_copy(), self.root / "output", "a" * 40)
         unpacked = self.root / "unpacked"

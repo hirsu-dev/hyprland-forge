@@ -8,7 +8,7 @@ class ForgeError(Exception):
 
 
 def relative_path(value):
-    if not isinstance(value, str) or not value or "\\" in value or ":" in value:
+    if not isinstance(value, str) or not value or "\\" in value or ":" in value or any(ord(character) < 32 for character in value):
         raise ForgeError(f"Invalid relative path: {value!r}")
     path = PurePosixPath(value)
     if path.is_absolute() or any(p in (".", "..") for p in value.split("/")):

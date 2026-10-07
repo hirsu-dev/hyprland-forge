@@ -46,7 +46,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual([s["id"] for s in selected], ["base", "hardware", "compositor", "shell"])
 
     def test_unsafe_paths_are_rejected(self):
-        for value in ("../secret", "/etc/shadow", "C:/Windows", ".config/../../x", "x\\y", "", "./x"):
+        for value in ("../secret", "/etc/shadow", "C:/Windows", ".config/../../x", "x\\y", "", "./x", "x\ny", "x\x00y"):
             with self.subTest(value=value), self.assertRaises(ForgeError):
                 relative_path(value)
 
