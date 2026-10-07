@@ -1,0 +1,67 @@
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+from .manifest import ForgeError, load_manifest, make_plan
+from .runtime import execute, lock, preflight, restore, show_plan
+from .storage import safe_target
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="hyprland-forge")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--plan", action="store_true")
+    modes.add_argument("--apply", action="store_true")
+    modes.add_argument("--rollback", metavar="TRANSACTION")
+    parser.add_argument("--stage", action="append")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args(argv)
+    source_root = Path(__file__).resolve().parent.parent
+    try:
+        manifest = load_manifest(source_root)
+        plan = make_plan(manifest, args.stage)
+        if args.json and (args.apply or args.rollback):
+            raise ForgeError("--json is available only for plans")
+        if args.rollback and args.stage:
+            raise ForgeError("--stage cannot be combined with --rollback")
+        if not args.apply and not args.rollback:
+            print(json.dumps(plan, indent=2)) if args.json else show_plan(plan)
+            return 0
+        preflight()
+        user_root = Path.home()
+        state_root = user_root / ".local/state/hyprland-forge"
+        safe_target(user_root, ".local/state/hyprland-forge/install.lock")
+        for item in plan["files"]:
+            safe_target(user_root, item["target"])
+        if not sys.stdin.isatty():
+            raise ForgeError("Apply and rollback require an interactive terminal")
+        if args.rollback:
+            print("Restore managed configuration files. Packages will remain installed.")
+            if input("Type RESTORE: ") != "RESTORE":
+                raise ForgeError("Cancelled")
+            with lock(state_root):
+                conflicts = restore(args.rollback, user_root, state_root)
+            if conflicts:
+                raise ForgeError("Kept files edited since installation: " + ", ".join(conflicts))
+            print("Configuration restored")
+            return 0
+        show_plan(plan)
+        if input("Type INSTALL: ") != "INSTALL":
+            raise ForgeError("Cancelled")
+        with lock(state_root):
+            transaction_id = execute(plan, source_root, user_root, state_root)
+        print(f"Complete: {transaction_id}")
+        return 0
+    except (ForgeError, OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
+        print(f"Forge: {exc}", file=sys.stderr)
+        return 1
+    except (KeyboardInterrupt, EOFError):
+        print("Forge: cancelled", file=sys.stderr)
+        return 130
+
+
+if __name__ == "__main__":
+    sys.exit(main())

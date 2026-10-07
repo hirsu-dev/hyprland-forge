@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "name": "hyprland-forge",
+  "release": "0.1.0",
+  "ready_for_daily_use": false,
+  "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
+  "visibility": "private",
+  "target": {
+    "distribution": "arch",
+    "architecture": "x86_64",
+    "compositor": "hyprland",
+    "configuration_language": "lua",
+    "cpu": "AMD Ryzen 7 7445HS",
+    "gpu": "NVIDIA RTX 4050 Laptop",
+    "ram_gb": 16,
+    "storage_gb": 1000,
+    "external": {"width": 1920, "height": 1080, "refresh_hz": 120, "connection": "HDMI", "main": true},
+    "internal": {"mode": "preferred", "enabled": true},
+    "display_position": "detect-or-prompt"
+  },
+  "design": {
+    "implementation": "original",
+    "primary_reference": "https://github.com/ilyamiro/serpantinum",
+    "references": [
+      "https://www.youtube.com/watch?v=NrRVr-kysko",
+      "https://github.com/caelestia-dots",
+      "https://github.com/binnewbs/arch-hyprland",
+      "https://github.com/JaKooLit/Hyprland-Dots",
+      "https://github.com/mel-edo/awesome-setup"
+    ],
+    "shell": "original Quickshell QML",
+    "priorities": ["animated panels", "rounded widgets", "coherent dynamic colors", "external-display-first", "low idle overhead"],
+    "comments": false,
+    "documentation": false
+  },
+  "stages": [
+    {
+      "id": "base",
+      "status": "ready",
+      "requires": [],
+      "packages": ["git", "python", "jq", "curl", "unzip", "rsync", "xdg-user-dirs", "xdg-utils"],
+      "files": []
+    },
+    {"id": "hardware", "status": "pending", "requires": ["base"], "packages": [], "files": []},
+    {"id": "compositor", "status": "pending", "requires": ["hardware"], "packages": [], "files": []},
+    {"id": "shell", "status": "pending", "requires": ["compositor"], "packages": [], "files": []},
+    {"id": "appearance", "status": "pending", "requires": ["shell"], "packages": [], "files": []},
+    {"id": "release", "status": "pending", "requires": ["appearance"], "packages": [], "files": []}
+  ]
+}
