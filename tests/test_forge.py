@@ -131,6 +131,27 @@ class DeploymentTests(unittest.TestCase):
         deployment.rollback()
         self.assertEqual(self.target.read_text(), "new content")
 
+    @unittest.skipIf(os.name == "nt", "POSIX permissions required")
+    def test_identical_script_permissions_are_repaired_and_restored(self):
+        self.target.parent.mkdir(parents=True)
+        self.target.write_text("new content", encoding="utf-8")
+        self.target.chmod(0o644)
+        self.files[0]["executable"] = True
+        deployment = Deployment(self.user, self.transaction)
+        deployment.apply(self.files, self.source)
+        self.assertEqual(self.target.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(len(deployment.entries), 1)
+        self.assertEqual(Deployment(self.user, self.transaction).rollback(), [])
+        self.assertEqual(self.target.stat().st_mode & 0o777, 0o644)
+
+    @unittest.skipIf(os.name == "nt", "POSIX permissions required")
+    def test_user_permission_changes_survive_rollback(self):
+        deployment = Deployment(self.user, self.transaction)
+        deployment.apply(self.files, self.source)
+        self.target.chmod(0o600)
+        self.assertEqual(deployment.rollback(), [self.files[0]["target"]])
+        self.assertEqual(self.target.stat().st_mode & 0o777, 0o600)
+
     def test_user_edits_survive_rollback(self):
         self.existing()
         deployment = Deployment(self.user, self.transaction)

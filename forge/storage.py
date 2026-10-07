@@ -64,31 +64,33 @@ class Deployment:
             target = safe_target(self.user_root, item["target"])
             content = source.read_bytes()
             new_hash = hashlib.sha256(content).hexdigest()
-            if target.exists() and digest(target) == new_hash:
+            mode = 0o755 if item.get("executable", False) else 0o644
+            if target.exists() and digest(target) == new_hash and (os.name == "nt" or stat.S_IMODE(target.stat().st_mode) == mode):
                 continue
-            prepared.append((item, target, content, new_hash))
-        for item, target, content, new_hash in prepared:
-            entry = {"target": item["target"], "installed_hash": new_hash, "backup": None}
+            prepared.append((item, target, content, new_hash, mode))
+        for item, target, content, new_hash, mode in prepared:
+            entry = {"target": item["target"], "installed_hash": new_hash, "installed_mode": mode, "backup": None}
             if target.exists():
                 backup = f"backup/{len(self.entries)}"
                 entry.update(backup=backup, previous_hash=digest(target), previous_mode=stat.S_IMODE(target.stat().st_mode))
                 atomic_write(self.transaction_root / backup, target.read_bytes())
             self.entries.append(entry)
             write_json(self.journal_path, self.entries)
-            atomic_write(target, content, 0o755 if item.get("executable", False) else 0o644)
+            atomic_write(target, content, mode)
 
     def rollback(self):
         conflicts = []
         for entry in reversed(self.entries):
             target = safe_target(self.user_root, entry["target"])
             current_hash = digest(target) if target.exists() else None
+            current_mode = stat.S_IMODE(target.stat().st_mode) if target.exists() else None
             if entry.get("restored"):
                 continue
-            if current_hash == entry.get("previous_hash"):
+            if current_hash == entry.get("previous_hash") and (os.name == "nt" or current_mode == entry.get("previous_mode")):
                 entry["restored"] = True
                 write_json(self.journal_path, self.entries)
                 continue
-            if current_hash != entry["installed_hash"]:
+            if current_hash != entry["installed_hash"] or (os.name != "nt" and "installed_mode" in entry and current_mode != entry["installed_mode"]):
                 conflicts.append(entry["target"])
                 continue
             if entry["backup"] is None:

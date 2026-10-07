@@ -9,6 +9,7 @@ from .manifest import ForgeError, load_manifest, make_plan
 from .runtime import execute, lock, preflight, restore, show_plan
 from .storage import safe_target
 from .hardware import doctor, resolve_plan
+from .login import resolve_plan as resolve_login
 
 
 def main(argv=None):
@@ -20,6 +21,7 @@ def main(argv=None):
     modes.add_argument("--doctor", action="store_true")
     parser.add_argument("--stage", action="append")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--login", choices=("auto", "sddm", "keep"), default="auto")
     args = parser.parse_args(argv)
     source_root = Path(__file__).resolve().parent.parent
     try:
@@ -37,6 +39,7 @@ def main(argv=None):
             preflight()
         if not args.rollback:
             plan = resolve_plan(plan, apply=args.apply)
+            plan = resolve_login(plan, mode=args.login, apply=args.apply)
         if not args.apply and not args.rollback:
             print(json.dumps(plan, indent=2)) if args.json else show_plan(plan)
             return 0

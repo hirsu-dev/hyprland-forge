@@ -17,7 +17,7 @@ def preflight():
     if platform.system() != "Linux" or platform.machine() != "x86_64":
         raise ForgeError("Installation requires x86_64 Arch Linux")
     if os.geteuid() == 0:
-        raise ForgeError("Run as your normal user; sudo is requested only for packages")
+        raise ForgeError("Run as your normal user; sudo is requested for packages and system services")
     release = {}
     for line in Path("/etc/os-release").read_text().splitlines():
         if "=" in line:
@@ -64,10 +64,15 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
     write_json(record_path, record)
     deployment = Deployment(user_root, transaction_root)
     try:
+        if plan.get("login", {}).get("action") == "enable-sddm":
+            from .login import verify_unchanged
+            verify_unchanged(plan, runner)
         for command in plan["commands"]:
             runner(command, check=True)
             record["commands_completed"].append(command)
             write_json(record_path, record)
+        if plan.get("login", {}).get("action") == "enable-sddm":
+            verify_unchanged(plan, runner)
         deployment.apply(plan["files"], source_root)
         for service in plan.get("services", []):
             prior = runner(["systemctl", "is-enabled", service], capture_output=True, text=True)
@@ -78,6 +83,14 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
             record["services_enabled"].append({"name": service, "previous": prior.stdout.strip()})
             write_json(record_path, record)
             runner(["sudo", "systemctl", "enable", service], check=True)
+        if plan.get("default_target"):
+            change = plan["default_target"]
+            current = runner(["systemctl", "get-default"], capture_output=True, text=True, check=True).stdout.strip()
+            if current != change["previous"]:
+                raise ForgeError("Default boot target changed during installation")
+            record["default_target"] = change
+            write_json(record_path, record)
+            runner(["sudo", "systemctl", "set-default", change["next"]], check=True)
         record["status"] = "complete"
         write_json(record_path, record)
         write_json(state_root / "latest.json", {"id": transaction_id})
@@ -85,6 +98,7 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
     except BaseException as exc:
         record["status"] = "failed"
         record["error"] = type(exc).__name__
+        record["target_rollback_failures"] = undo_target(record.get("default_target"), runner)
         record["service_rollback_failures"] = undo_services(record["services_enabled"], runner)
         try:
             record["rollback_conflicts"] = deployment.rollback()
@@ -92,6 +106,21 @@ def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
             record["rollback_error"] = str(rollback_error)
         write_json(record_path, record)
         raise
+
+
+def undo_target(change, runner=subprocess.run):
+    if not change:
+        return []
+    try:
+        current = runner(["systemctl", "get-default"], capture_output=True, text=True, check=True).stdout.strip()
+        if current == change["previous"]:
+            return []
+        if current != change["next"]:
+            return ["Default boot target was changed externally"]
+        runner(["sudo", "systemctl", "set-default", change["previous"]], check=True)
+    except (OSError, subprocess.SubprocessError):
+        return [change["previous"]]
+    return []
 
 
 def undo_services(services, runner=subprocess.run):
@@ -138,6 +167,12 @@ def show_plan(plan):
         print(f"{item['source']} -> ~/{item['target']}")
     for service in plan.get("services", []):
         print(f"Enable on next boot: {service}")
+    if plan.get("login"):
+        print("Graphical login: " + plan["login"]["action"])
+        if plan["login"].get("preview_only"):
+            print("Login preview assumes a fresh Arch installation; recheck on the target system.")
+    if plan.get("default_target"):
+        print("Default boot target: " + plan["default_target"]["next"])
     if plan["pending"]:
         print("Not released: " + ", ".join(plan["pending"]))
-    print("Package changes include a full Arch update. Config rollback leaves packages and services unchanged.")
+    print("Package changes include a full Arch update. Config rollback leaves packages, services and boot targets unchanged.")
