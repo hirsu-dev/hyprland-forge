@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .manifest import ForgeError
-from .storage import Deployment, write_json
+from .storage import Deployment, safe_target, write_json
 
 
 def preflight():
@@ -52,6 +52,11 @@ def lock(state_root):
 def execute(plan, source_root, user_root, state_root, runner=subprocess.run):
     transaction_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:8]
     transaction_root = state_root / "transactions" / transaction_id
+    try:
+        state_relative = str((transaction_root / "transaction.json").relative_to(user_root)).replace("\\", "/")
+    except ValueError as exc:
+        raise ForgeError("Transaction storage must be inside home") from exc
+    safe_target(user_root, state_relative)
     transaction_root.mkdir(parents=True, mode=0o700)
     record = {"id": transaction_id, "status": "started", "plan": plan, "commands_completed": []}
     record["services_enabled"] = []
@@ -107,6 +112,13 @@ def restore(transaction_id, user_root, state_root):
         raise ForgeError("Invalid transaction identifier")
     transaction_root = state_root / "transactions" / transaction_id
     record_path = transaction_root / "transaction.json"
+    try:
+        record_relative = str(record_path.relative_to(user_root)).replace("\\", "/")
+        journal_relative = str((transaction_root / "files.json").relative_to(user_root)).replace("\\", "/")
+    except ValueError as exc:
+        raise ForgeError("Transaction storage must be inside home") from exc
+    safe_target(user_root, record_relative)
+    safe_target(user_root, journal_relative)
     if not record_path.is_file():
         raise ForgeError("Transaction not found")
     record = json.loads(record_path.read_text(encoding="utf-8"))

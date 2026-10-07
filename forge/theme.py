@@ -72,6 +72,11 @@ def render(accent):
 
 
 def apply_files(payload, user_root, state_root):
+    try:
+        state_relative = str((state_root / "install.lock").relative_to(user_root)).replace("\\", "/")
+    except ValueError as exc:
+        raise ForgeError("Transaction storage must be inside home") from exc
+    safe_target(user_root, state_relative)
     safe_target(user_root, ".local/state/hyprland-forge/install.lock")
     for target in payload:
         safe_target(user_root, target)

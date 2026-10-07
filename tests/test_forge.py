@@ -231,6 +231,28 @@ class DeploymentTests(unittest.TestCase):
         with self.assertRaises(ForgeError):
             restore("../../outside", self.user, self.state)
 
+    def test_execute_refuses_state_outside_home(self):
+        with self.assertRaises(ForgeError):
+            execute({"commands": [], "files": self.files}, self.source, self.user, self.root / "outside")
+        self.assertFalse((self.root / "outside").exists())
+
+    def test_restore_refuses_linked_transaction_records(self):
+        transaction_id = execute({"commands": [], "files": self.files}, self.source, self.user, self.state)
+        record = self.state / "transactions" / transaction_id / "transaction.json"
+        outside = self.root / "outside.json"
+        outside.write_bytes(record.read_bytes())
+        try:
+            link = self.root / "check-link"
+            link.symlink_to(outside)
+            link.unlink()
+        except OSError:
+            self.skipTest("Symlinks unavailable")
+        record.unlink()
+        record.symlink_to(outside)
+        with self.assertRaises(ForgeError):
+            restore(transaction_id, self.user, self.state)
+        self.assertEqual(self.target.read_text(), "new content")
+
 
 if __name__ == "__main__":
     unittest.main()

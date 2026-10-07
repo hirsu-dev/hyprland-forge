@@ -93,6 +93,31 @@ class ThemeTests(unittest.TestCase):
             Image.new("RGB", (32, 32), (105, 190, 135)).save(image)
             self.assertEqual(sample_image(image), "#69be87")
 
+    def test_theme_state_cannot_escape_home(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            user = root / "home"
+            user.mkdir()
+            with self.assertRaises(ForgeError):
+                apply_theme(PRESETS["sage"], user, root / "outside")
+            self.assertFalse((root / "outside").exists())
+
+    def test_theme_state_symlink_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            user = root / "home"
+            state = user / ".local/state/hyprland-forge/themes"
+            state.parent.mkdir(parents=True)
+            outside = root / "outside"
+            outside.mkdir()
+            try:
+                state.symlink_to(outside, target_is_directory=True)
+            except OSError:
+                self.skipTest("Symlinks unavailable")
+            with self.assertRaises(ForgeError):
+                apply_theme(PRESETS["sage"], user, state)
+            self.assertEqual(list(outside.iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()
