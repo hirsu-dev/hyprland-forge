@@ -17,7 +17,7 @@ def choose(runner=subprocess.run):
     content = runner(["cliphist", "decode"], input=selection.stdout, capture_output=True, check=True, timeout=10).stdout
     if not content:
         return False
-    runner(["wl-copy"], input=content, capture_output=True, check=True, timeout=10)
+    runner(["wl-copy"], input=content, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=10)
     return True
 
 

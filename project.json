@@ -26,7 +26,8 @@
       "https://github.com/caelestia-dots",
       "https://github.com/binnewbs/arch-hyprland",
       "https://github.com/JaKooLit/Hyprland-Dots",
-      "https://github.com/mel-edo/awesome-setup"
+      "https://github.com/mel-edo/awesome-setup",
+      "https://github.com/43PR/dotfiles"
     ],
     "shell": "original Quickshell QML",
     "priorities": ["animated panels", "rounded widgets", "coherent dynamic colors", "external-display-first", "low idle overhead"],

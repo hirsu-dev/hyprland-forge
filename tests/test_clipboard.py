@@ -37,6 +37,13 @@ class ClipboardTests(unittest.TestCase):
         self.assertFalse(choose(self.runner))
         self.assertEqual(len(self.calls), 2)
 
+    def test_background_clipboard_owner_cannot_hold_capture_pipes_open(self):
+        self.assertTrue(choose(self.runner))
+        options = self.calls[-1][1]
+        self.assertFalse(options.get("capture_output", False))
+        self.assertEqual(options["stdout"], subprocess.DEVNULL)
+        self.assertEqual(options["stderr"], subprocess.DEVNULL)
+
     def test_empty_history_does_not_open_picker(self):
         self.history = b""
         self.assertFalse(choose(self.runner))
