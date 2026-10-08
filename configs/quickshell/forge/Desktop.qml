@@ -12,9 +12,17 @@ Singleton {
     property bool controlsOpen: false
     property bool launcherOpen: false
     property bool powerOpen: false
+    property bool settingsOpen: false
     property string powerAction: ""
     property string selectedScreen: ""
-    readonly property var panelScreen: Quickshell.screens.find(s => s.name === selectedScreen) || Quickshell.screens.find(s => s.name.startsWith("HDMI")) || Quickshell.screens[0] || null
+    readonly property var panelScreen: Quickshell.screens.find(s => s.name === selectedScreen) || Quickshell.screens.find(s => s.name === preferences.primary) || Quickshell.screens.find(s => s.name.startsWith("HDMI")) || Quickshell.screens[0] || null
+    FileView {
+        path: Quickshell.env("HOME") + "/.config/forge/desktop.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        JsonAdapter { id: preferences; property string primary: "" }
+    }
     readonly property var player: Mpris.players.values.find(p => p.playbackState === MprisPlaybackState.Playing) || Mpris.players.values[0] || null
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property int volume: sink && sink.audio ? Math.round(sink.audio.volume * 100) : 0
@@ -35,6 +43,7 @@ Singleton {
     function setVolume(value) { if (Number.isFinite(value) && sink && sink.audio) sink.audio.volume = Math.max(0, Math.min(1, value)) }
     function toggleMute() { if (sink && sink.audio) sink.audio.muted = !sink.audio.muted }
     function toggleControls(screen) {
+        settingsOpen = false
         if (screen) selectedScreen = screen.name
         launcherOpen = false
         powerOpen = false
@@ -42,6 +51,7 @@ Singleton {
         controlsOpen = !controlsOpen
     }
     function toggleLauncher(screen) {
+        settingsOpen = false
         if (screen) selectedScreen = screen.name
         controlsOpen = false
         powerOpen = false
@@ -49,6 +59,7 @@ Singleton {
         launcherOpen = !launcherOpen
     }
     function togglePower(screen) {
+        settingsOpen = false
         if (screen) selectedScreen = screen.name
         controlsOpen = false
         launcherOpen = false
@@ -65,11 +76,17 @@ Singleton {
         closePanels()
         exec(command)
     }
-    function closePanels() { controlsOpen = false; launcherOpen = false; powerOpen = false; powerAction = "" }
+    function toggleSettings() {
+        const next = !settingsOpen
+        closePanels()
+        settingsOpen = next
+    }
+    function closePanels() { controlsOpen = false; launcherOpen = false; powerOpen = false; settingsOpen = false; powerAction = "" }
     IpcHandler {
         target: "forge"
         function launcher(): void { root.toggleLauncher(null) }
         function controls(): void { root.toggleControls(null) }
+        function settings(): void { root.toggleSettings() }
         function close(): void { root.closePanels() }
         function power(): void { root.togglePower(null) }
         function powerChoice(action: string): void { if (root.powerOpen) root.requestPower(action) }

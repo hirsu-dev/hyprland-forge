@@ -23,6 +23,30 @@ end
 
 function M.plan(monitors, options)
     options = options or {}
+    if options.outputs then
+        local result = { monitors = {}, workspaces = {} }
+        local enabled = {}
+        for _, monitor in ipairs(monitors) do
+            local choice = options.outputs[monitor.name]
+            local rule = { output = monitor.name, mode = "preferred", position = "auto", scale = "auto", disabled = false }
+            if choice then for key, value in pairs(choice) do rule[key] = value end end
+            rule.output = monitor.name
+            table.insert(result.monitors, rule)
+            if not rule.disabled then table.insert(enabled, monitor.name) end
+        end
+        if #enabled == 0 and #monitors > 0 then
+            result.monitors[1] = { output = monitors[1].name, mode = "preferred", position = "0x0", scale = "auto", disabled = false }
+            enabled[1] = monitors[1].name
+        end
+        for _, name in ipairs(enabled) do if name == options.primary then result.primary = name end end
+        result.primary = result.primary or enabled[1]
+        local secondary
+        for _, name in ipairs(enabled) do if name ~= result.primary then secondary = secondary or name end end
+        for i = 1, 10 do
+            if result.primary then result.workspaces[i] = { workspace = tostring(i), monitor = i > 5 and secondary or result.primary, persistent = true, default = i == 1 or (i == 6 and secondary ~= nil) } end
+        end
+        return result
+    end
     local panel, external, other = nil, nil, {}
     for _, monitor in ipairs(monitors) do
         if internal(monitor.name) then

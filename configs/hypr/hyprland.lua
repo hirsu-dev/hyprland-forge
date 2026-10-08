@@ -1,6 +1,7 @@
 local directory = (os.getenv("XDG_CONFIG_HOME") or os.getenv("HOME") .. "/.config") .. "/hypr/"
 package.path = directory .. "?.lua;" .. package.path
 require("forge.monitors")
+local tiling = require("forge.tiling")
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
@@ -43,6 +44,7 @@ local commands = {
     ["SUPER + B"] = "firefox",
     ["SUPER + Space"] = "~/.local/bin/forge-launcher",
     ["SUPER + A"] = "quickshell -c forge ipc call forge controls",
+    ["SUPER + I"] = "quickshell -c forge ipc call forge settings",
     ["SUPER + L"] = "hyprlock",
     ["SUPER + CTRL + V"] = "~/.local/bin/forge-clipboard",
     ["SUPER + SHIFT + R"] = "hyprctl reload",
@@ -58,8 +60,11 @@ hl.bind("SUPER + SHIFT + S", hl.dsp.window.move({ workspace = "special:scratch" 
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true })
 for _, direction in ipairs({ "left", "right", "up", "down" }) do
-    hl.bind("SUPER + " .. direction, hl.dsp.focus({ direction = direction }))
+    hl.bind("SUPER + " .. direction, function() tiling.arrow(direction) end)
     hl.bind("SUPER + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }))
+end
+for key, zone in pairs({ Home = "top_left", Prior = "top_right", End = "bottom_left", Next = "bottom_right" }) do
+    hl.bind("SUPER + CTRL + " .. key, function() tiling.snap(zone) end)
 end
 for i = 1, 10 do
     hl.bind("SUPER + " .. i % 10, hl.dsp.focus({ workspace = i }))

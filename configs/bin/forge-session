@@ -15,6 +15,7 @@ forge_stop() {
 }
 trap forge_stop EXIT
 trap 'exit 0' TERM INT
+if [[ -x "$HOME/.local/bin/forge-settings" ]]; then forge_start "$HOME/.local/bin/forge-settings" --recover; fi
 forge_start hypridle
 forge_start wl-paste --type text --watch cliphist store
 forge_start wl-paste --type image --watch cliphist store

@@ -7,3 +7,4 @@ Launcher 1.0 Launcher.qml
 singleton Laptop 1.0 Laptop.qml
 ForgeSlider 1.0 ForgeSlider.qml
 PowerMenu 1.0 PowerMenu.qml
+Settings 1.0 Settings.qml

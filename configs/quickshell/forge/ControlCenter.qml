@@ -43,6 +43,7 @@ PanelWindow {
                     ForgeButton { text: "×"; onClicked: Desktop.closePanels() }
                 }
                 Text { text: Desktop.date; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 12 }
+                ForgeButton { Layout.fillWidth: true; text: "Desktop & displays"; onClicked: Desktop.toggleSettings() }
                 RowLayout {
                     Layout.fillWidth: true
                     ForgeButton { Layout.fillWidth: true; text: "󰖩 Network"; onClicked: { Desktop.exec(["kitty", "-e", "nmtui"]); Desktop.closePanels() } }
