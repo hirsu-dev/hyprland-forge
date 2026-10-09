@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from forge.hardware import hardware_packages, inventory, verify_services, resolve_plan
+from forge.hardware import hardware_packages, inventory, verify_services, resolve_plan, virtualization, VM_SERVICES
 from forge.manifest import load_manifest, make_plan
 from forge.manifest import ForgeError
 from forge.runtime import execute
@@ -39,6 +39,33 @@ class HardwareTests(unittest.TestCase):
             result = resolve_plan(plan)
         self.assertEqual(result["profile"], "laptop")
         self.assertIn("nvidia-open-dkms", result["packages"])
+
+    def test_virtualbox_profile_installs_guest_integration(self):
+        plan = make_plan(load_manifest(Path(__file__).resolve().parent.parent), None)
+        with patch("forge.hardware.platform.system", return_value="Linux"), patch("forge.hardware.virtualization", return_value="oracle"), patch("forge.hardware.inventory", return_value=self.data), patch("forge.hardware.verify_services"):
+            result = resolve_plan(plan, apply=True, profile="virtual-machine")
+        self.assertIn("virtualbox-guest-utils", result["packages"])
+        self.assertIn("vboxservice.service", result["services"])
+        self.assertEqual(result["hardware"]["hypervisor"], "oracle")
+
+    def test_other_vm_does_not_install_virtualbox_tools(self):
+        plan = make_plan(load_manifest(Path(__file__).resolve().parent.parent), None)
+        with patch("forge.hardware.platform.system", return_value="Linux"), patch("forge.hardware.virtualization", return_value="kvm"), patch("forge.hardware.inventory", return_value=self.data), patch("forge.hardware.verify_services"):
+            result = resolve_plan(plan, apply=True, profile="virtual-machine")
+        self.assertNotIn("virtualbox-guest-utils", result["packages"])
+        self.assertEqual(result["services"], list(VM_SERVICES))
+
+    def test_vm_service_validation_ignores_unused_masked_gpu_service(self):
+        def runner(command, **kwargs):
+            return subprocess.CompletedProcess(command, 1, "masked" if command[-1] == "nvidia-suspend.service" else "disabled")
+        verify_services(runner, services=VM_SERVICES)
+
+    def test_virtualization_detection_distinguishes_unknown(self):
+        self.assertEqual(virtualization(lambda *a, **k: subprocess.CompletedProcess(a, 1, "none")), "")
+        self.assertEqual(virtualization(lambda *a, **k: subprocess.CompletedProcess(a, 0, "oracle")), "oracle")
+        self.assertIsNone(virtualization(lambda *a, **k: subprocess.CompletedProcess(a, 1, "")))
+        with patch("forge.hardware.subprocess.run", side_effect=FileNotFoundError()):
+            self.assertIsNone(virtualization(__import__("subprocess").run))
 
     def test_gpu_required(self):
         self.data["gpus"] = [{"vendor": "0x1002"}]

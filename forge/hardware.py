@@ -8,6 +8,24 @@ from .manifest import ForgeError
 KERNELS = ("linux", "linux-lts", "linux-zen", "linux-hardened")
 SERVICES = ("NetworkManager.service", "bluetooth.service", "power-profiles-daemon.service", "fstrim.timer", "nvidia-suspend.service", "nvidia-hibernate.service", "nvidia-resume.service")
 CONFLICTS = ("tlp.service", "tuned.service", "auto-cpufreq.service", "systemd-networkd.service", "dhcpcd.service")
+VM_SERVICES = ("NetworkManager.service", "fstrim.timer")
+
+
+def virtualization(runner=subprocess.run):
+    try:
+        result = runner(["systemd-detect-virt", "--vm"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    value = result.stdout.strip()
+    if result.returncode == 0 and value and value != "none":
+        return value
+    return "" if result.returncode == 1 and value == "none" else None
+
+
+def profile_services(profile, hypervisor=None):
+    if profile == "virtual-machine":
+        return [*VM_SERVICES, *(["vboxservice.service"] if hypervisor == "oracle" else [])]
+    return list(SERVICES)
 
 
 def inventory(sys_root=Path("/sys"), runner=subprocess.run):
@@ -37,14 +55,15 @@ def hardware_packages(data):
     return [f"{kernel}-headers" for kernel in data["kernels"]]
 
 
-def verify_services(runner=subprocess.run):
+def verify_services(runner=subprocess.run, services=SERVICES, conflicts=CONFLICTS):
+    candidates = conflicts
     conflicts = []
-    for service in CONFLICTS:
+    for service in candidates:
         enabled = runner(["systemctl", "is-enabled", service], capture_output=True, text=True)
         active = runner(["systemctl", "is-active", service], capture_output=True, text=True)
         if enabled.returncode == 0 or active.returncode == 0:
             conflicts.append(service)
-    for service in SERVICES:
+    for service in services:
         result = runner(["systemctl", "is-enabled", service], capture_output=True, text=True)
         if result.stdout.strip() in ("masked", "masked-runtime"):
             conflicts.append(service + " (masked)")
@@ -59,15 +78,15 @@ def resolve_plan(plan, apply=False, profile="laptop"):
     if "hardware" not in plan["stages"]:
         return plan
     virtual = profile == "virtual-machine"
+    hypervisor = virtualization(subprocess.run) if virtual and (apply or platform.system() == "Linux") else None
     if virtual and apply:
-        result = subprocess.run(["systemd-detect-virt", "--vm"], capture_output=True, text=True, timeout=10)
-        if result.returncode != 0 or result.stdout.strip() in ("", "none"):
+        if not hypervisor:
             raise ForgeError("The virtual-machine profile requires a detected virtual machine")
     if platform.system() == "Linux" and Path("/etc/arch-release").is_file():
         data = inventory()
         headers = [] if virtual else hardware_packages(data) if apply else [f"{k}-headers" for k in data["kernels"] or ["linux"]]
         if apply:
-            verify_services()
+            verify_services(services=profile_services(profile, hypervisor), conflicts=CONFLICTS[-2:] if virtual else CONFLICTS)
         plan["hardware"] = data
     else:
         headers = [] if virtual else ["linux-headers"]
@@ -76,9 +95,12 @@ def resolve_plan(plan, apply=False, profile="laptop"):
         excluded = {"amd-ucode", "nvidia-open-dkms", "nvidia-utils", "nvidia-prime", "egl-wayland", "vulkan-radeon"}
         plan["packages"] = [package for package in plan["packages"] if package not in excluded]
         plan["hardware"]["validation_scope"] = "virtual-hardware-only"
+        plan["hardware"]["hypervisor"] = hypervisor
+        if hypervisor == "oracle":
+            plan["packages"].append("virtualbox-guest-utils")
     plan["packages"] = list(dict.fromkeys([*plan["packages"], *headers]))
     plan["commands"] = [["sudo", "pacman", "-Syu", "--needed", "--", *plan["packages"]]]
-    plan["services"] = ["NetworkManager.service", "fstrim.timer"] if virtual else list(SERVICES)
+    plan["services"] = profile_services(profile, hypervisor)
     plan["reboot_required"] = True
     return plan
 
