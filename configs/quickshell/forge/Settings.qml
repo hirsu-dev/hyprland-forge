@@ -19,6 +19,7 @@ PanelWindow {
     property int selected: 0
     property int seconds: 0
     property string error: ""
+    property string notice: ""
     property string operation: ""
     readonly property var output: draft && draft.outputs[selected] ? draft.outputs[selected] : null
     readonly property var displayModes: output ? (hardware.find(m => m.name === output.name) || { modes: ["preferred"] }).modes : []
@@ -61,9 +62,12 @@ PanelWindow {
                 draft = result.settings
                 hardware = result.monitors
                 pending = result.pending
+                const outcome = result.last_result
+                notice = outcome && outcome.status === "reverted-with-conflicts" ? "Preview ended. Kept your externally edited files: " + outcome.conflicts.join(", ") : outcome && outcome.status === "reverted" ? "The previous preview was reverted." : ""
                 selected = Math.min(selected, draft.outputs.length - 1)
             } else if (operation === "--set") {
                 pending = result
+                notice = ""
             } else {
                 pending = null
                 Qt.callLater(() => run("--query"))
@@ -179,7 +183,7 @@ PanelWindow {
                     Caption { Layout.fillWidth: true; text: "Positions use logical pixels after scaling and rotation. Negative positions place a display to the left or above. Changes revert after 20 seconds unless you keep them." }
                 }
             }
-            Caption { Layout.fillWidth: true; visible: panel.error !== ""; text: panel.error; color: ForgeTheme.accent }
+            Caption { Layout.fillWidth: true; visible: panel.error !== "" || panel.notice !== ""; text: panel.error || panel.notice; color: ForgeTheme.accent }
             RowLayout {
                 Layout.fillWidth: true
                 Caption { Layout.fillWidth: true; text: panel.pending ? "Keep these settings? Reverting in " + panel.seconds + "s" : process.running ? "Working…" : "Super + I opens desktop settings" }

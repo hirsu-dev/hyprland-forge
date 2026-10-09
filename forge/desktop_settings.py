@@ -14,6 +14,7 @@ from .storage import atomic_write, safe_target, write_json
 
 
 WAIT = 20
+RESULT = ".local/state/hyprland-forge/settings/last-result.json"
 
 
 def lua(value):
@@ -90,6 +91,11 @@ def read_pending(home):
     return json.loads(path.read_text()) if path.exists() else None
 
 
+def read_result(home):
+    path = safe_target(home, RESULT)
+    return json.loads(path.read_text()) if path.exists() else None
+
+
 def current(home, connected):
     path = safe_target(home, ".config/forge/desktop.json")
     stored = json.loads(path.read_text()) if path.exists() else {}
@@ -125,25 +131,26 @@ def reload(mode_changed=False, runner=subprocess.run):
 
 def finish(home, transaction, keep, runner=subprocess.run):
     state, path = paths(home)
+    result_path = safe_target(home, RESULT)
     with lock(home / ".local/state/hyprland-forge"):
         pending = read_pending(home)
         if not pending or pending["id"] != transaction:
             return {"status": "unchanged"}
         if keep and time.time() >= pending["deadline"]:
             keep = False
-        if not keep:
-            conflicts = restore(transaction, home, state)
-            if conflicts:
-                raise ForgeError("Kept externally edited settings: " + ", ".join(conflicts))
+        conflicts = restore(transaction, home, state) if not keep else []
+        result = {"status": "kept" if keep else "reverted-with-conflicts" if conflicts else "reverted", "conflicts": conflicts, "id": transaction}
+        write_json(result_path, result)
         path.unlink()
     if not keep:
         reload(pending.get("mode_changed", False), runner)
-    return {"status": "kept" if keep else "reverted"}
+    return result
 
 
 def apply(value, home, connected, runner=subprocess.run, spawn=subprocess.Popen):
     value = validate(value, connected)
     state, pending_path = paths(home)
+    result_path = safe_target(home, RESULT)
     with tempfile.TemporaryDirectory(prefix="forge-settings-") as folder:
         source = Path(folder)
         files = []
@@ -155,6 +162,7 @@ def apply(value, home, connected, runner=subprocess.run, spawn=subprocess.Popen)
         with lock(home / ".local/state/hyprland-forge"):
             if read_pending(home):
                 raise ForgeError("Keep or revert the current preview before applying another change")
+            write_json(result_path, None)
             changed = current(home, connected)["tiling"] != value["tiling"]
             transaction = execute({"commands": [], "files": files}, source, home, state)
             pending = {"id": transaction, "deadline": time.time() + WAIT, "mode_changed": changed}
@@ -216,7 +224,7 @@ def main(argv=None):
             result = finish(home, args.confirm or args.revert, bool(args.confirm))
         else:
             connected = monitors()
-            result = {"settings": current(home, connected), "monitors": [{"name": item["name"], "modes": modes(item)} for item in connected], "pending": read_pending(home)}
+            result = {"settings": current(home, connected), "monitors": [{"name": item["name"], "modes": modes(item)} for item in connected], "pending": read_pending(home), "last_result": read_result(home)}
         print(json.dumps(result))
         return 0
     except (ForgeError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:

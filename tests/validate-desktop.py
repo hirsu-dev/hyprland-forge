@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from forge import desktop_settings as settings
 from forge.runtime import lock, restore
+from forge.storage import atomic_write
 
 assert "--disposable-vm" in sys.argv
 assert subprocess.check_output(["systemd-detect-virt", "--vm"], text=True).strip() == "oracle"
@@ -89,7 +90,24 @@ try:
     assert settings.monitors()[0]["scale"] == baseline["outputs"][0]["scale"]
     assert client()["floating"]
     transactions.pop()
-    print(json.dumps({"windows_float": True, "left_right_snap": True, "restore_geometry": True, "caelestia_tiles": True, "manual_revert": True, "scale_change": True, "independent_watchdog_revert": True}))
+    value = settings.current(home, settings.monitors())
+    value["tiling"] = "caelestia"
+    pending = settings.apply(value, home, settings.monitors())
+    transactions.append(pending["id"])
+    path = home / ".config/hypr/tiling.local.lua"
+    installed = path.read_bytes()
+    edited = installed + b"\n"
+    try:
+        atomic_write(path, edited, 0o644)
+        outcome = settings.finish(home, pending["id"], False)
+        assert outcome["status"] == "reverted-with-conflicts"
+        assert settings.read_pending(home) is None
+        assert settings.read_result(home) == outcome
+        assert path.read_bytes() == edited
+    finally:
+        if path.read_bytes() == edited:
+            atomic_write(path, installed, 0o644)
+    print(json.dumps({"windows_float": True, "left_right_snap": True, "restore_geometry": True, "caelestia_tiles": True, "manual_revert": True, "scale_change": True, "independent_watchdog_revert": True, "external_edit_preserved_without_stuck_preview": True}))
 finally:
     for pid in idle:
         os.kill(int(pid), signal.SIGCONT)

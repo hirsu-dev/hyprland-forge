@@ -107,9 +107,26 @@ class DesktopSettingsTests(unittest.TestCase):
         pending = self.apply()
         path = self.home / ".config/hypr/monitors.local.lua"
         path.write_text("return {}\n")
-        with self.assertRaises(ForgeError):
-            settings.finish(self.home, pending["id"], False, self.runner)
+        outcome = settings.finish(self.home, pending["id"], False, self.runner)
+        self.assertEqual(outcome["status"], "reverted-with-conflicts")
+        self.assertEqual(outcome["conflicts"], [".config/hypr/monitors.local.lua"])
         self.assertEqual(path.read_text(), "return {}\n")
+        self.assertIsNone(settings.read_pending(self.home))
+        self.assertEqual(settings.read_result(self.home), outcome)
+        self.assertEqual(self.runner.call_args.args[0], ["hyprctl", "reload"])
+        self.apply()
+        self.assertIsNone(settings.read_result(self.home))
+
+    def test_watchdog_result_survives_shell_restart(self):
+        pending = self.apply()
+        outcome = settings.finish(self.home, pending["id"], False, self.runner)
+        self.assertEqual(settings.read_result(self.home), outcome)
+        self.assertEqual(outcome["status"], "reverted")
+
+    def test_confirm_records_kept_result(self):
+        pending = self.apply()
+        settings.finish(self.home, pending["id"], True, self.runner)
+        self.assertEqual(settings.read_result(self.home)["status"], "kept")
 
     def test_unknown_preview_is_ignored(self):
         pending = self.apply()
