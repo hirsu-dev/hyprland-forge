@@ -64,11 +64,11 @@ class TrayItem(ServiceInterface):
 async def main():
     bus = await MessageBus().connect()
     name = f"org.kde.StatusNotifierItem-{os.getpid()}-1"
-    await bus.request_name(name)
     bus.export("/StatusNotifierItem", TrayItem())
-    await bus.request_name("org.mpris.MediaPlayer2.forgefixture")
     bus.export("/org/mpris/MediaPlayer2", MprisRoot())
     bus.export("/org/mpris/MediaPlayer2", MprisPlayer())
+    await bus.request_name(name)
+    await bus.request_name("org.mpris.MediaPlayer2.forgefixture")
     reply = await bus.call(Message(destination="org.kde.StatusNotifierWatcher", path="/StatusNotifierWatcher", interface="org.kde.StatusNotifierWatcher", member="RegisterStatusNotifierItem", signature="s", body=[name]))
     if reply.message_type == MessageType.ERROR:
         raise RuntimeError(reply.body)
