@@ -17,8 +17,9 @@ class DesktopSettingsTests(unittest.TestCase):
         self.addCleanup(self.folder.cleanup)
         self.home = Path(self.folder.name)
         self.connected = [{"name": "HDMI-A-1", "width": 1920, "height": 1080, "refreshRate": 120, "availableModes": ["1920x1080@120.00Hz", "1920x1080@60.00Hz"]}, {"name": "eDP-1", "availableModes": ["1920x1080@60.00Hz"]}]
-        self.value = settings.current(self.home, self.connected)
-        self.runner = Mock(return_value=SimpleNamespace(stdout="ok\n"))
+        self.active_mode = "caelestia"
+        self.runner = Mock(side_effect=self.respond)
+        self.value = settings.current(self.home, self.connected, self.runner)
         self.spawn = Mock()
         self.guard = patch.object(settings, "lock", lambda _: contextlib.nullcontext())
         self.guard.start()
@@ -26,6 +27,14 @@ class DesktopSettingsTests(unittest.TestCase):
 
     def apply(self):
         return settings.apply(self.value, self.home, self.connected, self.runner, self.spawn)
+
+    def respond(self, command, **kwargs):
+        if command[1] == "repl":
+            return SimpleNamespace(stdout=self.active_mode + "\n")
+        if command[1] == "reload":
+            path = self.home / ".config/hypr/tiling.local.lua"
+            self.active_mode = json.loads(path.read_text().removeprefix("return ")) if path.exists() else "caelestia"
+        return SimpleNamespace(stdout="ok\n")
 
     def test_defaults_and_advertised_modes(self):
         self.assertEqual(self.value["primary"], "HDMI-A-1")
@@ -90,7 +99,8 @@ class DesktopSettingsTests(unittest.TestCase):
         self.assertIsNone(settings.read_pending(self.home))
 
     def test_failed_reload_restores_files(self):
-        self.runner.side_effect = [SimpleNamespace(stdout="error"), SimpleNamespace(stdout="ok")]
+        replies = iter((SimpleNamespace(stdout="error"), SimpleNamespace(stdout="ok")))
+        self.runner.side_effect = lambda command, **kwargs: next(replies) if command[1] == "reload" else self.respond(command, **kwargs)
         with self.assertRaises(ForgeError):
             self.apply()
         self.assertIsNone(settings.read_pending(self.home))
@@ -101,7 +111,7 @@ class DesktopSettingsTests(unittest.TestCase):
         pending = self.apply()
         self.assertTrue(pending["mode_changed"])
         self.assertEqual(self.runner.call_args.args[0][1], "dispatch")
-        self.assertEqual(settings.current(self.home, self.connected)["tiling"], "windows")
+        self.assertEqual(settings.current(self.home, self.connected, self.runner)["tiling"], "windows")
 
     def test_external_edits_are_preserved(self):
         pending = self.apply()
@@ -146,4 +156,64 @@ class DesktopSettingsTests(unittest.TestCase):
     def test_query_reflects_external_scale_changes(self):
         self.apply()
         self.connected[0]["scale"] = 1.5
-        self.assertEqual(settings.current(self.home, self.connected)["outputs"][0]["scale"], 1.5)
+        self.assertEqual(settings.current(self.home, self.connected, self.runner)["outputs"][0]["scale"], 1.5)
+
+    def test_unplugged_display_preferences_and_primary_survive_apply(self):
+        self.value["outputs"][0].update(x=-1920, y=100, rotation=2, vrr=2)
+        first = self.apply()
+        settings.finish(self.home, first["id"], True, self.runner)
+        laptop = self.connected[1:]
+        draft = settings.current(self.home, laptop, self.runner)
+        self.assertEqual([item["name"] for item in draft["outputs"]], ["eDP-1"])
+        self.assertEqual(draft["primary"], "eDP-1")
+        draft["tiling"] = "windows"
+        second = settings.apply(draft, self.home, laptop, self.runner, self.spawn)
+        stored = settings.saved_settings(self.home)
+        self.assertEqual(stored["primary"], "HDMI-A-1")
+        self.assertEqual(stored["outputs"][0], self.value["outputs"][0])
+        self.assertIn('HDMI-A-1', (self.home / ".config/hypr/monitors.local.lua").read_text())
+        self.assertEqual(settings.current(self.home, self.connected, self.runner)["primary"], "HDMI-A-1")
+        settings.finish(self.home, second["id"], False, self.runner)
+        self.assertEqual(settings.saved_settings(self.home), self.value)
+
+    def test_connected_main_display_can_be_changed(self):
+        first = self.apply()
+        settings.finish(self.home, first["id"], True, self.runner)
+        self.value["primary"] = "eDP-1"
+        self.apply()
+        self.assertEqual(settings.saved_settings(self.home)["primary"], "eDP-1")
+
+    def test_preserved_tiling_edit_overrides_stale_json(self):
+        self.value["tiling"] = "windows"
+        first = self.apply()
+        settings.finish(self.home, first["id"], True, self.runner)
+        self.value["tiling"] = "caelestia"
+        second = self.apply()
+        path = self.home / ".config/hypr/tiling.local.lua"
+        path.write_text('return "caelestia"\n\n')
+        result = settings.finish(self.home, second["id"], False, self.runner)
+        self.assertEqual(result["status"], "reverted-with-conflicts")
+        self.assertEqual(settings.saved_settings(self.home)["tiling"], "windows")
+        self.assertEqual(settings.current(self.home, self.connected, self.runner)["tiling"], "caelestia")
+        self.value["tiling"] = "windows"
+        third = self.apply()
+        self.assertTrue(third["mode_changed"])
+        self.assertEqual(self.runner.call_args.args[0][1], "dispatch")
+
+    def test_unknown_active_mode_blocks_changes(self):
+        self.active_mode = "unavailable"
+        with self.assertRaisesRegex(ForgeError, "active Forge tiling"):
+            self.apply()
+        self.spawn.assert_not_called()
+        self.assertFalse((self.home / ".config/forge/desktop.json").exists())
+
+    def test_corrupt_remembered_output_is_not_rewritten(self):
+        first = self.apply()
+        settings.finish(self.home, first["id"], True, self.runner)
+        path = self.home / ".config/forge/desktop.json"
+        invalid = copy.deepcopy(self.value)
+        invalid["outputs"][0]["scale"] = 99
+        path.write_text(json.dumps(invalid))
+        with self.assertRaises(ForgeError):
+            self.apply()
+        self.assertEqual(json.loads(path.read_text()), invalid)

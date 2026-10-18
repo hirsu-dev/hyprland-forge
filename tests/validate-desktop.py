@@ -104,10 +104,21 @@ try:
         assert settings.read_pending(home) is None
         assert settings.read_result(home) == outcome
         assert path.read_bytes() == edited
+        assert settings.saved_settings(home)["tiling"] == "windows"
+        assert settings.current(home, settings.monitors())["tiling"] == "caelestia"
     finally:
         if path.read_bytes() == edited:
             atomic_write(path, installed, 0o644)
-    print(json.dumps({"windows_float": True, "left_right_snap": True, "restore_geometry": True, "caelestia_tiles": True, "manual_revert": True, "scale_change": True, "independent_watchdog_revert": True, "external_edit_preserved_without_stuck_preview": True}))
+    value = settings.current(home, settings.monitors())
+    value["tiling"] = "windows"
+    next_preview = settings.apply(value, home, settings.monitors())
+    transactions.append(next_preview["id"])
+    assert next_preview["mode_changed"]
+    time.sleep(0.5)
+    assert client()["floating"]
+    settings.finish(home, next_preview["id"], False)
+    transactions.pop()
+    print(json.dumps({"windows_float": True, "left_right_snap": True, "restore_geometry": True, "caelestia_tiles": True, "manual_revert": True, "scale_change": True, "independent_watchdog_revert": True, "external_edit_preserved_without_stuck_preview": True, "active_tiling_after_conflict": True}))
 finally:
     for pid in idle:
         os.kill(int(pid), signal.SIGCONT)

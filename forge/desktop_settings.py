@@ -35,11 +35,11 @@ def modes(monitor):
     return ["preferred", *dict.fromkeys(value.removesuffix("Hz") for value in monitor.get("availableModes", []) if re.fullmatch(r"\d+x\d+@\d+(?:\.\d+)?(?:Hz)?", value))]
 
 
-def validate(value, connected):
+def validate(value, connected, limit=16):
     if not isinstance(value, dict) or value.get("tiling") not in ("windows", "caelestia"):
         raise ForgeError("Choose Windows snapping or Caelestia-style tiling")
     outputs = value.get("outputs")
-    if not isinstance(outputs, list) or not 1 <= len(outputs) <= 16:
+    if not isinstance(outputs, list) or not 1 <= len(outputs) <= limit:
         raise ForgeError("Invalid display list")
     hardware = {monitor["name"]: monitor for monitor in connected}
     selected = {}
@@ -96,9 +96,41 @@ def read_result(home):
     return json.loads(path.read_text()) if path.exists() else None
 
 
-def current(home, connected):
+def saved_settings(home):
     path = safe_target(home, ".config/forge/desktop.json")
-    stored = json.loads(path.read_text()) if path.exists() else {}
+    if not path.exists():
+        return {}
+    stored = json.loads(path.read_text())
+    if not isinstance(stored, dict) or not isinstance(stored.get("outputs"), list):
+        raise ForgeError("Saved display settings are invalid")
+    hardware = []
+    for output in stored["outputs"]:
+        if not isinstance(output, dict):
+            raise ForgeError("Saved display settings are invalid")
+        hardware.append({"name": output.get("name"), "availableModes": [output.get("mode")] if isinstance(output.get("mode"), str) else []})
+    return validate(stored, hardware, limit=64)
+
+
+def active_tiling(runner=subprocess.run):
+    result = runner(["hyprctl", "repl", 'return package.loaded["forge.tiling"] and package.loaded["forge.tiling"].mode or "unavailable"'], capture_output=True, text=True, check=True, timeout=5)
+    mode = result.stdout.strip()
+    if mode not in ("windows", "caelestia"):
+        raise ForgeError("Cannot read the active Forge tiling mode from Hyprland")
+    return mode
+
+
+def remember(value, stored, connected):
+    outputs = {item["name"]: item for item in stored.get("outputs", [])}
+    outputs.update({item["name"]: item for item in value["outputs"]})
+    if len(outputs) > 64:
+        raise ForgeError("Too many remembered displays")
+    preferred = stored.get("primary")
+    primary = preferred if preferred in outputs and outputs[preferred]["enabled"] and preferred not in {item["name"] for item in connected} else value["primary"]
+    return {"tiling": value["tiling"], "primary": primary, "outputs": list(outputs.values())}
+
+
+def current(home, connected, runner=subprocess.run):
+    stored = saved_settings(home)
     saved = {item["name"]: item for item in stored.get("outputs", [])}
     outputs = []
     for monitor in connected:
@@ -116,7 +148,7 @@ def current(home, connected):
     primary = stored.get("primary")
     if primary not in enabled:
         primary = next((name for name in enabled if name.startswith("HDMI")), enabled[0] if enabled else outputs[0]["name"])
-    return {"tiling": stored.get("tiling", "caelestia"), "primary": primary, "outputs": outputs}
+    return {"tiling": active_tiling(runner), "primary": primary, "outputs": outputs}
 
 
 def reload(mode_changed=False, runner=subprocess.run):
@@ -154,16 +186,17 @@ def apply(value, home, connected, runner=subprocess.run, spawn=subprocess.Popen)
     with tempfile.TemporaryDirectory(prefix="forge-settings-") as folder:
         source = Path(folder)
         files = []
-        for index, (target, content) in enumerate(render(value).items()):
-            safe_target(home, target)
-            name = f"configs/{index}"
-            atomic_write(source / name, content.encode(), 0o644)
-            files.append({"source": name, "target": target})
         with lock(home / ".local/state/hyprland-forge"):
             if read_pending(home):
                 raise ForgeError("Keep or revert the current preview before applying another change")
+            changed = active_tiling(runner) != value["tiling"]
+            remembered = remember(value, saved_settings(home), connected)
+            for index, (target, content) in enumerate(render(remembered).items()):
+                safe_target(home, target)
+                name = f"configs/{index}"
+                atomic_write(source / name, content.encode(), 0o644)
+                files.append({"source": name, "target": target})
             write_json(result_path, None)
-            changed = current(home, connected)["tiling"] != value["tiling"]
             transaction = execute({"commands": [], "files": files}, source, home, state)
             pending = {"id": transaction, "deadline": time.time() + WAIT, "mode_changed": changed}
             try:

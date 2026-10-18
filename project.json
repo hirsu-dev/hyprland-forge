@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.9.1",
+  "release": "0.9.2",
   "desktop_settings": {
     "tiling_modes": ["windows-style-snap", "caelestia-style-dwindle"],
     "display_controls": ["primary", "enabled", "resolution-refresh", "scale", "rotation", "position", "vrr"],
