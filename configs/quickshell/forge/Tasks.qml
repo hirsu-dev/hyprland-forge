@@ -46,6 +46,17 @@ Singleton {
             }
         }
     }
+    Timer {
+        id: workspaceRefresh
+        interval: 32
+        onTriggered: { Hyprland.refreshMonitors(); Hyprland.refreshToplevels() }
+    }
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (/workspace|focusedmon|movewindow/.test(event.name)) workspaceRefresh.restart()
+        }
+    }
     function identity(value) { return String(value || "").toLowerCase().replace(/\.desktop$/, "") }
     function entryFor(value) {
         const key = identity(value)
@@ -109,7 +120,7 @@ Singleton {
     IpcHandler {
         target: "forgeTasks"
         function status(): string {
-            return JSON.stringify({ enabled: root.enabled, primaryOnly: root.primaryOnly, currentMonitorOnly: root.currentMonitorOnly, showTitles: root.showTitles, pins: root.pins, busy: root.busy, error: root.error, transaction: root.lastTransaction, bars: Quickshell.screens.map(screen => ({ name: screen.name, visible: root.visibleOn(screen) })), windows: root.windows.map(window => ({ appId: window.appId, title: window.title, active: window.activated, fullscreen: window.fullscreen, screens: window.screens.map(screen => screen.name) })) })
+            return JSON.stringify({ enabled: root.enabled, primaryOnly: root.primaryOnly, currentMonitorOnly: root.currentMonitorOnly, showTitles: root.showTitles, pins: root.pins, busy: root.busy, error: root.error, transaction: root.lastTransaction, monitorWorkspaces: Hyprland.monitors.values.map(monitor => ({ name: monitor.name, workspace: monitor.activeWorkspace ? monitor.activeWorkspace.id : null })), bars: Quickshell.screens.map(screen => ({ name: screen.name, visible: root.visibleOn(screen) })), windows: root.windows.map(window => ({ appId: window.appId, title: window.title, workspace: root.nativeWindow(window) && root.nativeWindow(window).workspace ? root.nativeWindow(window).workspace.id : null, active: window.activated, fullscreen: window.fullscreen, screens: window.screens.map(screen => screen.name) })) })
         }
         function activate(index: int): void { root.activate(root.windows[index]) }
         function configure(patch: string): void { root.write("--set", patch) }

@@ -19,6 +19,7 @@ transactions = []
 processes = []
 extra_output = "FORGE-TASKBAR"
 output_created = False
+original_workspace = None
 idle = subprocess.run(["pgrep", "-u", str(os.getuid()), "-x", "hypridle"], capture_output=True, text=True).stdout.split()
 for pid in idle:
     os.kill(int(pid), signal.SIGSTOP)
@@ -43,7 +44,7 @@ def wait(predicate):
         if predicate(state):
             return state
         time.sleep(0.1)
-    raise AssertionError(state)
+    raise AssertionError({"shell": state, "monitors": json.loads(ctl("-j", "monitors")), "clients": json.loads(ctl("-j", "clients"))})
 
 
 def configure(*args):
@@ -74,12 +75,16 @@ def bottom_reserved():
 try:
     ipc("forge", "close")
     assert not any(window["appId"].lower() == "kitty" for window in status()["windows"]), "Close other Kitty windows before this isolated test"
+    original_workspace = json.loads(ctl("-j", "monitors"))[0]["activeWorkspace"]["id"]
+    occupied = {workspace["id"] for workspace in json.loads(ctl("-j", "workspaces"))}
+    fixture_workspace = next(index for index in range(930, 950) if index not in occupied)
+    ctl("dispatch", "hl.dsp.focus({workspace=" + str(fixture_workspace) + "})")
     configure("--set", '{"enabled":true,"primaryOnly":false,"currentMonitorOnly":false,"showTitles":true}')
     wait(lambda value: value["enabled"] and all(bar["visible"] for bar in value["bars"]))
     time.sleep(0.3)
     assert bottom_reserved() == 60
     for title in ("ForgeTaskbar-A", "ForgeTaskbar-B"):
-        processes.append(subprocess.Popen(["kitty", "--class", "kitty", "--title", title, "sh", "-c", "sleep 180"], env={**os.environ, "LIBGL_ALWAYS_SOFTWARE": "1"}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        processes.append(subprocess.Popen(["kitty", "--start-as", "normal", "-o", "remember_window_size=no", "--class", "kitty", "--title", title, "sh", "-c", "sleep 180"], env={**os.environ, "LIBGL_ALWAYS_SOFTWARE": "1"}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
     wait(lambda value: sum(window["title"].startswith("ForgeTaskbar-") for window in value["windows"]) == 2)
     activate_title("ForgeTaskbar-A")
     ipc("forgeTasks", "pinAction", "kitty")
@@ -138,6 +143,8 @@ finally:
     for process in processes:
         process.terminate()
         process.wait(timeout=10)
+    if original_workspace is not None:
+        ctl("dispatch", "hl.dsp.focus({workspace=" + str(original_workspace) + "})")
     with lock(home / ".local/state/hyprland-forge"):
         for transaction in reversed(transactions):
             assert not restore(transaction, home, home / STATE)
