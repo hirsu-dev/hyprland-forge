@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+    up) brightnessctl -c backlight -n2 set +5% ;;
+    down) brightnessctl -c backlight -n2 set 5%- ;;
+    *) exit 1 ;;
+esac
+quickshell -c forge ipc call forge backlight || true

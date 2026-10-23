@@ -13,3 +13,9 @@ singleton Tasks 1.0 Tasks.qml
 Taskbar 1.0 Taskbar.qml
 TaskButton 1.0 TaskButton.qml
 TaskbarSettings 1.0 TaskbarSettings.qml
+singleton Alerts 1.0 Alerts.qml
+NotificationCard 1.0 NotificationCard.qml
+NotificationPopups 1.0 NotificationPopups.qml
+Hud 1.0 Hud.qml
+Overview 1.0 Overview.qml
+Hub 1.0 Hub.qml

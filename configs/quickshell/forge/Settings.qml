@@ -160,6 +160,7 @@ PanelWindow {
                     ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "01  WORKSPACE"; selected: panel.page === 0; onClicked: Desktop.settingsPage = 0 }
                     ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "02  INTERFACE"; selected: panel.page === 1; onClicked: Desktop.settingsPage = 1 }
                     ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "03  TASKBAR"; selected: panel.page === 2; onClicked: Desktop.settingsPage = 2 }
+                    ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "04  SYSTEM DECK"; onClicked: Desktop.openHub("customize") }
                     Item { Layout.fillHeight: true }
                     Caption { Layout.fillWidth: true; text: "HYPRLAND / ARCH\n\nEXTERNAL FIRST\nDUAL LAYOUT\nLOCAL PREFERENCES"; font.pixelSize: 9; lineHeight: 1.5 }
                     Rectangle { Layout.fillWidth: true; height: 2; color: ForgeTheme.danger }

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ $# -eq 0 && -x "$HOME/.local/bin/forge-backgrounds" ]]; then exec "$HOME/.local/bin/forge-backgrounds"; fi
 wallpaper="${1:-${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/forge.svg}"
 if [[ -f "$wallpaper" ]]; then
     exec swaybg --image "$wallpaper" --mode fill --color '#100d16'

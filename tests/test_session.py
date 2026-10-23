@@ -30,10 +30,10 @@ class SessionTests(unittest.TestCase):
             process = subprocess.Popen(["bash", str(ROOT / "configs/bin/forge-session")], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
                 deadline = time.monotonic() + 10
-                while len(list(root.glob("*.pid"))) != 6 and time.monotonic() < deadline:
+                while len(list(root.glob("*.pid"))) != 5 and time.monotonic() < deadline:
                     self.assertIsNone(process.poll())
                     time.sleep(0.05)
-                self.assertEqual(len(list(root.glob("*.pid"))), 6)
+                self.assertEqual(len(list(root.glob("*.pid"))), 5)
                 self.assertEqual((root / "renderer").read_text(), "software")
                 self.assertFalse((root / "leaked-lock").exists())
                 duplicate = subprocess.run(["bash", str(ROOT / "configs/bin/forge-session")], env=env, capture_output=True, timeout=3)
@@ -43,9 +43,9 @@ class SessionTests(unittest.TestCase):
                 self.assertEqual(process.returncode, 0, error)
                 self.assertIn(b"authentication agent unavailable", error)
                 deadline = time.monotonic() + 3
-                while len(list(root.glob("*.stopped"))) != 6 and time.monotonic() < deadline:
+                while len(list(root.glob("*.stopped"))) != 5 and time.monotonic() < deadline:
                     time.sleep(0.05)
-                self.assertEqual(len(list(root.glob("*.stopped"))), 6)
+                self.assertEqual(len(list(root.glob("*.stopped"))), 5)
                 probe = subprocess.run(["flock", "-n", str(root / "hyprland-forge-session.lock"), "true"], capture_output=True, timeout=3)
                 self.assertEqual(probe.returncode, 0)
             finally:

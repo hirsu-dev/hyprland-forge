@@ -14,4 +14,8 @@ ShellRoot {
     Settings {}
     PowerMenu {}
     Launcher {}
+    NotificationPopups {}
+    Hud {}
+    Overview {}
+    Hub {}
 }

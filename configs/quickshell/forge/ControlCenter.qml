@@ -56,8 +56,8 @@ PanelWindow {
                 ForgeButton { Layout.fillWidth: true; text: "SYSTEM CONFIGURATION  ↗"; onClicked: Desktop.toggleSettings() }
                 RowLayout {
                     Layout.fillWidth: true
-                    ForgeButton { Layout.fillWidth: true; text: "NETWORK"; onClicked: { Desktop.exec(["kitty", "-e", "nmtui"]); Desktop.closePanels() } }
-                    ForgeButton { Layout.fillWidth: true; text: "BLUETOOTH"; onClicked: { Desktop.exec(["blueman-manager"]); Desktop.closePanels() } }
+                    ForgeButton { Layout.fillWidth: true; text: "CONNECTIONS"; onClicked: Desktop.openHub("connections") }
+                    ForgeButton { Layout.fillWidth: true; text: "SYSTEM DECK"; onClicked: Desktop.openHub("hardware") }
                 }
                 Caption { text: "01 / AUDIO SIGNAL"; color: ForgeTheme.cyan }
                 ForgeFrame {
@@ -116,8 +116,8 @@ PanelWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     ForgeButton { Layout.fillWidth: true; text: "LOCK"; onClicked: { Desktop.exec(["hyprlock"]); Desktop.closePanels() } }
-                    ForgeButton { Layout.fillWidth: true; text: "MIXER"; onClicked: { Desktop.exec(["pavucontrol"]); Desktop.closePanels() } }
-                    ForgeButton { Layout.fillWidth: true; text: "CLEAR ALERTS"; onClicked: Desktop.exec(["makoctl", "dismiss", "--all"]) }
+                    ForgeButton { Layout.fillWidth: true; text: "DEVICES"; onClicked: Desktop.openHub("connections") }
+                    ForgeButton { Layout.fillWidth: true; text: "ALERTS " + Alerts.history.length; onClicked: Desktop.openHub("alerts") }
                 }
                 Caption { text: "02 / POWER POLICY"; color: ForgeTheme.cyan }
                 RowLayout {

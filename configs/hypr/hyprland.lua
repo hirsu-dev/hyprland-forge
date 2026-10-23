@@ -49,8 +49,22 @@ local commands = {
     ["SUPER + CTRL + V"] = "~/.local/bin/forge-clipboard",
     ["SUPER + SHIFT + R"] = "hyprctl reload",
     ["Print"] = "~/.local/bin/forge-screenshot",
+    ["SUPER + Print"] = "quickshell -c forge ipc call forge hub capture",
     ["SUPER + SHIFT + Escape"] = "hyprshutdown",
+    ["ALT + Tab"] = "quickshell -c forge ipc call forge overview",
+    ["SUPER + O"] = "quickshell -c forge ipc call forge overview",
+    ["SUPER + N"] = "quickshell -c forge ipc call forge hub alerts",
+    ["SUPER + G"] = "quickshell -c forge ipc call forge hub hardware",
 }
+local shortcut_file = io.open(directory .. "forge/shortcuts.lua", "r")
+if shortcut_file then
+    shortcut_file:close()
+    local shortcuts = dofile(directory .. "forge/shortcuts.lua")
+    local defaults = { terminal = "SUPER + Return", files = "SUPER + E", browser = "SUPER + B", launcher = "SUPER + Space", controls = "SUPER + A", settings = "SUPER + I", lock = "SUPER + L" }
+    local remapped = {}
+    for name, key in pairs(defaults) do remapped[name] = commands[key]; commands[key] = nil end
+    for name, command in pairs(remapped) do commands[shortcuts[name] or defaults[name]] = command end
+end
 for key, command in pairs(commands) do hl.bind(key, hl.dsp.exec_cmd(command)) end
 hl.bind("SUPER + Q", hl.dsp.window.close())
 hl.bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }))
@@ -75,8 +89,8 @@ local media = {
     XF86AudioLowerVolume = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
     XF86AudioMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
     XF86AudioMicMute = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
-    XF86MonBrightnessUp = "brightnessctl -n2 set +5%",
-    XF86MonBrightnessDown = "brightnessctl -n2 set 5%-",
+    XF86MonBrightnessUp = "~/.local/bin/forge-backlight up",
+    XF86MonBrightnessDown = "~/.local/bin/forge-backlight down",
     XF86AudioPlay = "playerctl play-pause",
     XF86AudioNext = "playerctl next",
     XF86AudioPrev = "playerctl previous",
@@ -87,6 +101,8 @@ hl.on("hyprland.start", function() hl.exec_cmd("~/.local/bin/forge-session") end
 
 local colors = io.open(directory .. "forge/colors.lua", "r")
 if colors then colors:close(); dofile(directory .. "forge/colors.lua") end
+local preferences = io.open(directory .. "forge/preferences.lua", "r")
+if preferences then preferences:close(); dofile(directory .. "forge/preferences.lua") end
 local override = directory .. "user.lua"
 local file = io.open(override, "r")
 if file then file:close(); dofile(override) end

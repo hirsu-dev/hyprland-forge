@@ -63,6 +63,24 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+notify-send --expire-time=1000 'Forge smoke test' 'Memory-only notification'
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_alerts="$(quickshell -p "$forge_config" ipc call forgeAlerts status | python -c 'import json,sys; print(len(json.load(sys.stdin)["history"]))')"
+    if [[ "$forge_alerts" == 1 ]]; then break; fi
+    sleep 0.1
+done
+[[ "$forge_alerts" == 1 ]]
+quickshell -p "$forge_config" ipc call forgeAlerts quiet true
+quickshell -p "$forge_config" ipc call forgeAlerts status | python -c 'import json,sys; assert json.load(sys.stdin)["dnd"]'
+for forge_page in alerts connections customize hardware capture recovery; do
+    quickshell -p "$forge_config" ipc call forge hub "$forge_page"
+    quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["hub"] and not d["overview"] and not d["settings"]'
+done
+quickshell -p "$forge_config" ipc call forge overview
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["overview"] and not d["hub"]'
+quickshell -p "$forge_config" ipc call forge close
+quickshell -p "$forge_config" ipc call forgeAlerts clear
+quickshell -p "$forge_config" ipc call forgeAlerts quiet false
 quickshell -p "$forge_config" ipc call forgeTasks status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["enabled"] and d["showTitles"]; assert d["pins"] == ["kitty","thunar","firefox"]'
 for ((attempt = 0; attempt < 50; attempt++)); do
     forge_audio="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["audio"])')"

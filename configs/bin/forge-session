@@ -19,7 +19,7 @@ if [[ -x "$HOME/.local/bin/forge-settings" ]]; then forge_start "$HOME/.local/bi
 forge_start hypridle
 forge_start wl-paste --type text --watch cliphist store
 forge_start wl-paste --type image --watch cliphist store
-forge_start mako
+if command -v makoctl >/dev/null 2>&1; then makoctl quit 2>/dev/null || true; fi
 forge_start "$HOME/.local/bin/forge-wallpaper"
 if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
     if systemd-detect-virt --vm >/dev/null 2>&1; then

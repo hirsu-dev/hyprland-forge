@@ -88,6 +88,8 @@ PanelWindow {
                 }
             }
             ForgeButton { text: Desktop.muted ? "MUTE" : "VOL " + Desktop.volume; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { visible: Desktop.recording; text: "REC ■"; danger: true; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("capture") } }
+            ForgeButton { text: Alerts.dnd ? "DND" : "N " + Alerts.history.length; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("alerts") } }
             ForgeButton { text: Desktop.battery; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
             ForgeButton { text: Desktop.time; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
             ForgeButton { text: "SYS"; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.toggleSettings() } }
