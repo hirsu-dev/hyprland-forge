@@ -165,11 +165,13 @@ PanelWindow {
                 }
                 Rectangle { Layout.fillHeight: true; width: 1; color: ForgeTheme.line }
                 ScrollView {
+                    id: settingsScroll
+                    contentWidth: availableWidth
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
                     ColumnLayout {
-                        width: parent.width - 14
+                        width: settingsScroll.availableWidth - 14
                         spacing: 16
                         ColumnLayout {
                             Layout.fillWidth: true

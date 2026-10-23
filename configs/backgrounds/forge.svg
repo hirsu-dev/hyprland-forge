@@ -41,7 +41,7 @@
     <path d="M1550 466h105v219M1065 590v151h49" stroke="#74f7ef" opacity=".55"/>
     <path d="M1430 440v126h20M1730 610h57" stroke="#fcee0a" opacity=".6"/>
   </g>
-  <g font-family="Noto Sans, sans-serif">
+  <g font-family="Noto Sans, sans-serif" transform="translate(72 0)">
     <text x="112" y="360" fill="#74f7ef" font-family="monospace" font-size="12" letter-spacing="4">PERSONAL SYSTEM / NO CORPORATE ACCESS</text>
     <text x="103" y="520" fill="#fcee0a" font-size="156" font-weight="900" font-style="italic" letter-spacing="-9">FORGE</text>
     <path d="M112 547h466l16-16h152" fill="none" stroke="#ff4d61" stroke-width="4"/>
@@ -49,10 +49,10 @@
     <text x="112" y="631" fill="#bdaab8" font-family="monospace" font-size="13" letter-spacing="1">ARCH / HYPRLAND / OVERDRIVE INTERFACE</text>
   </g>
   <g font-family="monospace" font-size="10" letter-spacing="2">
-    <text x="112" y="163" fill="#ff4d61">LOCAL NODE / F-01</text>
+    <text x="184" y="163" fill="#ff4d61">LOCAL NODE / F-01</text>
     <text x="1670" y="163" fill="#bdaab8">SIGNAL: LOCAL</text>
-    <text x="112" y="918" fill="#74f7ef">SUPER + SPACE / EXECUTE</text>
-    <text x="112" y="942" fill="#bdaab8">SUPER + I / CONFIGURE</text>
+    <text x="184" y="918" fill="#74f7ef">SUPER + SPACE / EXECUTE</text>
+    <text x="184" y="942" fill="#bdaab8">SUPER + I / CONFIGURE</text>
     <text x="1554" y="942" fill="#bdaab8">UNOWNED / UNRESTRICTED</text>
   </g>
   <path d="M112 861h112v6H112z" fill="url(#hatch)"/>
