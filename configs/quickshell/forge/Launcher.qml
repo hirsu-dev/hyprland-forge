@@ -15,7 +15,7 @@ PanelWindow {
     readonly property var entries: DesktopEntries.applications.values.filter(a => a.name.toLowerCase().includes(search.text.toLowerCase())).sort((a,b) => a.name.localeCompare(b.name))
     onVisibleChanged: if (visible) { search.text = ""; search.forceActiveFocus(); apps.currentIndex = 0; content.enter() }
     function launchCurrent() {
-        if (entries[apps.currentIndex]) { entries[apps.currentIndex].execute(); Desktop.closePanels() }
+        if (entries[apps.currentIndex]) { Tasks.launch(entries[apps.currentIndex]) }
     }
     ForgeFrame {
         id: content
@@ -87,7 +87,22 @@ PanelWindow {
                         Text { Layout.fillWidth: true; text: entry.modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: entry.current ? ForgeTheme.accentText : ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 13 }
                         Text { text: "↗"; color: entry.current ? ForgeTheme.accentText : ForgeTheme.cyan; font.pixelSize: 18 }
                     }
-                    MouseArea { id: mouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { apps.currentIndex = entry.index; launcher.launchCurrent() } }
+                    Menu {
+                        id: appMenu
+                        MenuItem { text: Tasks.pinned(entry.modelData) ? "Unpin from taskbar" : "Pin to taskbar"; enabled: !Tasks.busy; onTriggered: Tasks.togglePin(entry.modelData) }
+                    }
+                    MouseArea {
+                        id: mouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        onClicked: event => {
+                            apps.currentIndex = entry.index
+                            if (event.button === Qt.RightButton) appMenu.popup()
+                            else launcher.launchCurrent()
+                        }
+                    }
                 }
                 Text { anchors.centerIn: parent; visible: apps.count === 0; text: "NO SIGNAL / NO MATCHES"; color: ForgeTheme.muted; font.family: ForgeTheme.font }
             }

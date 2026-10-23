@@ -159,6 +159,7 @@ PanelWindow {
                     Caption { text: "LOCAL / CONFIG"; color: ForgeTheme.cyan; font.pixelSize: 10 }
                     ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "01  WORKSPACE"; selected: panel.page === 0; onClicked: Desktop.settingsPage = 0 }
                     ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "02  INTERFACE"; selected: panel.page === 1; onClicked: Desktop.settingsPage = 1 }
+                    ForgeButton { Layout.fillWidth: true; implicitHeight: 44; text: "03  TASKBAR"; selected: panel.page === 2; onClicked: Desktop.settingsPage = 2 }
                     Item { Layout.fillHeight: true }
                     Caption { Layout.fillWidth: true; text: "HYPRLAND / ARCH\n\nEXTERNAL FIRST\nDUAL LAYOUT\nLOCAL PREFERENCES"; font.pixelSize: 9; lineHeight: 1.5 }
                     Rectangle { Layout.fillWidth: true; height: 2; color: ForgeTheme.danger }
@@ -271,6 +272,7 @@ PanelWindow {
                             }
                             Caption { Layout.fillWidth: true; text: "Changes save immediately. Controls, search, and display recovery remain usable with motion and effects disabled."; lineHeight: 1.6 }
                         }
+                        TaskbarSettings { Layout.fillWidth: true; visible: panel.page === 2 }
                     }
                 }
             }
@@ -278,7 +280,7 @@ PanelWindow {
             Rectangle { Layout.fillWidth: true; height: 1; color: ForgeTheme.line }
             RowLayout {
                 Layout.fillWidth: true
-                Caption { Layout.fillWidth: true; text: panel.pending ? "REVERTING IN " + panel.seconds + "s / KEEP THESE SETTINGS?" : process.running || appearanceProcess.running ? "SAVING / WAIT…" : panel.page === 0 ? "SUPER + I / WORKSPACE CONFIGURATION" : "INTERFACE / SAVED LOCALLY"; color: panel.pending ? ForgeTheme.danger : ForgeTheme.muted; font.pixelSize: 10 }
+                Caption { Layout.fillWidth: true; text: panel.pending ? "REVERTING IN " + panel.seconds + "s / KEEP THESE SETTINGS?" : process.running || appearanceProcess.running ? "SAVING / WAIT…" : panel.page === 0 ? "SUPER + I / WORKSPACE CONFIGURATION" : panel.page === 1 ? "INTERFACE / SAVED LOCALLY" : "TASKBAR / SAVED LOCALLY"; color: panel.pending ? ForgeTheme.danger : ForgeTheme.muted; font.pixelSize: 10 }
                 ForgeButton { visible: !panel.pending && panel.page === 0; text: "REFRESH"; enabled: !process.running; onClicked: panel.run("--query") }
                 ForgeButton { visible: !panel.pending && panel.page === 0; text: "PREVIEW →"; selected: true; enabled: panel.editable && panel.draft !== null; onClicked: { panel.saveFields(); panel.run("--set", JSON.stringify(panel.draft)) } }
                 ForgeButton { visible: panel.pending !== null; text: "REVERT"; danger: true; enabled: !process.running; onClicked: panel.run("--revert", panel.pending.id) }

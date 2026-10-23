@@ -11,6 +11,7 @@ mkdir -p "$XDG_CONFIG_HOME/forge"
 mkdir -p "$XDG_CONFIG_HOME/qt6ct"
 cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
 cp configs/forge/interface.json "$XDG_CONFIG_HOME/forge/interface.json"
+cp configs/forge/taskbar.json "$XDG_CONFIG_HOME/forge/taskbar.json"
 cp configs/qt6ct/qt6ct.conf "$XDG_CONFIG_HOME/qt6ct/qt6ct.conf"
 export QT_QPA_PLATFORMTHEME=qt6ct
 mkdir -p test-results
@@ -62,6 +63,7 @@ forge_status() {
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screens"] > 0 and d["screen"]; assert d["launcher"] == (sys.argv[1] == "true"); assert d["controls"] == (sys.argv[2] == "true")' "$1" "$2"
 }
 forge_status false false
+quickshell -p "$forge_config" ipc call forgeTasks status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["enabled"] and d["showTitles"]; assert d["pins"] == ["kitty","thunar","firefox"]'
 for ((attempt = 0; attempt < 50; attempt++)); do
     forge_audio="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; print(json.load(sys.stdin)["audio"])')"
     if [[ "$forge_audio" == True ]]; then break; fi
@@ -145,6 +147,20 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-1" and d["screens"] == 1'
     quickshell -p "$forge_config" ipc call forge close
 fi
+quickshell -p "$forge_config" ipc call forgeTasks status | python -c 'import json,sys; d=json.load(sys.stdin); assert len(d["bars"]) > 0 and all(b["visible"] for b in d["bars"])'
+python -c 'import json,os; from pathlib import Path; from forge.storage import atomic_write; from forge.taskbar import DEFAULTS; atomic_write(Path(os.environ["XDG_CONFIG_HOME"])/"forge/taskbar.json",json.dumps({**DEFAULTS,"enabled":False,"showTitles":False}).encode())'
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_taskbar="$(quickshell -p "$forge_config" ipc call forgeTasks status | python -c 'import json,sys; d=json.load(sys.stdin); print(d["enabled"] or d["showTitles"] or any(b["visible"] for b in d["bars"]))')"
+    if [[ "$forge_taskbar" == False ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_taskbar" == False ]]
+cp configs/forge/taskbar.json "$XDG_CONFIG_HOME/forge/taskbar.json"
+quickshell -p "$forge_config" ipc call forge taskbar
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["settings"] and d["settingsPage"] == 2'
+sleep 0.5
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/taskbar.png; fi
+quickshell -p "$forge_config" ipc call forge close
 quickshell -p "$forge_config" ipc call forge settings
 quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["settings"] and not d["controls"] and not d["launcher"]'
 quickshell -p "$forge_config" ipc call forge appearance

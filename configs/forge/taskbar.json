@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "primaryOnly": false,
+  "currentMonitorOnly": false,
+  "showTitles": true,
+  "pins": [
+    "kitty",
+    "thunar",
+    "firefox"
+  ]
+}

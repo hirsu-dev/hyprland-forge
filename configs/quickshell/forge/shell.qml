@@ -6,6 +6,10 @@ ShellRoot {
         model: Quickshell.screens
         Bar {}
     }
+    Variants {
+        model: Quickshell.screens
+        Taskbar {}
+    }
     ControlCenter {}
     Settings {}
     PowerMenu {}

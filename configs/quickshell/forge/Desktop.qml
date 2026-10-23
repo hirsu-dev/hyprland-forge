@@ -16,7 +16,8 @@ Singleton {
     property int settingsPage: 0
     property string powerAction: ""
     property string selectedScreen: ""
-    readonly property var panelScreen: Quickshell.screens.find(s => s.name === selectedScreen) || Quickshell.screens.find(s => s.name === preferences.primary) || Quickshell.screens.find(s => s.name.startsWith("HDMI")) || Quickshell.screens[0] || null
+    readonly property var primaryScreen: Quickshell.screens.find(s => s.name === preferences.primary) || Quickshell.screens.find(s => s.name.startsWith("HDMI")) || Quickshell.screens[0] || null
+    readonly property var panelScreen: Quickshell.screens.find(s => s.name === selectedScreen) || primaryScreen
     FileView {
         path: Quickshell.env("HOME") + "/.config/forge/desktop.json"
         watchChanges: true
@@ -89,6 +90,7 @@ Singleton {
         function controls(): void { root.toggleControls(null) }
         function settings(): void { root.toggleSettings() }
         function appearance(): void { root.settingsPage = 1; if (!root.settingsOpen) root.toggleSettings() }
+        function taskbar(): void { root.settingsPage = 2; if (!root.settingsOpen) root.toggleSettings() }
         function close(): void { root.closePanels() }
         function power(): void { root.togglePower(null) }
         function powerChoice(action: string): void { if (root.powerOpen) root.requestPower(action) }
