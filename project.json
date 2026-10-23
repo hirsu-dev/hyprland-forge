@@ -13,7 +13,7 @@
   "taskbar": {"implementation": "original Quickshell Wayland taskbar", "features": ["pinned-apps", "running-windows", "focus-and-cycle", "context-actions", "monitor-scope", "window-labels", "fullscreen-aware", "clipboard-access"]},
   "ready_for_daily_use": false,
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
-  "visibility": "private",
+  "visibility": "public",
   "target": {
     "distribution": "arch",
     "architecture": "x86_64",
