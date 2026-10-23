@@ -17,10 +17,10 @@ hl.config({
         border_size = 2,
         layout = "dwindle",
         resize_on_border = true,
-        col = { active_border = "rgba(b5c9a8ff)", inactive_border = "rgba(333b3fff)" },
+        col = { active_border = "rgba(fcee0aff)", inactive_border = "rgba(693642ff)" },
     },
     decoration = {
-        rounding = 16,
+        rounding = 0,
         active_opacity = 1,
         inactive_opacity = 1,
         blur = { enabled = true, size = 5, passes = 2 },
@@ -33,7 +33,7 @@ hl.config({
 })
 
 hl.curve("forge", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1 } } })
-hl.animation({ leaf = "windows", enabled = true, speed = 4, bezier = "forge", style = "popin 92%" })
+hl.animation({ leaf = "windows", enabled = true, speed = 4, bezier = "forge", style = "slide" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 4, bezier = "forge", style = "slide" })
 hl.animation({ leaf = "fade", enabled = true, speed = 3, bezier = "forge" })
 hl.animation({ leaf = "layers", enabled = true, speed = 3, bezier = "forge", style = "fade" })

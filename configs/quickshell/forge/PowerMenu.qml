@@ -6,50 +6,47 @@ PanelWindow {
     id: panel
     screen: Desktop.panelScreen
     visible: Desktop.powerOpen
-    implicitWidth: Math.min(440, screen ? screen.width - 40 : 440)
-    implicitHeight: 290
+    implicitWidth: Math.min(520, screen ? screen.width - 40 : 520)
+    implicitHeight: 350
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
-    onVisibleChanged: if (visible) content.forceActiveFocus()
-    Rectangle {
+    onVisibleChanged: if (visible) { content.forceActiveFocus(); content.enter() }
+    ForgeFrame {
         id: content
         anchors.fill: parent
-        opacity: panel.visible ? 1 : 0
-        scale: panel.visible ? 1 : 0.96
-        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-        radius: 24
-        color: ForgeTheme.background
-        border.color: ForgeTheme.line
+        borderColor: ForgeTheme.danger
         focus: true
         Keys.onEscapePressed: Desktop.closePanels()
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 22
+            anchors.margins: 26
             spacing: 16
-            Text { text: "End the day, your way"; font.pixelSize: 20; color: ForgeTheme.text; font.family: ForgeTheme.font }
-            Text { text: "Unsaved work may be lost."; font.pixelSize: 12; color: ForgeTheme.muted }
+            Text { text: "FORGE / SESSION CONTROL"; color: ForgeTheme.danger; font.family: ForgeTheme.font; font.pixelSize: 10; font.letterSpacing: 1.5 }
+            Text { text: "DISCONNECT_"; font.pixelSize: 30; font.bold: true; font.italic: true; color: ForgeTheme.accent; font.family: ForgeTheme.font }
+            Text { text: "SELECT AN ACTION. UNSAVED WORK MAY BE LOST."; font.pixelSize: 10; color: ForgeTheme.muted; font.family: ForgeTheme.font }
             GridLayout {
                 Layout.fillWidth: true
                 columns: 2
                 columnSpacing: 8; rowSpacing: 8
                 Repeater {
-                    model: [{ label: "󰒲 Suspend", action: "suspend" }, { label: "󰜉 Restart", action: "reboot" }, { label: "󰐥 Power off", action: "poweroff" }, { label: "󰍃 Log out", action: "logout" }]
+                    model: [{ label: "01 / Suspend", action: "suspend" }, { label: "02 / Restart", action: "reboot" }, { label: "03 / Power off", action: "poweroff" }, { label: "04 / Log out", action: "logout" }]
                     ForgeButton {
                         required property var modelData
                         Layout.fillWidth: true
+                        implicitHeight: 44
                         text: modelData.label
                         selected: Desktop.powerAction === modelData.action
                         onClicked: Desktop.requestPower(modelData.action)
                     }
                 }
             }
+            Text { Layout.fillWidth: true; text: Desktop.powerAction ? "AWAITING CONFIRMATION // " + Desktop.powerAction.toUpperCase() : "NO ACTION QUEUED"; color: Desktop.powerAction ? ForgeTheme.danger : ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 10 }
             Item { Layout.fillHeight: true }
             RowLayout {
                 Layout.fillWidth: true
-                ForgeButton { Layout.fillWidth: true; text: "Cancel"; onClicked: Desktop.closePanels() }
-                ForgeButton { Layout.fillWidth: true; text: "Confirm"; selected: true; enabled: Desktop.powerAction !== ""; onClicked: Desktop.confirmPower() }
+                ForgeButton { Layout.fillWidth: true; text: "CANCEL"; onClicked: Desktop.closePanels() }
+                ForgeButton { Layout.fillWidth: true; text: "CONFIRM →"; danger: true; selected: true; enabled: Desktop.powerAction !== ""; onClicked: Desktop.confirmPower() }
             }
         }
     }

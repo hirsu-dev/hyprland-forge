@@ -11,7 +11,7 @@ from unittest.mock import patch
 from forge.manifest import ForgeError
 from forge.runtime import restore
 from forge.runtime import lock
-from forge.theme import PRESETS, apply_theme, main, palette, render, rgb, sample_image
+from forge.theme import PRESETS, apply_theme, interface_payload, main, palette, render, rgb, sample_image
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,9 +36,67 @@ class ThemeTests(unittest.TestCase):
             self.assertIn(colors["accent"][1:] + "ff", files[".config/fuzzel/forge-colors.ini"])
 
     def test_default_assets_match_generator(self):
-        for target, content in render(PRESETS["sage"]).items():
+        for target, content in render(PRESETS["overdrive"]).items():
             source = ROOT / "configs" / target.removeprefix(".config/")
             self.assertEqual(source.read_text(encoding="utf-8"), content)
+
+    def test_signal_presets_keep_their_identity(self):
+        for name in ("overdrive", "redline", "icewire", "monolith"):
+            self.assertEqual(palette(PRESETS[name])["accent"], PRESETS[name])
+        self.assertEqual(palette(PRESETS["overdrive"])["background"], "#100d16")
+
+    def test_interface_toggles_preserve_other_preference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            target = user / ".config/forge/interface.json"
+            target.parent.mkdir(parents=True)
+            target.write_text('{"motion": false, "effects": true}')
+            payload = interface_payload(user, effects="off")
+            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {"motion": False, "effects": False})
+            self.assertEqual(json.loads(target.read_text()), {"motion": False, "effects": True})
+
+    def test_interface_defaults_and_rollback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            state = user / ".local/state/hyprland-forge/themes"
+            payload = interface_payload(user, motion="off")
+            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {"motion": False, "effects": True})
+            from forge.theme import apply_files
+            with patch("forge.theme.lock", side_effect=lambda path: contextlib.nullcontext()):
+                transaction = apply_files(payload, user, state)
+            self.assertEqual(restore(transaction, user, state), [])
+            self.assertFalse((user / ".config/forge/interface.json").exists())
+
+    def test_interface_rejects_invalid_existing_preferences(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            target = user / ".config/forge/interface.json"
+            target.parent.mkdir(parents=True)
+            for value in ('[]', '{"motion": "off"}', '{"effects": 0}', '{"unknown": true}', " " * 8193):
+                target.write_text(value)
+                with self.subTest(value=value[:30]), self.assertRaises((ForgeError, ValueError)):
+                    interface_payload(user, motion="on")
+
+    def test_interface_cli_conflicts_are_refused(self):
+        for args in (["--motion", "off", "--preset", "overdrive"], ["--effects", "off", "--motion", "off"]):
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                main(args)
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(main(["--motion", "off", "--rollback", "example"]), 1)
+
+    def test_interface_cannot_read_through_symlink(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            target = user / ".config/forge/interface.json"
+            target.parent.mkdir(parents=True)
+            source = user / "original.json"
+            source.write_text('{"motion": false}')
+            try:
+                target.symlink_to(source)
+            except OSError:
+                self.skipTest("Symlinks unavailable")
+            with self.assertRaises(ForgeError):
+                interface_payload(user, effects="off")
 
     def test_cli_plan_is_read_only(self):
         result = subprocess.run([sys.executable, "-m", "forge.theme", "--plan", "--preset", "plum"], cwd=ROOT, capture_output=True, text=True)

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.9.2",
+  "release": "0.10.0",
   "desktop_settings": {
     "tiling_modes": ["windows-style-snap", "caelestia-style-dwindle"],
     "display_controls": ["primary", "enabled", "resolution-refresh", "scale", "rotation", "position", "vrr"],
@@ -26,8 +26,12 @@
   },
   "design": {
     "implementation": "original",
-    "primary_reference": "https://github.com/ilyamiro/serpantinum",
+    "primary_reference": "https://hrushikbarani-hub.github.io/",
+    "direction": "Overdrive / Redline cyberpunk desktop",
     "references": [
+      "thread://01a15736-b678-7f72-ad25-8fbfb49822aa",
+      "https://www.cyberpunk.net/us/en/",
+      "https://github.com/ilyamiro/serpantinum",
       "https://www.youtube.com/watch?v=NrRVr-kysko",
       "https://github.com/caelestia-dots",
       "https://github.com/binnewbs/arch-hyprland",
@@ -36,7 +40,7 @@
       "https://github.com/43PR/dotfiles"
     ],
     "shell": "original Quickshell QML",
-    "priorities": ["animated panels", "rounded widgets", "coherent dynamic colors", "external-display-first", "low idle overhead"],
+    "priorities": ["angular HUD panels", "Overdrive yellow and Redline signal accents", "original vector artwork", "switchable motion and effects", "external-display-first", "low idle overhead"],
     "comments": false,
     "documentation": false
   },
@@ -94,6 +98,7 @@
         {"source": "configs/quickshell/forge/qmldir", "target": ".config/quickshell/forge/qmldir"},
         {"source": "configs/quickshell/forge/ForgeTheme.qml", "target": ".config/quickshell/forge/ForgeTheme.qml"},
         {"source": "configs/quickshell/forge/Desktop.qml", "target": ".config/quickshell/forge/Desktop.qml"},
+        {"source": "configs/quickshell/forge/ForgeFrame.qml", "target": ".config/quickshell/forge/ForgeFrame.qml"},
         {"source": "configs/quickshell/forge/ForgeButton.qml", "target": ".config/quickshell/forge/ForgeButton.qml"},
         {"source": "configs/quickshell/forge/ForgeSlider.qml", "target": ".config/quickshell/forge/ForgeSlider.qml"},
         {"source": "configs/quickshell/forge/Laptop.qml", "target": ".config/quickshell/forge/Laptop.qml"},
@@ -120,6 +125,7 @@
       {"source": "configs/kitty/kitty.conf", "target": ".config/kitty/kitty.conf"},
       {"source": "configs/kitty/forge-colors.conf", "target": ".config/kitty/forge-colors.conf"},
       {"source": "configs/fuzzel/forge-colors.ini", "target": ".config/fuzzel/forge-colors.ini"},
+      {"source": "configs/forge/interface.json", "target": ".config/forge/interface.json"},
       {"source": "configs/forge/theme.json", "target": ".config/forge/theme.json"},
       {"source": "configs/hypr/forge/colors.lua", "target": ".config/hypr/forge/colors.lua"},
       {"source": "configs/bin/forge-appearance", "target": ".local/bin/forge-appearance", "executable": true},

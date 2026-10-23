@@ -1,10 +1,12 @@
 {
-  "background": "#11171f",
-  "surface": "#1b242d",
-  "raised": "#27323b",
-  "text": "#e1e7ea",
-  "muted": "#9daab3",
-  "line": "#39454d",
-  "accent": "#b5c9a8",
-  "accentText": "#142018"
+  "background": "#100d16",
+  "surface": "#1d141f",
+  "raised": "#2b1b2a",
+  "text": "#f4edf5",
+  "muted": "#bdaab8",
+  "line": "#693642",
+  "cyan": "#74f7ef",
+  "danger": "#ff4d61",
+  "accent": "#fcee0a",
+  "accentText": "#100d16"
 }

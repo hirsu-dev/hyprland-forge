@@ -12,8 +12,8 @@ from .runtime import execute, lock, preflight, restore
 from .storage import atomic_write, safe_target
 
 
-PRESETS = {"sage": "#b5c9a8", "ocean": "#9dbbd1", "plum": "#c6afd2", "ember": "#dec49a"}
-BASE = {"background": "#11171f", "surface": "#1b242d", "raised": "#27323b", "text": "#e1e7ea", "muted": "#9daab3", "line": "#39454d"}
+PRESETS = {"overdrive": "#fcee0a", "redline": "#ff4d61", "icewire": "#74f7ef", "monolith": "#e9e1ec", "sage": "#b5c9a8", "ocean": "#9dbbd1", "plum": "#c6afd2", "ember": "#dec49a"}
+BASE = {"background": "#100d16", "surface": "#1d141f", "raised": "#2b1b2a", "text": "#f4edf5", "muted": "#bdaab8", "line": "#693642", "cyan": "#74f7ef", "danger": "#ff4d61"}
 
 
 def rgb(value):
@@ -29,8 +29,13 @@ def hex_color(channels):
 def palette(accent):
     hue, lightness, saturation = colorsys.rgb_to_hls(*rgb(accent))
     result = dict(BASE)
-    result["accent"] = hex_color(colorsys.hls_to_rgb(hue, max(0.72, min(0.82, lightness)), min(0.6, max(0.22, saturation))))
-    result["accentText"] = "#142018"
+    result["accent"] = hex_color(colorsys.hls_to_rgb(hue, max(0.5, lightness), saturation))
+    def luminance(color):
+        return sum(weight * (channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4) for weight, channel in zip((0.2126, 0.7152, 0.0722), rgb(color)))
+    lightness = luminance(result["accent"])
+    dark_contrast = (lightness + 0.05) / (luminance(BASE["background"]) + 0.05)
+    light_contrast = (luminance(BASE["text"]) + 0.05) / (lightness + 0.05)
+    result["accentText"] = BASE["background"] if dark_contrast >= light_contrast else BASE["text"]
     return result
 
 
@@ -61,7 +66,7 @@ def render(accent):
     border = colors["accent"][1:] + "ff"
     return {
         ".config/forge/theme.json": json.dumps(colors, indent=2) + "\n",
-        ".config/hypr/forge/colors.lua": 'hl.config({ general = { col = { active_border = "rgba(' + border + ')", inactive_border = "rgba(39454dff)" } } })\n',
+        ".config/hypr/forge/colors.lua": 'hl.config({ general = { col = { active_border = "rgba(' + border + ')", inactive_border = "rgba(693642ff)" } } })\n',
         ".config/kitty/forge-colors.conf": "\n".join(f"{key} {value}" for key, value in {
             "background": colors["background"], "foreground": colors["text"], "cursor": colors["accent"],
             "selection_background": colors["accent"], "selection_foreground": colors["accentText"],
@@ -99,25 +104,45 @@ def apply_theme(accent, user_root, state_root):
     return apply_files(render(accent), user_root, state_root)
 
 
+def interface_payload(user_root, motion=None, effects=None):
+    target = safe_target(user_root, ".config/forge/interface.json")
+    settings = {"motion": True, "effects": True}
+    if target.exists():
+        if target.stat().st_size > 8192:
+            raise ForgeError("Interface preferences exceed the size limit")
+        current = json.loads(target.read_text(encoding="utf-8"))
+        if not isinstance(current, dict) or any(key not in settings or not isinstance(value, bool) for key, value in current.items()):
+            raise ForgeError("Invalid interface preferences")
+        settings.update(current)
+    if motion is not None:
+        settings["motion"] = motion == "on"
+    if effects is not None:
+        settings["effects"] = effects == "on"
+    return {".config/forge/interface.json": json.dumps(settings, indent=2) + "\n"}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="forge-appearance")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--preset", choices=PRESETS, default=None)
     source.add_argument("--accent")
     source.add_argument("--wallpaper", type=Path)
+    source.add_argument("--motion", choices=("on", "off"))
+    source.add_argument("--effects", choices=("on", "off"))
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true")
     mode.add_argument("--rollback", metavar="TRANSACTION")
     mode.add_argument("--plan", action="store_true")
     args = parser.parse_args(argv)
     try:
-        if args.rollback and (args.accent or args.preset or args.wallpaper):
+        if args.rollback and (args.accent or args.preset or args.wallpaper or args.motion or args.effects):
             raise ForgeError("Rollback cannot be combined with an accent or wallpaper")
-        accent = args.accent or PRESETS[args.preset or "sage"]
+        accent = args.accent or PRESETS[args.preset or "overdrive"]
         if args.wallpaper:
             accent = sample_image(args.wallpaper)
+        payload = interface_payload(Path.home(), args.motion, args.effects) if args.motion or args.effects else render(accent)
         if not args.apply and not args.rollback:
-            print(json.dumps(render(accent), indent=2))
+            print(json.dumps(payload, indent=2))
             return 0
         preflight()
         user_root = Path.home()
@@ -130,7 +155,7 @@ def main(argv=None):
                 raise ForgeError("Kept edited files: " + ", ".join(conflicts))
             print("Appearance restored")
         else:
-            print("Appearance saved: " + apply_theme(accent, user_root, state_root))
+            print("Appearance saved: " + apply_files(payload, user_root, state_root))
         for command in (["hyprctl", "reload"],):
             try:
                 subprocess.run(command, check=False, capture_output=True, timeout=5)

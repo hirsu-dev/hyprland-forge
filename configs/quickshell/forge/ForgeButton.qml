@@ -1,32 +1,39 @@
 import QtQuick
 
-Rectangle {
+ForgeFrame {
     id: root
     property string text: ""
     property bool selected: false
+    property bool danger: false
     signal clicked()
     activeFocusOnTab: true
-    opacity: enabled ? 1 : 0.4
     Accessible.role: Accessible.Button
     Accessible.name: text
-    Accessible.onPressAction: clicked()
-    Keys.onReturnPressed: clicked()
-    Keys.onSpacePressed: clicked()
-    implicitWidth: label.implicitWidth + 24
+    Accessible.onPressAction: if (enabled) clicked()
+    Keys.onReturnPressed: if (enabled) clicked()
+    Keys.onSpacePressed: if (enabled) clicked()
+    implicitWidth: label.implicitWidth + 28
     implicitHeight: 36
-    radius: 12
-    color: selected ? ForgeTheme.accent : pointer.containsMouse ? ForgeTheme.raised : ForgeTheme.surface
-    border.color: selected ? ForgeTheme.accent : ForgeTheme.line
-    border.width: pointer.containsMouse || activeFocus ? 1 : 0
-    Behavior on color { ColorAnimation { duration: 140 } }
+    cut: 7
+    ornament: false
+    opacity: enabled ? 1 : 0.38
+    color: selected ? (danger ? ForgeTheme.danger : ForgeTheme.accent) : pointer.containsMouse || activeFocus ? ForgeTheme.raised : ForgeTheme.surface
+    borderColor: selected ? color : pointer.containsMouse || activeFocus ? ForgeTheme.cyan : ForgeTheme.line
+    Behavior on color { ColorAnimation { duration: ForgeTheme.duration / 2 } }
     Text {
         id: label
         anchors.centerIn: parent
         text: root.text
         textFormat: Text.PlainText
         font.family: ForgeTheme.font
-        font.pixelSize: 12
-        color: root.selected ? ForgeTheme.accentText : ForgeTheme.text
+        font.pixelSize: 11
+        font.bold: root.selected
+        color: root.selected ? ForgeTheme.accentText : root.danger ? ForgeTheme.danger : ForgeTheme.text
+    }
+    Rectangle {
+        x: 4; y: 9; width: 2; height: parent.height - 24
+        visible: root.activeFocus
+        color: ForgeTheme.cyan
     }
     MouseArea {
         id: pointer

@@ -1,24 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 3840 2160">
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 1920 1080">
   <defs>
-    <linearGradient id="sky" x2="0.8" y2="1">
-      <stop stop-color="#0e151e"/>
-      <stop offset="1" stop-color="#25353a"/>
+    <linearGradient id="sky" x2="1" y2="1">
+      <stop stop-color="#100d16"/><stop offset=".6" stop-color="#1c111d"/><stop offset="1" stop-color="#291823"/>
     </linearGradient>
-    <radialGradient id="halo">
-      <stop stop-color="#b5c9a8" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#b5c9a8" stop-opacity="0"/>
+    <radialGradient id="signal">
+      <stop stop-color="#ff4d61" stop-opacity=".12"/><stop offset="1" stop-color="#ff4d61" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="ridge" x2="0" y2="1">
-      <stop stop-color="#43594f"/>
-      <stop offset="1" stop-color="#1a2a2e"/>
-    </linearGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#ab5064" stroke-opacity=".1" stroke-width=".7"/>
+    </pattern>
+    <pattern id="windows" width="19" height="25" patternUnits="userSpaceOnUse">
+      <path d="M4 7h4v8H4z" fill="#74f7ef" opacity=".18"/>
+    </pattern>
+    <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <path d="M0 0v10" stroke="#fcee0a" stroke-width="3"/>
+    </pattern>
   </defs>
-  <path fill="url(#sky)" d="M0 0h3840v2160H0z"/>
-  <ellipse cx="2580" cy="830" rx="1260" ry="1070" fill="url(#halo)"/>
-  <circle cx="2580" cy="770" r="240" fill="#b5c9a8" opacity=".8"/>
-  <path d="M0 1420 530 1100 900 1340 1320 760 2050 1440 2760 950 3210 1320 3840 1020V2160H0Z" fill="url(#ridge)"/>
-  <path d="m1080 1130 240-370 390 364-316-235-314 241" fill="#b5c9a8" opacity=".24"/>
-  <path d="M0 1510Q540 1180 1140 1590T2340 1570 3840 1530V2160H0Z" fill="#1b2c30"/>
-  <path d="M0 1780Q530 1470 1270 1810T2650 1810 3840 1720V2160H0Z" fill="#142128"/>
-  <path d="M0 1970Q630 1790 1340 2030T2750 2000 3840 1980V2160H0Z" fill="#0e1921"/>
+  <path fill="url(#sky)" d="M0 0h1920v1080H0z"/>
+  <path fill="url(#grid)" d="M0 0h1920v1080H0z"/>
+  <ellipse cx="1380" cy="490" rx="720" ry="620" fill="url(#signal)"/>
+  <g fill="none" stroke="#693642">
+    <path d="M28 138V94h116M1776 94h116v44M28 930v52h116M1776 982h116v-52"/>
+    <path d="M1108 170h454l222 222v342l-138 138h-538l-171-171V341z" opacity=".5"/>
+    <path d="M1140 204h401l208 208v305l-124 124h-462L972 681V357z" opacity=".35"/>
+    <path d="M950 953 1350 555 1908 955M1130 1028l220-473 373 473M0 954h1920M0 1028h1920" opacity=".35"/>
+  </g>
+  <g fill="#100d16" stroke="#693642" stroke-width="1.2">
+    <path d="M1020 850V590h32V486h87v104h31v260z"/>
+    <path d="M1180 850V386h25v-35h42v-65h8v65h48v35h28v464z"/>
+    <path d="M1344 850V520h29V403h82v117h33v330z"/>
+    <path d="M1496 850V466h41v-42h43v-74h9v74h44v42h35v384z"/>
+    <path d="M1681 850V577h23V513h92v64h34v273z"/>
+    <path d="M1838 850V648h82v202z"/>
+  </g>
+  <g fill="url(#windows)">
+    <path d="M1066 506h61v344h-61zM1215 400h101v450h-101zM1385 421h58v429h-58zM1550 480h100v370h-100zM1718 590h98v260h-98z"/>
+  </g>
+  <g fill="none" stroke-width="2">
+    <path d="M1205 386h98l28 30v315" stroke="#ff4d61" opacity=".65"/>
+    <path d="M1550 466h105v219M1065 590v151h49" stroke="#74f7ef" opacity=".55"/>
+    <path d="M1430 440v126h20M1730 610h57" stroke="#fcee0a" opacity=".6"/>
+  </g>
+  <g font-family="Noto Sans, sans-serif">
+    <text x="112" y="360" fill="#74f7ef" font-family="monospace" font-size="12" letter-spacing="4">PERSONAL SYSTEM / NO CORPORATE ACCESS</text>
+    <text x="103" y="520" fill="#fcee0a" font-size="156" font-weight="900" font-style="italic" letter-spacing="-9">FORGE</text>
+    <path d="M112 547h466l16-16h152" fill="none" stroke="#ff4d61" stroke-width="4"/>
+    <text x="112" y="592" fill="#f4edf5" font-size="25" font-weight="800" letter-spacing="3">YOUR HARDWARE. YOUR RULES.</text>
+    <text x="112" y="631" fill="#bdaab8" font-family="monospace" font-size="13" letter-spacing="1">ARCH / HYPRLAND / OVERDRIVE INTERFACE</text>
+  </g>
+  <g font-family="monospace" font-size="10" letter-spacing="2">
+    <text x="112" y="163" fill="#ff4d61">LOCAL NODE / F-01</text>
+    <text x="1670" y="163" fill="#bdaab8">SIGNAL: LOCAL</text>
+    <text x="112" y="918" fill="#74f7ef">SUPER + SPACE / EXECUTE</text>
+    <text x="112" y="942" fill="#bdaab8">SUPER + I / CONFIGURE</text>
+    <text x="1554" y="942" fill="#bdaab8">UNOWNED / UNRESTRICTED</text>
+  </g>
+  <path d="M112 861h112v6H112z" fill="url(#hatch)"/>
+  <path d="M242 864h494l20 20h644" fill="none" stroke="#693642"/>
+  <g fill="#ff4d61">
+    <path d="M1397 170h60v3h-60zM937 430h3v38h-3zM1844 764h32v3h-32z"/>
+    <path d="M22 367h12v1H22zM28 361v12h1v-12zM1886 710h12v1h-12zM1892 704v12h1v-12z"/>
+  </g>
 </svg>

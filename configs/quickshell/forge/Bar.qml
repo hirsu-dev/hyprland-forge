@@ -11,52 +11,52 @@ PanelWindow {
     required property var modelData
     screen: modelData
     anchors { top: true; left: true; right: true }
-    implicitHeight: 54
+    implicitHeight: 56
     color: "transparent"
-    exclusiveZone: 54
-    Rectangle {
+    exclusiveZone: 56
+    ForgeFrame {
         anchors.fill: parent
-        anchors.margins: 7
-        radius: 15
-        color: ForgeTheme.background
-        border.color: ForgeTheme.line
+        anchors.margins: 6
+        cut: 12
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 8
-            anchors.rightMargin: 8
-            spacing: 7
-            ForgeButton { text: "󰣇"; selected: true; onClicked: Desktop.toggleLauncher(bar.screen) }
+            anchors.leftMargin: 12
+            anchors.rightMargin: 14
+            spacing: 6
+            ForgeButton {
+                text: "FORGE /"
+                selected: true
+                implicitHeight: 30
+                onClicked: Desktop.toggleLauncher(bar.screen)
+            }
+            Rectangle { Layout.leftMargin: 5; Layout.rightMargin: 5; width: 1; height: 20; color: ForgeTheme.line }
             Row {
-                spacing: 4
+                spacing: 3
                 Repeater {
                     model: 10
-                    Rectangle {
+                    ForgeButton {
                         required property int index
                         readonly property var monitor: Hyprland.monitorFor(bar.screen)
-                        readonly property bool active: monitor && monitor.activeWorkspace && monitor.activeWorkspace.id === index + 1
-                        width: active ? 30 : 13
-                        height: 13
-                        anchors.verticalCenter: parent.verticalCenter
-                        radius: 7
-                        color: active ? ForgeTheme.accent : ForgeTheme.raised
-                        Behavior on width { NumberAnimation { duration: 190; easing.type: Easing.OutCubic } }
-                        Behavior on color { ColorAnimation { duration: 190 } }
-                        MouseArea { anchors.fill: parent; onClicked: Desktop.workspace(parent.index + 1) }
+                        selected: monitor && monitor.activeWorkspace && monitor.activeWorkspace.id === index + 1
+                        text: String(index + 1).padStart(2, "0")
+                        implicitWidth: selected ? 36 : 26
+                        implicitHeight: 28
+                        onClicked: Desktop.workspace(index + 1)
                     }
                 }
             }
             Item { Layout.fillWidth: true }
             Text {
-                Layout.maximumWidth: Math.max(80, bar.width * 0.22)
-                text: Desktop.player ? "♫  " + Desktop.player.trackTitle : "FORGE"
+                Layout.maximumWidth: Math.max(0, bar.width - 980)
+                visible: bar.width > 1020
+                text: Desktop.player ? "♫  " + Desktop.player.trackTitle : "OVERDRIVE // LOCAL SESSION"
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                color: ForgeTheme.muted
+                color: ForgeTheme.cyan
                 font.family: ForgeTheme.font
-                font.pixelSize: 11
+                font.pixelSize: 10
             }
             Item { Layout.fillWidth: true }
-            ForgeButton { text: Desktop.time; onClicked: Desktop.toggleControls(bar.screen) }
             Row {
                 spacing: 4
                 Repeater {
@@ -64,9 +64,9 @@ PanelWindow {
                     Rectangle {
                         id: trayIcon
                         required property var modelData
-                        width: 30; height: 30; radius: 10
+                        width: 26; height: 28
                         color: trayMouse.containsMouse ? ForgeTheme.raised : "transparent"
-                        Image { anchors.centerIn: parent; source: trayIcon.modelData.icon; sourceSize.width: 20; sourceSize.height: 20; width: 20; height: 20 }
+                        Image { anchors.centerIn: parent; source: trayIcon.modelData.icon; sourceSize.width: 18; sourceSize.height: 18; width: 18; height: 18 }
                         ToolTip.visible: trayMouse.containsMouse
                         ToolTip.text: modelData.tooltipTitle || modelData.title || modelData.id
                         ToolTip.delay: 500
@@ -87,10 +87,11 @@ PanelWindow {
                     }
                 }
             }
-            ForgeButton { text: Desktop.muted ? "󰝟" : "󰕾 " + Desktop.volume; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { text: "󰁹 " + Desktop.battery; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { text: "󰒓"; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { text: "󰐥"; onClicked: Desktop.togglePower(bar.screen) }
+            ForgeButton { text: Desktop.muted ? "MUTE" : "VOL " + Desktop.volume; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { text: Desktop.battery; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { text: Desktop.time; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { text: "SYS"; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.toggleSettings() } }
+            ForgeButton { text: "⏻"; danger: true; implicitHeight: 28; onClicked: Desktop.togglePower(bar.screen) }
         }
     }
 }

@@ -6,7 +6,7 @@ root = Path.cwd()
 errors = []
 options = load_config(str(root / "configs/kitty/kitty.conf"), accumulate_bad_lines=errors)
 assert not errors, errors
-assert str(options.background) == "#11171f"
+assert str(options.background) == "#100d16"
 settings = ConfigParser()
 settings.read(root / "configs/qt6ct/qt6ct.conf")
 assert settings.getboolean("Appearance", "custom_palette")

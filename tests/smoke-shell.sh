@@ -10,6 +10,7 @@ XDG_CONFIG_HOME="$(mktemp -d)"
 mkdir -p "$XDG_CONFIG_HOME/forge"
 mkdir -p "$XDG_CONFIG_HOME/qt6ct"
 cp configs/forge/theme.json "$XDG_CONFIG_HOME/forge/theme.json"
+cp configs/forge/interface.json "$XDG_CONFIG_HOME/forge/interface.json"
 cp configs/qt6ct/qt6ct.conf "$XDG_CONFIG_HOME/qt6ct/qt6ct.conf"
 export QT_QPA_PLATFORMTHEME=qt6ct
 mkdir -p test-results
@@ -144,6 +145,24 @@ if [[ "$QT_QPA_PLATFORM" == wayland ]]; then
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["screen"] == "HEADLESS-1" and d["screens"] == 1'
     quickshell -p "$forge_config" ipc call forge close
 fi
+quickshell -p "$forge_config" ipc call forge settings
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["settings"] and not d["controls"] and not d["launcher"]'
+quickshell -p "$forge_config" ipc call forge appearance
+quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; assert json.load(sys.stdin)["settingsPage"] == 1'
+sleep 0.5
+if [[ "$QT_QPA_PLATFORM" == wayland ]]; then grim -o HEADLESS-1 test-results/interface.png; fi
+python -c 'import json,os; from pathlib import Path; from forge.storage import atomic_write; atomic_write(Path(os.environ["XDG_CONFIG_HOME"])/"forge/interface.json",json.dumps({"motion":False,"effects":False}).encode())'
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_motion="$(quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); print(d["motion"] or d["effects"])')"
+    if [[ "$forge_motion" == False ]]; then break; fi
+    sleep 0.2
+done
+[[ "$forge_motion" == False ]]
+quickshell -p "$forge_config" ipc call forge close
+quickshell -p "$forge_config" ipc call forge launcher
+forge_status true false
+quickshell -p "$forge_config" ipc call forge close
+cp configs/forge/interface.json "$XDG_CONFIG_HOME/forge/interface.json"
 quickshell -p "$forge_config" ipc call forge power
 quickshell -p "$forge_config" ipc call forge powerChoice reboot
 quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["power"] and d["powerAction"] == "reboot" and not d["launcher"] and not d["controls"]'

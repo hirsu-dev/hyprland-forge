@@ -13,6 +13,7 @@ Singleton {
     property bool launcherOpen: false
     property bool powerOpen: false
     property bool settingsOpen: false
+    property int settingsPage: 0
     property string powerAction: ""
     property string selectedScreen: ""
     readonly property var panelScreen: Quickshell.screens.find(s => s.name === selectedScreen) || Quickshell.screens.find(s => s.name === preferences.primary) || Quickshell.screens.find(s => s.name.startsWith("HDMI")) || Quickshell.screens[0] || null
@@ -87,6 +88,7 @@ Singleton {
         function launcher(): void { root.toggleLauncher(null) }
         function controls(): void { root.toggleControls(null) }
         function settings(): void { root.toggleSettings() }
+        function appearance(): void { root.settingsPage = 1; if (!root.settingsOpen) root.toggleSettings() }
         function close(): void { root.closePanels() }
         function power(): void { root.togglePower(null) }
         function powerChoice(action: string): void { if (root.powerOpen) root.requestPower(action) }
@@ -98,7 +100,7 @@ Singleton {
             if (Quickshell.screens.some(s => s.name === name)) root.selectedScreen = name
         }
         function status(): string {
-            return JSON.stringify({ launcher: root.launcherOpen, controls: root.controlsOpen, power: root.powerOpen, powerAction: root.powerAction, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length, accent: ForgeTheme.accent.toString(), trayItems: SystemTray.items.values.length, brightness: Laptop.brightness, backlight: Laptop.available, volume: root.volume, muted: root.muted, audio: root.sink !== null, track: root.player ? root.player.trackTitle : "", playing: root.player !== null && root.player.playbackState === MprisPlaybackState.Playing })
+            return JSON.stringify({ settings: root.settingsOpen, settingsPage: root.settingsPage, motion: ForgeTheme.motion, effects: ForgeTheme.effects, launcher: root.launcherOpen, controls: root.controlsOpen, power: root.powerOpen, powerAction: root.powerAction, screen: root.panelScreen ? root.panelScreen.name : "", screens: Quickshell.screens.length, accent: ForgeTheme.accent.toString(), trayItems: SystemTray.items.values.length, brightness: Laptop.brightness, backlight: Laptop.available, volume: root.volume, muted: root.muted, audio: root.sink !== null, track: root.player ? root.player.trackTitle : "", playing: root.player !== null && root.player.playbackState === MprisPlaybackState.Playing })
         }
     }
 }

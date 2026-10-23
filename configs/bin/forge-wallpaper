@@ -2,6 +2,6 @@
 set -euo pipefail
 wallpaper="${1:-${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/forge.svg}"
 if [[ -f "$wallpaper" ]]; then
-    exec swaybg --image "$wallpaper" --mode fill --color '#11171f'
+    exec swaybg --image "$wallpaper" --mode fill --color '#100d16'
 fi
-exec swaybg --color '#11171f'
+exec swaybg --color '#100d16'
