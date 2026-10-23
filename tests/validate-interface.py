@@ -64,7 +64,8 @@ try:
     status(power=True, powerAction="reboot", controls=False)
     ipc("close")
     status(power=False, powerAction="", launcher=False, controls=False, settings=False)
-    assert not json.loads(subprocess.check_output(["hyprctl", "-j", "configerrors"], text=True))
+    errors = json.loads(subprocess.check_output(["hyprctl", "-j", "configerrors"], text=True))
+    assert not [error for error in errors if error.strip()], errors
     print(json.dumps({"live_palettes": True, "motion_preference": True, "clean_effects": True, "panel_exclusivity": True, "power_cancellation": True, "configuration_errors": []}))
 finally:
     ipc("close")
