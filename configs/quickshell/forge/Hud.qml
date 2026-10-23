@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -24,6 +25,10 @@ PanelWindow {
     }
     Connections { target: Laptop; function onBrightnessChanged() { panel.show("DISPLAY / LUMINANCE", Laptop.brightness) } }
     Timer { id: hide; interval: 1800; onTriggered: panel.active = false }
+    IpcHandler {
+        target: "forgeHud"
+        function status(): string { return JSON.stringify({ active: panel.active, label: panel.label, amount: panel.amount }) }
+    }
     ForgeFrame {
         anchors.fill: parent
         ColumnLayout {

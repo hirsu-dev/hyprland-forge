@@ -101,6 +101,7 @@
         {"source": "configs/bin/forge-backgrounds", "target": ".local/bin/forge-backgrounds", "executable": true},
         {"source": "configs/bin/forge-update", "target": ".local/bin/forge-update", "executable": true},
         {"source": "configs/bin/forge-game", "target": ".local/bin/forge-game", "executable": true},
+        {"source": "configs/gamemode.ini", "target": ".config/gamemode.ini"},
         {"source": "configs/bin/forge-backlight", "target": ".local/bin/forge-backlight", "executable": true},
         {"source": "forge/control.py", "target": ".local/lib/hyprland-forge/forge/control.py"},
         {"source": "forge/capture.py", "target": ".local/lib/hyprland-forge/forge/capture.py"},

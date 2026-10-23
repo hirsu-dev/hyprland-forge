@@ -279,7 +279,7 @@ PanelWindow {
                             Repeater { model: panel.statistics.batteries || []; Label { required property var modelData; text: modelData.name + " / " + modelData.percent + "% / " + modelData.status } }
                             Heading { text: "02 / GAMING PROFILE" }
                             ForgeButton { text: panel.preferences.gaming ? "GAMING PROFILE / ON" : "GAMING PROFILE / OFF"; selected: panel.preferences.gaming; enabled: !panel.busy; onClicked: panel.request("save", { patch: { gaming: !panel.preferences.gaming } }) }
-                            Label { text: "Gaming profile disables compositor blur and animations. Launch below uses GameMode, NVIDIA offload when available, and an idle inhibitor for the application lifetime. No overclocking or driver changes."; color: ForgeTheme.muted }
+                            Label { text: "Gaming profile disables compositor blur and animations. Launch below uses GameMode on physical hardware, NVIDIA offload when available, and an idle inhibitor for the application lifetime. GameMode is skipped in VMs. No overclocking, driver or security-mitigation changes."; color: ForgeTheme.muted }
                             Choice { id: gamingApp; model: Tasks.applications.map(entry => entry.name) }
                             ForgeButton {
                                 text: "LAUNCH WITH GAMEMODE"; enabled: gamingApp.currentIndex >= 0

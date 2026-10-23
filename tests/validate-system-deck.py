@@ -104,6 +104,9 @@ try:
     sink_id = next(value["id"] for value in outputs if value["name"] == "ForgeDeckTestSink")
     ipc("forgeHub", "output", sink_id)
     wait(lambda values: any(value["id"] == sink_id and value["active"] for value in values), lambda: json.loads(ipc("forgeHub", "outputs")))
+    ipc("forge", "volume", "0.31")
+    wait(lambda value: value["active"] and value["amount"] == 31, lambda: json.loads(ipc("forgeHud", "status")))
+    wait(lambda value: not value["active"], lambda: json.loads(ipc("forgeHud", "status")))
     capture = subprocess.run([str(home / ".local/bin/forge-capture"), "--mode", "display"], text=True, capture_output=True, check=True, timeout=20)
     screenshot = Path(json.loads(capture.stdout)["path"])
     assert screenshot.read_bytes().startswith(b"\x89PNG")
@@ -117,9 +120,10 @@ try:
     assert movie.stat().st_size > 1000
     probe = json.loads(subprocess.check_output(["ffprobe", "-v", "quiet", "-show_format", "-of", "json", str(movie)], text=True))
     assert float(probe["format"]["duration"]) > 0
+    subprocess.run([str(home / ".local/bin/forge-game"), "/usr/bin/true"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
     errors = json.loads(subprocess.check_output(["hyprctl", "-j", "configerrors"], text=True))
     assert not [error for error in errors if error.strip()], errors
-    print(json.dumps({"notification_history": True, "notification_expiry": True, "dnd": True, "notification_action": True, "all_deck_pages": True, "panel_exclusivity": True, "input_apply": True, "gaming_effects": True, "display_profile_revert": True, "hardware_telemetry": True, "audio_output_switch": True, "screenshot": str(screenshot), "recording": str(movie), "config_errors": []}))
+    print(json.dumps({"notification_history": True, "notification_expiry": True, "dnd": True, "notification_action": True, "all_deck_pages": True, "panel_exclusivity": True, "input_apply": True, "gaming_effects": True, "game_launcher_vm_fallback": True, "display_profile_revert": True, "hardware_telemetry": True, "audio_output_switch": True, "volume_hud_expiry": True, "screenshot": str(screenshot), "recording": str(movie), "config_errors": []}))
 finally:
     for process in processes:
         if process.poll() is None:
