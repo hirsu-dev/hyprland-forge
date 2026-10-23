@@ -10,6 +10,7 @@ PanelWindow {
     id: bar
     required property var modelData
     screen: modelData
+    visible: !Tasks.fullscreenOn(modelData)
     anchors { top: true; left: true; right: true }
     implicitHeight: 56
     color: "transparent"

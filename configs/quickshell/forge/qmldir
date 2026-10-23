@@ -19,3 +19,5 @@ NotificationPopups 1.0 NotificationPopups.qml
 Hud 1.0 Hud.qml
 Overview 1.0 Overview.qml
 Hub 1.0 Hub.qml
+GamingSettings 1.0 GamingSettings.qml
+LiveWallpaperSettings 1.0 LiveWallpaperSettings.qml

@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
-set -euo pipefail
-[[ $# -gt 0 ]] || exit 1
-forge_game=(gamemoderun)
-if systemd-detect-virt --vm >/dev/null 2>&1; then forge_game=(); fi
-if command -v prime-run >/dev/null 2>&1 && command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then
-    exec systemd-inhibit --no-ask-password --what=idle --mode=block --why='Forge gaming session' prime-run "${forge_game[@]}" "$@"
-fi
-exec systemd-inhibit --no-ask-password --what=idle --mode=block --why='Forge gaming session' "${forge_game[@]}" "$@"
+#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.home() / ".local/lib/hyprland-forge"))
+from forge.gaming import main
+
+sys.exit(main())

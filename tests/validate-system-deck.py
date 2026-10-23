@@ -125,6 +125,8 @@ try:
     assert not [error for error in errors if error.strip()], errors
     print(json.dumps({"notification_history": True, "notification_expiry": True, "dnd": True, "notification_action": True, "all_deck_pages": True, "panel_exclusivity": True, "input_apply": True, "gaming_effects": True, "game_launcher_vm_fallback": True, "display_profile_revert": True, "hardware_telemetry": True, "audio_output_switch": True, "volume_hud_expiry": True, "screenshot": str(screenshot), "recording": str(movie), "config_errors": []}))
 finally:
+    for pid in idle:
+        os.kill(int(pid), signal.SIGCONT)
     for process in processes:
         if process.poll() is None:
             process.send_signal(signal.SIGINT)
@@ -144,5 +146,3 @@ finally:
         for transaction in reversed(transactions):
             assert not restore(transaction, home, home / STATE)
     subprocess.run(["hyprctl", "reload"], capture_output=True, check=True)
-    for pid in idle:
-        os.kill(int(pid), signal.SIGCONT)

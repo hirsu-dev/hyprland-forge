@@ -23,6 +23,9 @@ PanelWindow {
     property int cpuPercent: 0
     property var backupList: []
     property var updateList: []
+    property var wallpaperProjects: []
+    property var wallpaperAssets: []
+    property bool wallpaperRenderer: false
     property var pending: null
     property int countdown: 0
     property string logs: ""
@@ -71,6 +74,9 @@ PanelWindow {
         if (result.updates) updateList = result.updates
         if (result.logs !== undefined) logs = result.logs
         if (result.message) message = result.message
+        if (result.wallpaperProjects) wallpaperProjects = result.wallpaperProjects
+        if (result.wallpaperAssets) wallpaperAssets = result.wallpaperAssets
+        if (result.wallpaperRenderer) wallpaperRenderer = result.wallpaperRenderer.installed
         if (result.pending) pending = result.pending
     }
     function draft(key, value) { const next = Object.assign({}, inputDraft); next[key] = value; inputDraft = next }
@@ -257,7 +263,18 @@ PanelWindow {
                                 ForgeButton { text: "APPLY IMAGE"; enabled: !panel.busy && wallpaperPath.text !== ""; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); next[wallpaperOutput.currentText] = wallpaperPath.text; panel.request("save", { patch: { wallpapers: next } }) } }
                                 ForgeButton { text: "RESET OUTPUT"; enabled: !panel.busy; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); delete next[wallpaperOutput.currentText]; panel.request("save", { patch: { wallpapers: next } }) } }
                             }
-                            Heading { text: "04 / DISPLAY PROFILES" }
+                            Heading { text: "04 / LIVE WALLPAPER" }
+                            LiveWallpaperSettings {
+                                Layout.fillWidth: true
+                                settings: panel.preferences.liveWallpaper || { enabled: false, project: "", assets: "", output: "primary", fps: 30, silent: true, pauseOnGaming: true }
+                                projects: panel.wallpaperProjects
+                                assets: panel.wallpaperAssets
+                                installed: panel.wallpaperRenderer
+                                busy: panel.busy
+                                onSave: value => panel.request("save", { patch: { liveWallpaper: value } })
+                                onScan: panel.request("wallpaper-library")
+                            }
+                            Heading { text: "05 / DISPLAY PROFILES" }
                             Field { id: profileName; placeholderText: "Profile name / Desk, Laptop, Gaming"; maximumLength: 32 }
                             ForgeButton { text: "SAVE CURRENT DISPLAYS"; enabled: !panel.busy; onClicked: panel.request("profile-save", { name: profileName.text }) }
                             Choice { id: profiles; model: Object.keys(panel.preferences.profiles) }
@@ -278,6 +295,12 @@ PanelWindow {
                             Repeater { model: panel.statistics.temperatures || []; Label { required property var modelData; text: modelData.name + " / " + modelData.celsius.toFixed(1) + "°C" } }
                             Repeater { model: panel.statistics.batteries || []; Label { required property var modelData; text: modelData.name + " / " + modelData.percent + "% / " + modelData.status } }
                             Heading { text: "02 / GAMING PROFILE" }
+                            GamingSettings {
+                                Layout.fillWidth: true
+                                settings: panel.preferences.gameOptions || { overlay: false, gamescope: false, width: 1920, height: 1080, fps: 120 }
+                                busy: panel.busy
+                                onSave: value => panel.request("save", { patch: { gameOptions: value } })
+                            }
                             ForgeButton { text: panel.preferences.gaming ? "GAMING PROFILE / ON" : "GAMING PROFILE / OFF"; selected: panel.preferences.gaming; enabled: !panel.busy; onClicked: panel.request("save", { patch: { gaming: !panel.preferences.gaming } }) }
                             Label { text: "Gaming profile disables compositor blur and animations. Launch below uses GameMode on physical hardware, NVIDIA offload when available, and an idle inhibitor for the application lifetime. GameMode is skipped in VMs. No overclocking, driver or security-mitigation changes."; color: ForgeTheme.muted }
                             Choice { id: gamingApp; model: Tasks.applications.map(entry => entry.name) }

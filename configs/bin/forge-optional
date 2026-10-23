@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$(uname -s)" == Linux && -f /etc/arch-release && $EUID -ne 0 ]] || exit 1
+case "${1:-}" in
+wallpaper)
+    printf '%s\n' 'Optional community renderer: linux-wallpaperengine-git (AUR).' 'Requires your own Wallpaper Engine assets from Steam.' 'Community build scripts execute code as your user. Review before approving.'
+    forge_build="$(mktemp -d -t forge-wallpaper-build-XXXXXXXX)"
+    git clone --depth=1 https://aur.archlinux.org/linux-wallpaperengine-git.git "$forge_build/package"
+    less "$forge_build/package/PKGBUILD"
+    read -r -p 'Type BUILD to install build tools and run this package script: ' forge_answer
+    [[ "$forge_answer" == BUILD ]] || exit 0
+    sudo pacman -Syu --needed -- base-devel git
+    cd "$forge_build/package"
+    makepkg -si
+    printf '%s\n' "Build files retained at $forge_build"
+    ;;
+gaming)
+    if ! pacman -Sl multilib >/dev/null 2>&1; then
+        printf '%s\n' 'Enable the official [multilib] repository in /etc/pacman.conf first.' 'No repository or system configuration was changed.'
+        read -r -p 'Press Enter to close.'
+        exit 1
+    fi
+    printf '%s\n' 'Official gaming packages: Steam, Lutris and 32-bit AMD/NVIDIA Vulkan runtimes.' 'Review the full update and pacman package prompts.'
+    read -r -p 'Type GAMING to continue: ' forge_answer
+    [[ "$forge_answer" == GAMING ]] || exit 0
+    sudo pacman -Syu --needed -- steam lutris lib32-mesa lib32-vulkan-radeon lib32-nvidia-utils lib32-vulkan-icd-loader lib32-gamemode lib32-mangohud
+    ;;
+*) exit 1 ;;
+esac

@@ -24,7 +24,9 @@ ACTIONS = {
     "settings": ("SUPER + I", "quickshell -c forge ipc call forge settings"),
     "lock": ("SUPER + L", "hyprlock"),
 }
-DEFAULTS = {"sensitivity": 0, "naturalScroll": True, "tapToClick": True, "disableWhileTyping": True, "gaming": False, "bindings": {key: item[0] for key, item in ACTIONS.items()}, "wallpapers": {}, "profiles": {}}
+LIVE = {"enabled": False, "project": "", "assets": "", "output": "primary", "fps": 30, "silent": True, "pauseOnGaming": True}
+GAME = {"overlay": False, "gamescope": False, "width": 1920, "height": 1080, "fps": 120}
+DEFAULTS = {"sensitivity": 0, "naturalScroll": True, "tapToClick": True, "disableWhileTyping": True, "gaming": False, "bindings": {key: item[0] for key, item in ACTIONS.items()}, "wallpapers": {}, "profiles": {}, "liveWallpaper": LIVE, "gameOptions": GAME}
 
 
 def run(command, runner=subprocess.run, accepted=(0,), timeout=15, **kwargs):
@@ -87,6 +89,27 @@ def validate(value):
         outputs = settings.get("outputs", [])
         hardware = [{"name": item.get("name"), "availableModes": [item.get("mode")]} for item in outputs if isinstance(item, dict)] if isinstance(outputs, list) else []
         validate_display(settings, hardware)
+    live = result["liveWallpaper"]
+    game = result["gameOptions"]
+    if not isinstance(live, dict) or set(live) != set(LIVE) or not isinstance(game, dict) or set(game) != set(GAME):
+        raise ForgeError("Invalid live wallpaper or gaming options")
+    for name in ("enabled", "silent", "pauseOnGaming"):
+        if type(live[name]) is not bool:
+            raise ForgeError("Wallpaper switches must be booleans")
+    for name in ("overlay", "gamescope"):
+        if type(game[name]) is not bool:
+            raise ForgeError("Gaming switches must be booleans")
+    if type(live["fps"]) is not int or not 10 <= live["fps"] <= 60:
+        raise ForgeError("Live wallpaper FPS must be between 10 and 60")
+    if not isinstance(live["output"], str) or not re.fullmatch(r"primary|[A-Za-z][A-Za-z0-9_-]{0,63}", live["output"]):
+        raise ForgeError("Invalid live wallpaper output")
+    for name in ("project", "assets"):
+        value = live[name]
+        if value != "" and not Path(text(value, 4096)).is_absolute():
+            raise ForgeError("Choose an absolute wallpaper directory")
+    for name, lower, upper in (("width", 640, 3840), ("height", 480, 2160), ("fps", 30, 240)):
+        if type(game[name]) is not int or not lower <= game[name] <= upper:
+            raise ForgeError("Invalid game resolution or frame cap")
     return result
 
 
@@ -102,7 +125,7 @@ def render(value):
     from .desktop_settings import lua
     lines = ["hl.config(" + lua({"input": input_config}) + ")"]
     if value["gaming"]:
-        lines.append("hl.config(" + lua({"animations": {"enabled": False}, "decoration": {"blur": {"enabled": False}}}) + ")")
+        lines.append("hl.config(" + lua({"animations": {"enabled": False}, "decoration": {"blur": {"enabled": False}, "shadow": {"enabled": False}}}) + ")")
     return {TARGET: json.dumps(value, indent=2) + "\n", ".config/hypr/forge/preferences.lua": "\n".join(lines) + "\n", ".config/hypr/forge/shortcuts.lua": "return " + lua(value["bindings"]) + "\n"}
 
 
@@ -115,6 +138,9 @@ def apply(home, patch, runner=subprocess.run):
         for path in value["wallpapers"].values():
             if not Path(path).is_file():
                 raise ForgeError("Wallpaper file does not exist")
+        if value["liveWallpaper"]["enabled"]:
+            from .wallpaper import validate_project
+            validate_project(value["liveWallpaper"])
         with tempfile.TemporaryDirectory(prefix="forge-control-") as directory:
             source = Path(directory)
             files = []
@@ -258,7 +284,11 @@ def dispatch(request, home, runner=subprocess.run):
         raise ForgeError("Request must be an object")
     action = request.get("action")
     if action == "preferences":
-        return {"preferences": load(home)}
+        from .wallpaper import renderer_status
+        return {"preferences": load(home), "wallpaperRenderer": renderer_status()}
+    if action == "wallpaper-library":
+        from .wallpaper import library
+        return library(home)
     if action == "metrics":
         return {**metrics(runner=runner), "preferences": load(home)}
     if action == "network":
