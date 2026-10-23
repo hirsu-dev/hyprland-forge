@@ -24,13 +24,13 @@ try:
     call("hyprctl", "dispatch", 'function() hl.monitor({output="Virtual-1",mode="1920x1080@60",position="0x0",scale=1}) end')
     call("hyprctl", "dispatch", 'hl.dsp.dpms({action="on"})')
     time.sleep(2)
-    for page in ("hardware", "customize", "alerts"):
+    for page in ("hardware", "customize", "wallpapers", "alerts"):
         if page == "alerts":
             subprocess.run(["notify-send", "--expire-time=10000", "FORGE / SIGNAL ONLINE", "System deck modules validated in the Arch VM. Physical laptop checks remain pending."], check=True)
         ipc("hub", page)
         time.sleep(2)
         subprocess.run(["grim", "/tmp/forge-system-deck-" + page + ".png"], check=True, timeout=10)
-    print(json.dumps({"screenshots": ["/tmp/forge-system-deck-" + page + ".png" for page in ("hardware", "customize", "alerts")]}))
+    print(json.dumps({"screenshots": ["/tmp/forge-system-deck-" + page + ".png" for page in ("hardware", "customize", "wallpapers", "alerts")]}))
 finally:
     ipc("close")
     call("quickshell", "-c", "forge", "ipc", "call", "forgeAlerts", "clear")

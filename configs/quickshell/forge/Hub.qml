@@ -42,7 +42,7 @@ PanelWindow {
     readonly property var audioNodes: Pipewire.nodes.values.filter(node => !node.isStream && node.audio !== null)
     readonly property var outputs: audioNodes.filter(node => node.isSink)
     readonly property var inputs: audioNodes.filter(node => !node.isSink)
-    readonly property var pages: ["alerts", "connections", "customize", "hardware", "capture", "recovery"]
+    readonly property var pages: ["alerts", "connections", "customize", "wallpapers", "hardware", "capture", "recovery"]
     readonly property bool busy: worker.running
     Component.onCompleted: request("preferences")
     function request(action, extra) {
@@ -54,7 +54,7 @@ PanelWindow {
     }
     function refresh() {
         updateArmed = false; restoreArmed = ""
-        const actions = { alerts: "preferences", connections: "network", customize: "preferences", hardware: "metrics", capture: "preferences", recovery: "backups" }
+        const actions = { alerts: "preferences", connections: "network", customize: "preferences", wallpapers: "wallpaper-library", hardware: "metrics", capture: "preferences", recovery: "backups" }
         request(actions[Desktop.hubPage] || "preferences")
     }
     function receive(result) {
@@ -263,18 +263,7 @@ PanelWindow {
                                 ForgeButton { text: "APPLY IMAGE"; enabled: !panel.busy && wallpaperPath.text !== ""; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); next[wallpaperOutput.currentText] = wallpaperPath.text; panel.request("save", { patch: { wallpapers: next } }) } }
                                 ForgeButton { text: "RESET OUTPUT"; enabled: !panel.busy; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); delete next[wallpaperOutput.currentText]; panel.request("save", { patch: { wallpapers: next } }) } }
                             }
-                            Heading { text: "04 / LIVE WALLPAPER" }
-                            LiveWallpaperSettings {
-                                Layout.fillWidth: true
-                                settings: panel.preferences.liveWallpaper || { enabled: false, project: "", assets: "", output: "primary", fps: 30, silent: true, pauseOnGaming: true }
-                                projects: panel.wallpaperProjects
-                                assets: panel.wallpaperAssets
-                                installed: panel.wallpaperRenderer
-                                busy: panel.busy
-                                onSave: value => panel.request("save", { patch: { liveWallpaper: value } })
-                                onScan: panel.request("wallpaper-library")
-                            }
-                            Heading { text: "05 / DISPLAY PROFILES" }
+                            Heading { text: "04 / DISPLAY PROFILES" }
                             Field { id: profileName; placeholderText: "Profile name / Desk, Laptop, Gaming"; maximumLength: 32 }
                             ForgeButton { text: "SAVE CURRENT DISPLAYS"; enabled: !panel.busy; onClicked: panel.request("profile-save", { name: profileName.text }) }
                             Choice { id: profiles; model: Object.keys(panel.preferences.profiles) }
@@ -284,6 +273,19 @@ PanelWindow {
                                 Label { text: "KEEP DISPLAY PREVIEW? " + panel.countdown + "s"; color: ForgeTheme.danger }
                                 ForgeButton { text: "KEEP"; enabled: !previewWorker.running; onClicked: { previewWorker.command = [Quickshell.env("HOME") + "/.local/bin/forge-settings", "--confirm", panel.pending.id]; previewWorker.running = true } }
                                 ForgeButton { text: "REVERT"; enabled: !previewWorker.running; onClicked: { previewWorker.command = [Quickshell.env("HOME") + "/.local/bin/forge-settings", "--revert", panel.pending.id]; previewWorker.running = true } }
+                            }
+                        }
+                        ColumnLayout {
+                            visible: Desktop.hubPage === "wallpapers"; Layout.fillWidth: true
+                            LiveWallpaperSettings {
+                                Layout.fillWidth: true
+                                settings: panel.preferences.liveWallpaper || { enabled: false, project: "", assets: "", output: "primary", fps: 30, silent: true, pauseOnGaming: true }
+                                projects: panel.wallpaperProjects
+                                assets: panel.wallpaperAssets
+                                installed: panel.wallpaperRenderer
+                                busy: panel.busy
+                                onSave: value => panel.request("save", { patch: { liveWallpaper: value } })
+                                onScan: panel.request("wallpaper-library")
                             }
                         }
                         ColumnLayout {

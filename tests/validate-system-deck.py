@@ -78,7 +78,7 @@ try:
     ipc("forgeAlerts", "invoke", entry["id"], 0)
     output, _ = action.communicate(timeout=10)
     assert output.strip() == "default", output
-    for page in ("alerts", "connections", "customize", "hardware", "capture", "recovery"):
+    for page in ("alerts", "connections", "customize", "wallpapers", "hardware", "capture", "recovery"):
         ipc("forge", "hub", page)
         wait(lambda value: value["page"] == page and not value["busy"], hub)
         state = status()

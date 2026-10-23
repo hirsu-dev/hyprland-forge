@@ -15,7 +15,7 @@ wallpaper)
     printf '%s\n' "Build files retained at $forge_build"
     ;;
 gaming)
-    if ! pacman -Sl multilib >/dev/null 2>&1; then
+    if ! pacman-conf --repo-list | grep -Fxq multilib; then
         printf '%s\n' 'Enable the official [multilib] repository in /etc/pacman.conf first.' 'No repository or system configuration was changed.'
         read -r -p 'Press Enter to close.'
         exit 1

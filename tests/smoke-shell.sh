@@ -72,7 +72,7 @@ done
 [[ "$forge_alerts" == 1 ]]
 quickshell -p "$forge_config" ipc call forgeAlerts quiet true
 quickshell -p "$forge_config" ipc call forgeAlerts status | python -c 'import json,sys; assert json.load(sys.stdin)["dnd"]'
-for forge_page in alerts connections customize hardware capture recovery; do
+for forge_page in alerts connections customize wallpapers hardware capture recovery; do
     quickshell -p "$forge_config" ipc call forge hub "$forge_page"
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["hub"] and not d["overview"] and not d["settings"]'
 done
