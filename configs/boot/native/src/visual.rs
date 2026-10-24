@@ -87,6 +87,39 @@ impl Frame {
         self.rect(x + w - 2, y, 2, h, color);
     }
 
+    fn brand(&mut self, x: i32, y: i32) {
+        self.rect(x, y, 12, 96, YELLOW);
+        self.rect(x, y, 64, 12, YELLOW);
+        self.rect(x, y + 42, 52, 12, YELLOW);
+        let o = x + 84;
+        self.rect(o, y, 64, 96, YELLOW);
+        self.rect(o + 12, y + 12, 40, 72, BG);
+        for n in 0..10 {
+            self.rect(o, y + n, 10 - n, 1, BG);
+            self.rect(o + 54 + n, y + n, 10 - n, 1, BG);
+            self.rect(o, y + 95 - n, 10 - n, 1, BG);
+            self.rect(o + 54 + n, y + 95 - n, 10 - n, 1, BG);
+        }
+        let r = x + 168;
+        self.rect(r, y, 12, 96, YELLOW);
+        self.rect(r, y, 64, 54, YELLOW);
+        self.rect(r + 12, y + 12, 40, 30, BG);
+        for n in 0..12 {
+            self.line(r + 32 + n, y + 48, r + 58 + n, y + 94, YELLOW);
+        }
+        let g = x + 252;
+        self.rect(g, y, 12, 96, YELLOW);
+        self.rect(g, y, 64, 12, YELLOW);
+        self.rect(g, y + 84, 64, 12, YELLOW);
+        self.rect(g + 32, y + 42, 32, 12, YELLOW);
+        self.rect(g + 52, y + 42, 12, 54, YELLOW);
+        let e = x + 336;
+        self.rect(e, y, 12, 96, YELLOW);
+        self.rect(e, y, 64, 12, YELLOW);
+        self.rect(e, y + 42, 52, 12, YELLOW);
+        self.rect(e, y + 84, 64, 12, YELLOW);
+    }
+
     fn logo(&mut self, reveal: i32) {
         let points = [
             (1200, 330),
@@ -170,7 +203,7 @@ impl Frame {
         } else {
             0
         };
-        self.text(88 - slide, 270, "FORGE", 12, YELLOW);
+        self.brand(96 - slide, 270);
         self.text(96, 400, "YOUR MACHINE. YOUR SIGNAL.", 3, INK);
         self.rect(96, 452, 694, 3, RED);
         self.line(96, 972, 1824, 972, 0x693642);
@@ -216,20 +249,8 @@ impl Frame {
                     2,
                     BG,
                 );
-                self.text(
-                    96,
-                    826,
-                    "A SEPARATE BOOT PASSWORD. NOT DISK ENCRYPTION.",
-                    2,
-                    MUTED,
-                );
-                self.text(
-                    96,
-                    874,
-                    "YOUR WINDOWS AND LINUX SIGN-INS STAY ENABLED.",
-                    2,
-                    MUTED,
-                );
+                self.text(96, 826, "LOCAL ACCESS / OFFLINE", 2, MUTED);
+                self.text(96, 874, "UNLOCK TO SELECT YOUR ENVIRONMENT", 2, MUTED);
                 if state.phase() == Phase::Unlocking {
                     let width = if state.motion() {
                         (state.elapsed().min(650) * 730 / 650) as i32
