@@ -170,6 +170,7 @@
       {"source": "configs/bin/forge-settings", "target": ".local/bin/forge-settings", "executable": true},
       {"source": "forge/desktop_settings.py", "target": ".local/lib/hyprland-forge/forge/desktop_settings.py"},
       {"source": "forge/diagnostics.py", "target": ".local/lib/hyprland-forge/forge/diagnostics.py"},
+      {"source": "forge/maintenance.py", "target": ".local/lib/hyprland-forge/forge/maintenance.py"},
       {"source": "forge/hardware.py", "target": ".local/lib/hyprland-forge/forge/hardware.py"},
       {"source": "forge/__init__.py", "target": ".local/lib/hyprland-forge/forge/__init__.py"},
       {"source": "forge/theme.py", "target": ".local/lib/hyprland-forge/forge/theme.py"},

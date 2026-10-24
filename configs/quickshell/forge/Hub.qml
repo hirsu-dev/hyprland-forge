@@ -23,6 +23,7 @@ PanelWindow {
     property int cpuPercent: 0
     property var backupList: []
     property var updateList: []
+    property var healthList: []
     property var wallpaperProjects: []
     property var wallpaperAssets: []
     property bool wallpaperRenderer: false
@@ -72,6 +73,7 @@ PanelWindow {
         }
         if (result.backups) backupList = result.backups
         if (result.updates) updateList = result.updates
+        if (result.health) healthList = result.health
         if (result.logs !== undefined) logs = result.logs
         if (result.message) message = result.message
         if (result.wallpaperProjects) wallpaperProjects = result.wallpaperProjects
@@ -336,12 +338,28 @@ PanelWindow {
                         }
                         ColumnLayout {
                             visible: Desktop.hubPage === "recovery"; Layout.fillWidth: true; spacing: 12
-                            Heading { text: "01 / SYSTEM UPDATES" }
+                            Heading { text: "01 / SYSTEM HEALTH" }
+                            ForgeButton { text: "CHECK THIS SESSION"; enabled: !panel.busy; onClicked: panel.request("health") }
+                            Repeater {
+                                model: panel.healthList
+                                ColumnLayout {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    spacing: 3
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: modelData.name }
+                                        Text { text: modelData.status === "passed" ? "OK" : modelData.status.replace(/-/g, " ").toUpperCase(); color: modelData.status === "passed" || modelData.status === "not-applicable" ? ForgeTheme.cyan : ForgeTheme.danger; font.family: ForgeTheme.font; font.pixelSize: 10 }
+                                    }
+                                    Label { visible: modelData.detail !== ""; text: modelData.detail; color: ForgeTheme.muted; font.pixelSize: 10 }
+                                }
+                            }
+                            Heading { text: "02 / SYSTEM UPDATES" }
                             Label { text: "Update previews use an isolated package database. Applying an update opens a terminal and requires your sudo password and pacman confirmation. AUR packages are not managed here."; color: ForgeTheme.muted }
                             ForgeButton { text: "CHECK OFFICIAL UPDATES"; enabled: !panel.busy; onClicked: panel.request("updates") }
                             Repeater { model: panel.updateList; Label { required property string modelData; text: modelData } }
                             ForgeButton { text: panel.updateArmed ? "CONFIRM / OPEN PACMAN UPDATE" : "UPDATE ENTIRE SYSTEM"; danger: true; enabled: !panel.busy; onClicked: { if (!panel.updateArmed) panel.updateArmed = true; else { panel.updateArmed = false; Desktop.exec(["kitty", "-e", Quickshell.env("HOME") + "/.local/bin/forge-update"]) } } }
-                            Heading { text: "02 / CONFIG RECOVERY" }
+                            Heading { text: "03 / CONFIG RECOVERY" }
                             Label { text: "Undo restores config files only, preserving conflicting external edits. It does not undo package upgrades, restore boot files, or replace a full disk backup."; color: ForgeTheme.muted }
                             Repeater {
                                 model: panel.backupList
@@ -352,7 +370,7 @@ PanelWindow {
                                     ForgeButton { text: panel.restoreArmed === modelData.id ? "CONFIRM UNDO" : "UNDO"; danger: true; enabled: !panel.busy; onClicked: { if (panel.restoreArmed !== modelData.id) panel.restoreArmed = modelData.id; else { panel.restoreArmed = ""; panel.request("restore", modelData) } } }
                                 }
                             }
-                            Heading { text: "03 / SESSION LOGS" }
+                            Heading { text: "04 / SESSION LOGS" }
                             ForgeButton { text: "READ USER SESSION LOGS"; enabled: !panel.busy; onClicked: panel.request("logs") }
                             TextArea { Layout.fillWidth: true; visible: panel.logs !== ""; text: panel.logs; readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap; textFormat: TextEdit.PlainText; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 10; background: Rectangle { color: ForgeTheme.surface } }
                         }

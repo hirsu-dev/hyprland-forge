@@ -291,6 +291,9 @@ def dispatch(request, home, runner=subprocess.run):
         return library(home)
     if action == "metrics":
         return {**metrics(runner=runner), "preferences": load(home)}
+    if action == "health":
+        from .maintenance import report
+        return report(home, runner)
     if action == "network":
         return network(runner)
     if action == "bluetooth":
