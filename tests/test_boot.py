@@ -1,11 +1,14 @@
 import hashlib
 import importlib.util
+import io
+import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from forge.boot import build, configuration, esp_uuid, font_name, password_hash, theme
+from forge.boot import build, configuration, esp_uuid, font_name, main, password_hash, theme
 from forge.manifest import ForgeError
 
 
@@ -68,6 +71,42 @@ class BootTests(unittest.TestCase):
             with self.assertRaisesRegex(ForgeError, "grub"):
                 build(output, "1234-abcd", "5678-ef01", password_hash("test-boot-password"))
             self.assertFalse(output.exists())
+
+    def test_noninteractive_build_never_reads_password(self):
+        with patch("sys.argv", ["forge-boot", "--output", "unused", "--forge-uuid", "1234-abcd", "--windows-uuid", "5678-ef01"]), patch("forge.boot.sys.stdin.isatty", return_value=False), patch("forge.boot.getpass.getpass") as password, patch("sys.stdout", new_callable=io.StringIO):
+            self.assertEqual(main(), 1)
+            password.assert_not_called()
+
+    @unittest.skipUnless(importlib.util.find_spec("PIL"), "Pillow required")
+    def test_build_stages_only_new_files_and_hash_not_plaintext(self):
+        def runner(command, **kwargs):
+            if command[0] == "grub-mkfont":
+                target = next(value.split("=", 1)[1] for value in command if value.startswith("--output="))
+                Path(target).write_bytes(b"FILE\x00\x00\x00\x04PFF2NAME\x00\x00\x00\x15ForgeMono Regular 28\x00")
+            if command[0] == "grub-mkstandalone":
+                target = next(value.split("=", 1)[1] for value in command if value.startswith("--output="))
+                Path(target).write_bytes(b"fixture-efi")
+            return subprocess.CompletedProcess(command, 0, "", "")
+        with tempfile.TemporaryDirectory() as directory, patch("forge.boot.shutil.which", return_value="fixture"):
+            root = Path(directory)
+            output = build(root / "new", "1234-abcd", "5678-ef01", password_hash("test-secret-boot-password"), runner=runner)
+            self.assertEqual((output / "EFI/Forge/forge-x64.efi").read_bytes(), b"fixture-efi")
+            self.assertTrue((output / "sddm/forge-overdrive/Main.qml").is_file())
+            self.assertNotIn("test-secret-boot-password", (output / "grub.cfg").read_text())
+            plan = json.loads((output / "plan.json").read_text())
+            self.assertFalse(plan["boot_order_changed"])
+            self.assertEqual(plan["activation"], "not-installed")
+            with self.assertRaisesRegex(ForgeError, "existing"):
+                build(output, "1234-abcd", "5678-ef01", password_hash("test-secret-boot-password"), runner=runner)
+            self.assertEqual([path.name for path in root.iterdir()], ["new"])
+
+    @unittest.skipUnless(importlib.util.find_spec("PIL"), "Pillow required")
+    def test_failed_build_does_not_publish_partial_package(self):
+        with tempfile.TemporaryDirectory() as directory, patch("forge.boot.shutil.which", return_value="fixture"):
+            root = Path(directory)
+            with self.assertRaises(subprocess.CalledProcessError):
+                build(root / "new", "1234-abcd", "5678-ef01", password_hash("test-secret-boot-password"), runner=lambda command, **kwargs: (_ for _ in ()).throw(subprocess.CalledProcessError(1, command)))
+            self.assertEqual(list(root.iterdir()), [])
 
     @unittest.skipUnless(importlib.util.find_spec("PIL"), "Pillow required")
     def test_original_artwork_and_preview_render(self):

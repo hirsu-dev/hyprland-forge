@@ -7,7 +7,9 @@ import re
 import secrets
 import shutil
 import subprocess
+import sys
 import tempfile
+import warnings
 from pathlib import Path
 
 from .boot_art import render
@@ -179,16 +181,20 @@ def main():
     args = parser.parse_args()
     try:
         if args.render_only:
-            if args.output.exists():
+            if args.output.exists() or args.output.is_symlink():
                 raise ForgeError("Choose a new output folder")
             render(args.output)
         else:
             esp_uuid(args.forge_uuid)
             esp_uuid(args.windows_uuid)
+            if not sys.stdin.isatty():
+                raise ForgeError("Boot password setup needs an interactive terminal")
             print("Prepare a boot package only. No firmware, partitions or current boot files will be changed.")
             print("Use a NEW boot password, separate from Windows, Linux and disk encryption passwords.")
-            first = getpass.getpass("Boot password (12+ characters): ")
-            second = getpass.getpass("Repeat boot password: ")
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", getpass.GetPassWarning)
+                first = getpass.getpass("Boot password (12+ characters): ")
+                second = getpass.getpass("Repeat boot password: ")
             if first != second:
                 raise ForgeError("Passwords did not match")
             hashed = password_hash(first)
@@ -197,7 +203,7 @@ def main():
         print("Prepared: " + str(args.output))
         print("Not activated. Physical boot testing and a recovery path are required before installation.")
         return 0
-    except (ForgeError, OSError, ValueError, ImportError, subprocess.CalledProcessError) as exc:
+    except (ForgeError, OSError, ValueError, ImportError, EOFError, getpass.GetPassWarning, subprocess.CalledProcessError) as exc:
         print("Forge boot: " + str(exc))
         return 1
 

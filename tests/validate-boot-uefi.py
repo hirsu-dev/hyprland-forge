@@ -19,7 +19,7 @@ PASSWORD = "ephemeral-boot-test-password"
 
 
 def command(args):
-    return subprocess.run(args, check=True, capture_output=True, text=True)
+    return subprocess.run(args, check=True, capture_output=True, text=True, timeout=90)
 
 
 def serial_config(*args):
@@ -69,6 +69,7 @@ class BootVM:
         self.console.connect(str(serial))
         self.console.settimeout(.2)
         self.monitor.connect(str(qmp))
+        self.monitor.settimeout(15)
         self.protocol = self.monitor.makefile("rwb", buffering=0)
         self.protocol.readline()
         self.qmp("qmp_capabilities")
@@ -90,6 +91,7 @@ class BootVM:
                 count = self.pending.index(marker.encode()) + len(marker)
                 result = bytes(self.pending[:count])
                 del self.pending[:count]
+                print(self.label + ": " + marker, flush=True)
                 return result
             try:
                 part = self.console.recv(65536)
