@@ -55,11 +55,17 @@ class IntegrationTests(unittest.TestCase):
         source = self.root / "source"
         source.mkdir()
         for directory in ("forge", "configs"):
-            shutil.copytree(ROOT / directory, source / directory, ignore=shutil.ignore_patterns("__pycache__"))
+            shutil.copytree(ROOT / directory, source / directory, ignore=shutil.ignore_patterns("__pycache__", "target"))
         for name in ("install.sh", "install-online.sh", "live.sh"):
             shutil.copy2(ROOT / name, source / name)
         (source / "project.json").write_text(json.dumps(self.manifest))
         return source
+
+    def test_compositor_installs_all_session_imports_without_appearance(self):
+        execute(make_plan(self.manifest, ["compositor"]), ROOT, self.user, self.state, runner=lambda *a, **k: None)
+        library = self.user / ".local/lib/hyprland-forge"
+        result = subprocess.run([sys.executable, "-I", "-c", "import sys; sys.path.insert(0, sys.argv[1]); import forge.session; from forge.hardware import virtualization", str(library)], cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_bundle_is_reproducible_and_checked(self):
         source = self.source_copy()

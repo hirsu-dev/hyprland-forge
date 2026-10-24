@@ -55,7 +55,12 @@
       "status": "ready",
       "requires": [],
       "packages": ["git", "python", "jq", "curl", "unzip", "rsync", "xdg-user-dirs", "xdg-utils"],
-      "files": []
+      "files": [
+        {"source": "forge/__init__.py", "target": ".local/lib/hyprland-forge/forge/__init__.py"},
+        {"source": "forge/manifest.py", "target": ".local/lib/hyprland-forge/forge/manifest.py"},
+        {"source": "forge/storage.py", "target": ".local/lib/hyprland-forge/forge/storage.py"},
+        {"source": "forge/hardware.py", "target": ".local/lib/hyprland-forge/forge/hardware.py"}
+      ]
     },
     {
       "id": "hardware",
@@ -171,12 +176,8 @@
       {"source": "forge/desktop_settings.py", "target": ".local/lib/hyprland-forge/forge/desktop_settings.py"},
       {"source": "forge/diagnostics.py", "target": ".local/lib/hyprland-forge/forge/diagnostics.py"},
       {"source": "forge/maintenance.py", "target": ".local/lib/hyprland-forge/forge/maintenance.py"},
-      {"source": "forge/hardware.py", "target": ".local/lib/hyprland-forge/forge/hardware.py"},
-      {"source": "forge/__init__.py", "target": ".local/lib/hyprland-forge/forge/__init__.py"},
       {"source": "forge/theme.py", "target": ".local/lib/hyprland-forge/forge/theme.py"},
-      {"source": "forge/manifest.py", "target": ".local/lib/hyprland-forge/forge/manifest.py"},
       {"source": "forge/runtime.py", "target": ".local/lib/hyprland-forge/forge/runtime.py"},
-      {"source": "forge/storage.py", "target": ".local/lib/hyprland-forge/forge/storage.py"},
       {"source": "configs/fuzzel/fuzzel.ini", "target": ".config/fuzzel/fuzzel.ini"},
       {"source": "configs/xdg-desktop-portal/hyprland-portals.conf", "target": ".config/xdg-desktop-portal/hyprland-portals.conf"}
     ], "runtime_validation": {
