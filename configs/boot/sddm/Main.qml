@@ -123,6 +123,7 @@ Rectangle {
                 text: userModel.lastUser
                 placeholderText: "Username"
                 color: root.ink
+                placeholderTextColor: "#bdaab8"
                 selectByMouse: true
                 font.pixelSize: 22
                 font.family: root.typeface
@@ -138,6 +139,7 @@ Rectangle {
                 height: 62
                 placeholderText: "Account password"
                 color: root.ink
+                placeholderTextColor: "#bdaab8"
                 echoMode: TextInput.Password
                 passwordMaskDelay: 0
                 inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText

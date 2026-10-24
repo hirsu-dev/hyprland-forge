@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from forge.boot import build, configuration, esp_uuid, font_name, main, password_hash, theme
+from forge.boot import build, configuration, esp_uuid, font_name, main, password_hash, selection_configuration, theme
 from forge.manifest import ForgeError
 
 
@@ -34,19 +34,22 @@ class BootTests(unittest.TestCase):
 
     def test_menu_stays_behind_authentication(self):
         result = configuration("1234-abcd", "5678-ef01", password_hash("test-boot-password"))
-        self.assertLess(result.index("if authenticate forge"), result.index("menuentry"))
+        self.assertLess(result.index("if authenticate forge"), result.index("configfile (memdisk)/boot/grub/selector.cfg"))
         self.assertIn("while true; do", result)
+        self.assertNotIn("Windows 11", result)
+        self.assertNotIn("chainloader", result)
+        self.assertNotIn("test-boot-password", result)
+        result = selection_configuration("1234-abcd", "5678-ef01")
         self.assertIn("--users forge", result)
         self.assertNotIn("--unrestricted", result)
         self.assertIn("set timeout=-1", result)
-        self.assertNotIn("test-boot-password", result)
         self.assertIn("/EFI/Microsoft/Boot/bootmgfw.efi", result)
         self.assertIn("/EFI/systemd/systemd-bootx64.efi", result)
         self.assertNotIn("efibootmgr", result)
         self.assertNotIn("grub-install", result)
 
     def test_missing_loader_cannot_accidentally_boot_previous_kernel(self):
-        result = configuration("1234-abcd", "5678-ef01", password_hash("test-boot-password"))
+        result = selection_configuration("1234-abcd", "5678-ef01")
         self.assertEqual(result.count("                boot\n            fi"), 2)
         self.assertEqual(result.count("No disk was changed"), 2)
 

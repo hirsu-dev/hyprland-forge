@@ -49,9 +49,8 @@ def render(destination, font=None):
         draw.line((96, 452, 790, 452), fill=red, width=3)
         draw.text((96, 478), "IDENTITY CHECK" if mode == "auth" else "CHOOSE YOUR ENVIRONMENT", font=fonts[24], fill=ink)
         if mode == "auth":
-            draw.rectangle((96, 536, 826, 794), fill="#100d16", outline="#693642", width=2)
-            draw.text((120, 810), "BOOT USER  forge   /   LOCAL BOOT PASSWORD", font=fonts[16], fill=muted)
-            draw.text((96, 904), "AUTHENTICATE TO REVEAL SYSTEMS", font=fonts[20], fill=cyan)
+            draw.rectangle((96, 536, 826, 926), fill="#100d16", outline="#693642", width=2)
+            draw.text((96, 940), "BOOT USER  forge  /  AUTHENTICATE TO REVEAL SYSTEMS", font=fonts[16], fill=cyan)
         else:
             draw.rectangle((96, 538, 826, 790), fill="#100d16", outline="#693642", width=2)
             draw.text((96, 836), "UP / DOWN   SELECT     ENTER   LAUNCH", font=fonts[20], fill=cyan)

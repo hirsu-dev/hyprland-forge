@@ -43,6 +43,7 @@ insmod search_fs_uuid
 insmod chain
 insmod password_pbkdf2
 loadfont (memdisk)/boot/grub/forge.pf2
+loadfont (memdisk)/boot/grub/terminal.pf2
 set gfxmode=1920x1080,1280x720,1024x768,auto
 set gfxpayload=keep
 terminal_output gfxterm
@@ -51,22 +52,31 @@ set color_highlight=black/yellow
 set superusers=forge
 export superusers
 password_pbkdf2 forge {hashed}
-background_image (memdisk)/boot/grub/auth.png
-while true; do
-    clear
-    echo 'FORGE / ACCESS CONTROL'
-    echo 'Boot username: forge'
-    echo 'Use your separate boot password, not your Windows password.'
-    if authenticate forge; then
-        break
-    fi
-    echo 'Access denied. Try again.'
-done
-clear
-set theme=(memdisk)/boot/grub/theme.txt
+set theme=(memdisk)/boot/grub/startup.txt
 export theme
 set default=0
+set timeout=1
+menuentry 'Initialize access' --unrestricted {{
+    while true; do
+        clear
+        echo 'FORGE / LOCAL ACCESS'
+        echo 'Boot username: forge'
+        echo 'Use your separate boot password.'
+        if authenticate forge; then
+            configfile (memdisk)/boot/grub/selector.cfg
+        fi
+        echo 'Access denied. Try again.'
+    done
+}}
+'''
+
+
+def selection_configuration(forge_uuid, windows_uuid):
+    forge_uuid, windows_uuid = esp_uuid(forge_uuid), esp_uuid(windows_uuid)
+    return f'''set theme=(memdisk)/boot/grub/theme.txt
+export theme
 set timeout=-1
+set default=0
 menuentry 'Forge OS' --class forge --users forge {{
     if search --no-floppy --fs-uuid --set=forge_esp {forge_uuid}; then
         if [ -f ($forge_esp)/EFI/systemd/systemd-bootx64.efi ]; then
@@ -92,18 +102,19 @@ menuentry 'Windows 11' --class windows --users forge {{
 '''
 
 
-def theme(font):
-    if not re.fullmatch(r"[a-zA-Z0-9 _-]{1,100}", font):
+def theme(font, terminal=None, startup=False):
+    terminal = terminal or font
+    if not all(re.fullmatch(r"[a-zA-Z0-9 _-]{1,100}", name) for name in (font, terminal)):
         raise ForgeError("Invalid GRUB font identity")
     return f'''title-text: ""
-desktop-image: "selector.png"
+desktop-image: "{'auth.png' if startup else 'selector.png'}"
 desktop-image-scale-method: "stretch"
 desktop-color: "#100d16"
-terminal-font: "{font}"
+terminal-font: "{terminal}"
 terminal-left: "5%"
 terminal-top: "50%"
 terminal-width: "38%"
-terminal-height: "24%"
+terminal-height: "40%"
 + boot_menu {{
     left = 6%
     top = 52%
@@ -119,7 +130,17 @@ terminal-height: "24%"
     icon_height = 0
     selected_item_pixmap_style = "select_*.png"
 }}
-'''
+''' + ('''+ progress_bar {
+    id = "__timeout__"
+    left = 6%
+    top = 72%
+    width = 35%
+    height = 3
+    show_text = false
+    fg_color = "#74f7ef"
+    bg_color = "#693642"
+}
+''' if startup else "")
 
 
 def font_name(path):
@@ -155,11 +176,16 @@ def build(output, forge_uuid, windows_uuid, hashed, runner=subprocess.run):
         assets = stage / "grub"
         font = render(assets)
         runner(["grub-mkfont", "--name=ForgeMono", "--size=28", "--output=" + str(assets / "forge.pf2"), str(font)], check=True, capture_output=True, text=True)
-        (assets / "theme.txt").write_text(theme(font_name(assets / "forge.pf2")), encoding="utf-8", newline="\n")
+        runner(["grub-mkfont", "--name=ForgeTerm", "--size=14", "--output=" + str(assets / "terminal.pf2"), str(font)], check=True, capture_output=True, text=True)
+        menu_font, terminal_font = font_name(assets / "forge.pf2"), font_name(assets / "terminal.pf2")
+        (assets / "theme.txt").write_text(theme(menu_font, terminal_font), encoding="utf-8", newline="\n")
+        (assets / "startup.txt").write_text(theme(menu_font, terminal_font, startup=True), encoding="utf-8", newline="\n")
+        (assets / "selector.cfg").write_text(selection_configuration(forge_uuid, windows_uuid), encoding="utf-8", newline="\n")
         config_path = stage / "grub.cfg"
         config_path.write_text(config, encoding="utf-8", newline="\n")
         config_path.chmod(0o600)
         runner(["grub-script-check", str(config_path)], check=True, capture_output=True, text=True)
+        runner(["grub-script-check", str(assets / "selector.cfg")], check=True, capture_output=True, text=True)
         efi = stage / "EFI/Forge/forge-x64.efi"
         efi.parent.mkdir(parents=True)
         maps = ["boot/grub/grub.cfg=" + str(config_path)]

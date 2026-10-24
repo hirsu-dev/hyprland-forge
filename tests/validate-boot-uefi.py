@@ -134,6 +134,7 @@ with tempfile.TemporaryDirectory(prefix="forge-uefi-") as temporary:
     disk(root / "windows.img", "5678EF01", root / "windows.efi", "/EFI/Microsoft/Boot/bootmgfw.efi")
     with BootVM(root, "windows") as vm:
         vm.wait("Enter username:")
+        time.sleep(.3)
         vm.screenshot("authentication")
         assert b"Windows 11" not in vm.log and b"Forge OS" not in vm.log
         vm.console.sendall(b"forge\rwrong-test-password\r")
