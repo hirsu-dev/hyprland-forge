@@ -56,7 +56,7 @@ class IntegrationTests(unittest.TestCase):
         source = self.root / "source"
         source.mkdir()
         for directory in ("forge", "configs"):
-            shutil.copytree(ROOT / directory, source / directory, ignore=shutil.ignore_patterns("__pycache__"))
+            shutil.copytree(ROOT / directory, source / directory, ignore=shutil.ignore_patterns("__pycache__", "target"))
         for name in ("install.sh", "install-online.sh", "live.sh"):
             shutil.copy2(ROOT / name, source / name)
         (source / "project.json").write_text(json.dumps(self.manifest))

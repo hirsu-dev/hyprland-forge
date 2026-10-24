@@ -9,9 +9,10 @@ use forge_startup::state::{Action, Config, Key, State, Target};
 use forge_startup::visual::Frame;
 use uefi::{
     Error, Guid, Result, Status,
-    boot::{self, BootPolicy, EventType, LoadImageSource, TimerTrigger, Tpl},
+    boot::{self, EventType, LoadImageSource, TimerTrigger, Tpl},
     cstr16, entry,
     proto::{
+        BootPolicy,
         console::{
             gop::{BltOp, BltPixel, BltRegion, GraphicsOutput},
             text::{Key as FirmwareKey, ScanCode},
@@ -111,7 +112,8 @@ fn interface(state: &mut State, config: &Config) -> Result<Target> {
                 continue;
             }
             Action::Launch(target) => {
-                boot::close_event(events[1].clone())?;
+                let [_, timer] = events;
+                boot::close_event(timer)?;
                 return Ok(target);
             }
             Action::None => {}
