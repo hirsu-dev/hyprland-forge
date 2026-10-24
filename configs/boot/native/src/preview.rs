@@ -25,7 +25,7 @@ fn main() {
     fs::create_dir_all(destination).unwrap();
     let mut state = State::default();
     let mut frame = Frame::new(1280, 720).unwrap();
-    for index in 0..28 {
+    for index in 0..56 {
         frame.draw(&state);
         save(&frame, &destination.join(format!("intro-{index:03}.ppm")));
         state.tick(40);

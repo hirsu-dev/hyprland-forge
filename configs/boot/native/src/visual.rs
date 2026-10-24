@@ -9,6 +9,11 @@ const YELLOW: u32 = 0xfcee0a;
 const CYAN: u32 = 0x74f7ef;
 const RED: u32 = 0xff4d61;
 
+fn ease(elapsed: u32, start: u32, duration: u32) -> i32 {
+    let p = (elapsed.saturating_sub(start).min(duration) * 1024 / duration) as i32;
+    1024 - (1024 - p) * (1024 - p) / 1024
+}
+
 pub struct Frame {
     pub pixels: Vec<u32>,
     pub width: usize,
@@ -154,6 +159,55 @@ impl Frame {
         }
     }
 
+    fn redline(&mut self, elapsed: u32) {
+        let split = ease(elapsed, 1450, 750) * 1920 / 1024;
+        let beam = ease(elapsed, 80, 600) * 1080 / 1024;
+        for y in 0..1080 {
+            let seam = 1344 - y * 768 / 1080;
+            self.rect(0, y, seam - split, 1, 0x1b0b16);
+            self.rect(seam + split, y, 1920 - seam - split, 1, 0x0d0a13);
+            if y < beam {
+                for (width, color) in [(24, 0x42202c), (10, 0x8c293e), (4, RED), (1, INK)] {
+                    self.rect(seam - split - width, y, width, 1, color);
+                    self.rect(seam + split, y, width, 1, color);
+                }
+            }
+        }
+        if elapsed < 1450 {
+            let arrival = (1024 - ease(elapsed, 180, 700)) * 180 / 1024;
+            self.brand(676 - arrival, 440);
+            self.text(678 - arrival, 572, "REDLINE / OPEN THE SIGNAL", 2, CYAN);
+            for n in 0..8 {
+                let y = 190 + n * 92;
+                let seam = 1344 - y * 768 / 1080;
+                let width = 50 + (elapsed.min(1400) as i32 + n * 97) % 180;
+                self.rect(seam - width - 30, y, width, 2, 0x9c3549);
+                self.rect(seam + 30, y + 12, width / 2, 2, 0x397773);
+            }
+            self.text(96, 76, "F / OVERDRIVE SYSTEMS", 2, YELLOW);
+            self.text(96, 884, "CUT / FORM / OPEN", 2, RED);
+            self.rect(96, 934, 1728 * elapsed.min(2200) as i32 / 2200, 3, RED);
+            self.text(96, 1004, "ENTER SKIP / F2 REDUCED MOTION", 2, MUTED);
+        }
+        if elapsed >= 1450 {
+            let travel = ease(elapsed, 1450, 750);
+            for n in 0..48 {
+                let y = 80 + (n * 137) % 900;
+                let seam = 1344 - y * 768 / 1080;
+                let direction = if n % 2 == 0 { -1 } else { 1 };
+                let x = seam + direction * travel * (120 + n * 17) / 1024;
+                let dy = ((n * 31) % 120 - 60) * travel / 1024;
+                self.line(
+                    x,
+                    y + dy,
+                    x + direction * (8 + n % 6 * 6),
+                    y + dy - 4,
+                    if n % 4 == 0 { CYAN } else { RED },
+                );
+            }
+        }
+    }
+
     pub fn draw(&mut self, state: &State) {
         self.pixels.fill(BG);
         for x in (48..1920).step_by(64) {
@@ -180,6 +234,21 @@ impl Frame {
                     p[(i + 1) % p.len()].0,
                     p[(i + 1) % p.len()].1,
                     0x50303e,
+                );
+            }
+            if state.motion() {
+                let cursor = ((state.time() / 8 + inset as u32 * 7) % 8192) as usize;
+                let edge = cursor / 1024;
+                let step = (cursor % 1024) as i32;
+                let (a, b) = (p[edge], p[(edge + 1) % p.len()]);
+                let x = a.0 + (b.0 - a.0) * step / 1024;
+                let y = a.1 + (b.1 - a.1) * step / 1024;
+                self.line(
+                    x,
+                    y,
+                    x + (b.0 - a.0) / 8,
+                    y + (b.1 - a.1) / 8,
+                    if inset % 60 == 0 { RED } else { CYAN },
                 );
             }
         }
@@ -212,6 +281,16 @@ impl Frame {
         if state.motion() {
             let y = ((state.time() / 9) % 900 + 140) as i32;
             self.rect(96, y, 1730, 1, 0x283b3f);
+            for n in 0..28 {
+                let height = 6 + ((state.time() / 45 + n as u32 * 17) % 36) as i32;
+                self.rect(
+                    1190 + n * 17,
+                    860 - height,
+                    6,
+                    height,
+                    if n % 3 == 0 { RED } else { 0x397773 },
+                );
+            }
         }
         match state.phase() {
             Phase::Intro => {
@@ -233,7 +312,9 @@ impl Frame {
                 for index in 0..count {
                     self.text(120 + index as i32 * 28, 598, "*", 3, INK);
                 }
-                if state.phase() == Phase::Password && (state.time() / 500) % 2 == 0 {
+                if state.phase() == Phase::Password
+                    && (!state.motion() || (state.time() / 500) % 2 == 0)
+                {
                     self.rect(120 + count as i32 * 28, 593, 3, 30, YELLOW);
                 }
                 self.rect(96, 710, 730, 66, edge);
@@ -266,7 +347,12 @@ impl Frame {
                     (0, "FORGE OS", "ARCH / HYPRLAND", Target::Forge),
                     (1, "WINDOWS 11", "WINDOWS BOOT MANAGER", Target::Windows),
                 ] {
-                    let y = 562 + index * 132;
+                    let offset = if state.motion() && state.phase() == Phase::Selector {
+                        (1024 - ease(state.elapsed(), index as u32 * 70, 320)) * 40 / 1024
+                    } else {
+                        0
+                    };
+                    let y = 562 + index * 132 + offset;
                     let selected = state.target() == target;
                     self.rect(96, y, 730, 106, if selected { YELLOW } else { 0x1d141f });
                     self.border(96, y, 730, 106, if selected { YELLOW } else { 0x693642 });
@@ -299,6 +385,9 @@ impl Frame {
                 }
             }
         }
+        if state.phase() == Phase::Intro && state.motion() {
+            self.redline(state.elapsed());
+        }
     }
 }
 
@@ -319,7 +408,44 @@ mod tests {
         frame.draw(&state);
         assert_ne!(first, frame.pixels);
         state.tick(700);
+        state.key(Key::Enter);
         state.key(Key::Char(b'x'));
+        frame.draw(&state);
+        assert_eq!(frame.pixels.len(), 1280 * 720);
+    }
+
+    #[test]
+    fn reduced_motion_is_static_and_intro_can_be_skipped() {
+        let mut frame = Frame::new(640, 480).unwrap();
+        let mut state = State::default();
+        state.key(Key::Motion);
+        state.tick(1);
+        assert_eq!(state.phase(), Phase::Password);
+        frame.draw(&state);
+        let first = frame.pixels.clone();
+        state.tick(777);
+        frame.draw(&state);
+        assert_eq!(first, frame.pixels);
+        let mut skip = State::default();
+        skip.key(Key::Enter);
+        assert_eq!(skip.phase(), Phase::Password);
+    }
+
+    #[test]
+    fn redline_is_deterministic_bounded_and_opens_into_password() {
+        let mut frame = Frame::new(1280, 720).unwrap();
+        let mut state = State::default();
+        let mut previous = Vec::new();
+        for _ in 0..11 {
+            frame.draw(&state);
+            assert_ne!(frame.pixels, previous);
+            previous = frame.pixels.clone();
+            frame.draw(&state);
+            assert_eq!(frame.pixels, previous);
+            state.tick(200);
+        }
+        assert_eq!(state.phase(), Phase::Password);
+        state.tick(u32::MAX);
         frame.draw(&state);
         assert_eq!(frame.pixels.len(), 1280 * 720);
     }

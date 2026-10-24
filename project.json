@@ -9,7 +9,7 @@
     "builder": "forge-boot --engine native",
     "target": "x86_64-UEFI-GPT",
     "flow": ["animated-local-startup", "password-only-gate", "Forge-or-Windows-picker", "existing-OS-loader", "OS-account-sign-in"],
-    "pre_os_motion": "native-GOP-timer-driven-logo-reveal-scanline-unlock-and-launch-transitions",
+    "pre_os_motion": "Redline-inspired-2200ms-diagonal-neon-split-gate-sparks-perimeter-tracers-logo-reveal-staggered-picker-and-reduced-motion",
     "forge_login_motion": "animated-SDDM",
     "authentication": "PBKDF2-HMAC-SHA256-600000-random-salt-constant-time-compare-secret-clearing-bounded-input-and-backoff",
     "provisioning": "machine-specific-GPT-PARTUUIDs-and-hash-embedded-in-local-build-no-default-password",

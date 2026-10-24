@@ -145,7 +145,7 @@ impl State {
         self.elapsed = self.elapsed.saturating_add(milliseconds);
         self.time = self.time.wrapping_add(milliseconds);
         match self.phase {
-            Phase::Intro if self.elapsed >= if self.motion { 1100 } else { 0 } => {
+            Phase::Intro if self.elapsed >= if self.motion { 2200 } else { 0 } => {
                 self.change(Phase::Password)
             }
             Phase::Denied if self.elapsed >= (1000u32 << self.failed.min(5)) => {
@@ -281,7 +281,7 @@ mod tests {
     #[test]
     fn locked_input_cannot_launch_or_reveal_selection() {
         let mut state = State::default();
-        state.tick(1200);
+        state.key(Key::Enter);
         for _ in 0..10 {
             state.key(Key::Next);
             state.key(Key::Enter);
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn passwords_are_bounded_filtered_and_cleared() {
         let mut state = State::default();
-        state.tick(1200);
+        state.key(Key::Enter);
         for _ in 0..256 {
             state.key(Key::Char(b'a'));
         }
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn failed_authentication_has_backoff_and_clears_secret() {
         let mut state = State::default();
-        state.tick(1200);
+        state.key(Key::Enter);
         password(&mut state, b"wrong-password");
         assert_eq!(state.key(Key::Enter), Action::Verify);
         state.verify(&config());
@@ -327,7 +327,7 @@ mod tests {
     #[test]
     fn successful_authentication_allows_both_targets_and_relock() {
         let mut state = State::default();
-        state.tick(1200);
+        state.key(Key::Enter);
         password(&mut state, b"ephemeral-test-password");
         state.key(Key::Enter);
         state.verify(&config());
