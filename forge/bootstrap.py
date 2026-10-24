@@ -11,6 +11,9 @@ from pathlib import Path
 def root_arch():
     if platform.system() != "Linux" or platform.machine() != "x86_64" or os.geteuid() != 0 or not Path("/etc/arch-release").is_file() or Path("/run/archiso").exists():
         raise ValueError("Account preparation needs root on an installed x86_64 Arch system")
+    release = dict(line.split("=", 1) for line in Path("/etc/os-release").read_text().splitlines() if "=" in line)
+    if release.get("ID", "").strip('"') != "arch":
+        raise ValueError("Guided setup supports Arch Linux only")
     if subprocess.run(["systemd-detect-virt", "--chroot"], capture_output=True).returncode == 0:
         raise ValueError("Reboot into installed Arch before preparing the desktop")
 
