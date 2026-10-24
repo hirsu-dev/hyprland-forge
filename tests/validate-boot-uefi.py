@@ -84,7 +84,7 @@ class BootVM:
             if "error" in data:
                 raise AssertionError(data)
 
-    def wait(self, marker, timeout=45):
+    def wait(self, marker, timeout=90):
         end = time.monotonic() + timeout
         while time.monotonic() < end:
             if marker.encode() in self.pending:
@@ -101,6 +101,7 @@ class BootVM:
                 break
             self.log.extend(part)
             self.pending.extend(part)
+        self.screenshot(self.label + "-failure")
         raise AssertionError("Missing test marker: " + marker + "\n" + self.log.decode(errors="replace")[-4000:])
 
     def screenshot(self, name):

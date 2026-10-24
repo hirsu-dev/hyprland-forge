@@ -1,5 +1,6 @@
 import copy
 import hashlib
+import importlib.util
 import json
 import shutil
 import subprocess
@@ -60,6 +61,16 @@ class IntegrationTests(unittest.TestCase):
             shutil.copy2(ROOT / name, source / name)
         (source / "project.json").write_text(json.dumps(self.manifest))
         return source
+
+    @unittest.skipUnless(importlib.util.find_spec("PIL"), "Pillow required")
+    def test_installed_boot_builder_has_artwork_and_theme_without_checkout(self):
+        import os
+        execute(make_plan(self.manifest, None), ROOT, self.user, self.state, runner=lambda command, **kwargs: None)
+        wrapper = self.user / ".local/bin/forge-boot"
+        result = subprocess.run([sys.executable, str(wrapper), "--render-only", "--output", str(self.root / "preview")], cwd=self.root, env={**os.environ, "HOME": str(self.user), "USERPROFILE": str(self.user)}, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertTrue((self.root / "preview/selector.png").is_file())
+        self.assertTrue((self.user / ".local/share/hyprland-forge/boot/sddm/Main.qml").is_file())
 
     def test_bundle_is_reproducible_and_checked(self):
         source = self.source_copy()
