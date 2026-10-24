@@ -206,6 +206,9 @@ def main():
     parser = argparse.ArgumentParser(prog="forge-boot")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--render-only", action="store_true")
+    parser.add_argument("--engine", choices=("native", "grub"), default="native")
+    parser.add_argument("--forge-partuuid")
+    parser.add_argument("--windows-partuuid")
     parser.add_argument("--forge-uuid")
     parser.add_argument("--windows-uuid")
     args = parser.parse_args()
@@ -215,8 +218,13 @@ def main():
                 raise ForgeError("Choose a new output folder")
             render(args.output)
         else:
-            esp_uuid(args.forge_uuid)
-            esp_uuid(args.windows_uuid)
+            if args.engine == "native":
+                from .native_boot import partition_id, provisioning, build as native_build
+                partition_id(args.forge_partuuid)
+                partition_id(args.windows_partuuid)
+            else:
+                esp_uuid(args.forge_uuid)
+                esp_uuid(args.windows_uuid)
             if not sys.stdin.isatty():
                 raise ForgeError("Boot password setup needs an interactive terminal")
             print("Prepare a boot package only. No firmware, partitions or current boot files will be changed.")
@@ -227,9 +235,14 @@ def main():
                 second = getpass.getpass("Repeat boot password: ")
             if first != second:
                 raise ForgeError("Passwords did not match")
-            hashed = password_hash(first)
-            del first, second
-            build(args.output, args.forge_uuid, args.windows_uuid, hashed)
+            if args.engine == "native":
+                provision = provisioning(first, args.forge_partuuid, args.windows_partuuid)
+                del first, second
+                native_build(args.output, provision)
+            else:
+                hashed = password_hash(first)
+                del first, second
+                build(args.output, args.forge_uuid, args.windows_uuid, hashed)
         print("Prepared: " + str(args.output))
         print("Not activated. Physical boot testing and a recovery path are required before installation.")
         return 0
