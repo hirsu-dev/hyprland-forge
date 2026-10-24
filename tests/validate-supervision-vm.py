@@ -21,7 +21,14 @@ def status():
 
 def children(parent, needle):
     pids = (Path("/proc") / str(parent) / "task" / str(parent) / "children").read_text().split()
-    return [int(pid) for pid in pids if (Path("/proc") / pid / "cmdline").read_bytes().split(b"\0")[:len(needle)] == needle]
+    result = []
+    for pid in pids:
+        try:
+            if (Path("/proc") / pid / "cmdline").read_bytes().split(b"\0")[:len(needle)] == needle:
+                result.append(int(pid))
+        except FileNotFoundError:
+            continue
+    return result
 
 
 initial = status()

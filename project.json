@@ -13,6 +13,19 @@
   },
   "taskbar": {"implementation": "original Quickshell Wayland taskbar", "features": ["pinned-apps", "running-windows", "focus-and-cycle", "context-actions", "monitor-scope", "window-labels", "fullscreen-aware", "clipboard-access"]},
   "ready_for_daily_use": false,
+  "vm_qualification": {
+    "release": "0.15.1",
+    "result": "passed",
+    "runtime_revision": "0c84a552b44a648d3303cbb900dc19c43f481c2d",
+    "date": "2026-10-24",
+    "environment": {"virtualizer": "VirtualBox", "ram_mb": 2304, "cpus": 2, "kernel": "7.2.11-arch1-1", "graphics": "software-compatibility-rendering"},
+    "python_tests": 221,
+    "scenarios": ["guided-install-with-gaming", "guest-reboot-and-normal-session-start", "no-failed-system-services", "all-seven-everyday-apps-open", "video-playback-position-advances", "two-tiling-modes", "display-preview-and-timed-revert", "virtual-monitor-hotplug", "taskbar-actions", "notification-actions-and-DND", "audio-routing", "screen-capture-and-recording", "text-and-image-clipboard", "theme-and-effects", "panel-and-clipboard-crash-recovery", "duplicate-session-refused", "five-minute-multitasking-with-recovery"],
+    "multitasking_seconds": 300,
+    "physical_hardware_qualified": false,
+    "pending": ["physical-NVIDIA-and-gaming-performance", "physical-HDMI-120-Hz", "physical-suspend-resume-and-lid", "physical-peripherals", "extended-daily-use", "experimental-native-startup"],
+    "virtual_graphics_warnings": "vmwgfx-host-channel-errors-observed; applications-verified-with-software-compatibility-path"
+  },
   "everyday_safety": {"battery": "15-percent-low-5-percent-critical-on-battery-with-recharge-rearm", "critical_notifications": "visible-during-do-not-disturb", "power_actions": "explicit-user-action", "hardware_validation": "pending-on-device"},
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
   "visibility": "public",
@@ -190,6 +203,6 @@
       {"source": "configs/mpv/mpv.conf", "target": ".config/mpv/mpv.conf"},
       {"source": "configs/mpv/virtual-machine.conf", "target": ".local/share/hyprland-forge/profiles/mpv-virtual-machine.conf"}
     ], "features": ["removable-storage-and-trash", "MTP-phone-browsing", "SMB-network-shares", "archive-menu-and-7zip", "image-PDF-text-and-media-apps", "first-login-default-apps-preserve-existing-choices", "standard-user-folders", "supervised-session-with-backoff-and-owned-process-cleanup", "VM-compatible-media-rendering"], "hardware_validation": "pending-on-device"},
-    {"id": "release", "status": "ready", "requires": ["everyday"], "packages": [], "files": [], "qualification": "automated-checks-only", "hardware_validation": "pending-on-device"}
+    {"id": "release", "status": "ready", "requires": ["everyday"], "packages": [], "files": [], "qualification": "automated-and-virtual-machine-desktop-checks", "hardware_validation": "pending-on-device"}
   ]
 }
