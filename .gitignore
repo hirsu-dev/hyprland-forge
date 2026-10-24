@@ -6,4 +6,5 @@ __pycache__/
 .env
 *.pem
 *.key
+configs/boot/native/target/
 test-results/

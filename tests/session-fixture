@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import signal
+import subprocess
 import sys
 from pathlib import Path
 
@@ -15,6 +16,8 @@ if name == "systemd-detect-virt":
     sys.exit(0)
 if name == "quickshell":
     (root / "renderer").write_text(os.environ.get("QT_QUICK_BACKEND", ""))
+    child = subprocess.Popen([sys.executable, "-c", "import signal; signal.pause()"])
+    (root / "child-process").write_text(str(child.pid))
 try:
     os.fstat(9)
 except OSError:

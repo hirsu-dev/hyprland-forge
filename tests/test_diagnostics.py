@@ -44,7 +44,7 @@ class DiagnosticsTests(unittest.TestCase):
         return subprocess.CompletedProcess(command, 0, self.responses[key], "")
 
     def collect(self, session=True):
-        with patch("forge.diagnostics.platform.system", return_value="Linux"), patch("forge.diagnostics.platform.release", return_value="test-kernel"), patch.dict("os.environ", {"HYPRLAND_INSTANCE_SIGNATURE": "test" if session else ""}):
+        with patch("forge.diagnostics.platform.system", return_value="Linux"), patch("forge.diagnostics.platform.release", return_value="test-kernel"), patch("forge.diagnostics.session_health", return_value={"status": "passed"}), patch.dict("os.environ", {"HYPRLAND_INSTANCE_SIGNATURE": "test" if session else ""}):
             return collect(self.sys, self.runner)
 
     def test_complete_runtime_checks_pass(self):

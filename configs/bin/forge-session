@@ -1,34 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec 9>"${XDG_RUNTIME_DIR:?}/hyprland-forge-session.lock"
-flock -n 9 || exit 0
-dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE || printf '%s\n' 'Forge: session environment activation failed' >&2
-systemctl --user start hyprpolkitagent.service || printf '%s\n' 'Forge: authentication agent unavailable' >&2
-forge_start() {
-    "$@" 9>&- &
-}
-forge_stop() {
-    local forge_pid
-    while read -r forge_pid; do
-        kill "$forge_pid" 2>/dev/null || true
-    done < <(jobs -pr)
-}
-trap forge_stop EXIT
-trap 'exit 0' TERM INT
-if [[ -x "$HOME/.local/bin/forge-settings" ]]; then forge_start "$HOME/.local/bin/forge-settings" --recover; fi
-forge_start hypridle
-forge_start wl-paste --type text --watch cliphist store
-forge_start wl-paste --type image --watch cliphist store
-if command -v makoctl >/dev/null 2>&1; then makoctl quit 2>/dev/null || true; fi
-forge_start "$HOME/.local/bin/forge-wallpaper"
-if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/forge/shell.qml" ]]; then
-    if systemd-detect-virt --vm >/dev/null 2>&1; then
-        forge_start env QT_QUICK_BACKEND=software quickshell -c forge
-    else
-        forge_start quickshell -c forge
-    fi
-fi
-while hyprctl -j monitors >/dev/null 2>&1; do
-    sleep 10 9>&- &
-    wait "$!" || true
-done
+export PYTHONPATH="$HOME/.local/lib/hyprland-forge${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m forge.session

@@ -4,6 +4,7 @@ import os
 import platform
 import re
 import subprocess
+import time
 from pathlib import Path
 
 from .hardware import inventory, profile_services, virtualization
@@ -16,6 +17,26 @@ def probe(command, runner):
         return {"ok": result.returncode == 0, "output": result.stdout.strip(), "error": result.stderr.strip()}
     except (OSError, subprocess.TimeoutExpired) as exc:
         return {"ok": False, "output": "", "error": str(exc)}
+
+
+def session_health(runtime=None, now=None):
+    runtime = Path(runtime or os.environ.get("XDG_RUNTIME_DIR", "/nonexistent"))
+    try:
+        data = json.loads((runtime / "hyprland-forge-session.json").read_text())
+        if not isinstance(data, dict) or data.get("running") is not True or type(data.get("updated")) not in (float, int):
+            raise ValueError("No running session")
+        age = (time.time() if now is None else now) - data["updated"]
+        if not math.isfinite(age) or not -5 <= age <= 20:
+            raise ValueError("Session heartbeat is stale")
+        components = data.get("components")
+        if not isinstance(components, list) or any(not isinstance(item, dict) or not isinstance(item.get("name"), str) for item in components):
+            raise ValueError("Invalid component status")
+        states = {item["name"]: item.get("running") is True for item in components}
+        required = {"idle", "clipboard-text", "clipboard-image", "wallpaper", "shell"}
+        unavailable = sorted(name for name in required if not states.get(name))
+        return {"status": "warning" if unavailable else "passed", "recovering": unavailable, "components": components}
+    except (OSError, ValueError, TypeError):
+        return {"status": "warning", "reason": "No fresh Forge supervisor status; sign out and back in after updating"}
 
 
 def collect(sys_root=Path("/sys"), runner=subprocess.run):
@@ -89,6 +110,7 @@ def collect(sys_root=Path("/sys"), runner=subprocess.run):
         except ValueError:
             shell_ready = False
         checks["shell"] = {"status": "passed" if shell_ready else "failed"}
+        checks["session_components"] = session_health()
     else:
         checks["hyprland_session"] = {"status": "pending", "reason": "Run inside Hyprland to verify displays and shell"}
     data["checks"] = checks

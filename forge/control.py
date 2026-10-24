@@ -300,7 +300,13 @@ def dispatch(request, home, runner=subprocess.run):
     if action == "updates":
         return {"updates": run(["checkupdates"], runner, accepted=(0, 2), timeout=90).splitlines(), "message": "Preview only. Official repository packages; AUR packages are not managed here."}
     if action == "logs":
-        return {"logs": run(["journalctl", "--user", "-b", "-n", "100", "--no-pager"], runner)[-20000:]}
+        path = safe_target(home, ".local/state/hyprland-forge/session.log")
+        logs = path.read_text(errors="replace")[-12000:] if path.is_file() else ""
+        try:
+            journal = run(["journalctl", "--user", "-b", "-n", "100", "--no-pager"], runner)[-8000:]
+        except (ForgeError, OSError, subprocess.TimeoutExpired):
+            journal = "User journal unavailable"
+        return {"logs": "FORGE COMPONENTS\n" + (logs or "No component events recorded") + "\n\nUSER SESSION\n" + journal}
     preflight()
     if action == "save":
         return apply(home, request.get("patch"), runner)
