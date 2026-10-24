@@ -26,18 +26,18 @@ use uefi::{
 
 fn trace(state: &State) {
     #[cfg(feature = "firmware-test")]
-    if let Ok(handle) = boot::get_handle_for_protocol::<uefi::proto::console::serial::Serial>() {
-        if let Ok(mut serial) =
-            boot::open_protocol_exclusive::<uefi::proto::console::serial::Serial>(handle)
-        {
-            let text: &[u8] = match state.phase() {
-                forge_startup::state::Phase::Password => b"FORGE:LOCKED\r\n",
-                forge_startup::state::Phase::Denied => b"FORGE:DENIED\r\n",
-                forge_startup::state::Phase::Selector => b"FORGE:SELECTOR\r\n",
-                forge_startup::state::Phase::Missing => b"FORGE:MISSING\r\n",
-                _ => b"FORGE:TRANSITION\r\n",
-            };
-            let _ = serial.write(text);
+    {
+        let text: &[u8] = match state.phase() {
+            forge_startup::state::Phase::Password => b"FORGE:LOCKED\r\n",
+            forge_startup::state::Phase::Denied => b"FORGE:DENIED\r\n",
+            forge_startup::state::Phase::Selector => b"FORGE:SELECTOR\r\n",
+            forge_startup::state::Phase::Missing => b"FORGE:MISSING\r\n",
+            _ => b"FORGE:TRANSITION\r\n",
+        };
+        for byte in text {
+            unsafe {
+                core::arch::asm!("out dx, al", in("dx") 0xe9u16, in("al") *byte, options(nomem, nostack, preserves_flags));
+            }
         }
     }
     #[cfg(not(feature = "firmware-test"))]
