@@ -40,6 +40,8 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
         audio.setsampwidth(2)
         audio.setframerate(48000)
         audio.writeframes(bytes(48000 * 2 * 2))
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=0xfcee0a:s=640x360:r=30", "-t", "2", "-c:v", "mpeg4", str(root / "forge-everyday.mp4")], check=True, timeout=20)
+    subprocess.run(["pw-play", str(root / "forge-everyday.wav")], capture_output=True, check=True, timeout=10)
     page = root / "forge-everyday.html"
     page.write_text('<!doctype html><title>Forge Everyday Validation</title><style>body{background:#100d16;color:#fcee0a;font:32px sans-serif;padding:60px}</style><h1>Forge Everyday Validation</h1><p>Browser rendering on the installed desktop.</p>')
     profile = root / "browser"
@@ -48,10 +50,10 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
     applications = [
         ("files", ["thunar", str(root)], ("thunar",), None),
         ("text", ["mousepad", str(text)], ("mousepad", "org.xfce.mousepad"), None),
-        ("image", ["ristretto", str(root / "forge-everyday.png")], ("ristretto",), None),
+        ("image", ["ristretto", str(root / "forge-everyday.png")], ("ristretto", "org.xfce.ristretto"), None),
         ("pdf", ["evince", str(root / "forge-everyday.pdf")], ("evince", "org.gnome.evince"), None),
         ("archive", ["xarchiver", str(root / "forge-everyday.zip")], ("xarchiver",), None),
-        ("media", ["mpv", "--no-config", "--force-window=yes", "--keep-open=yes", str(root / "forge-everyday.wav")], ("mpv",), None),
+        ("media", ["mpv", "--no-config", "--keep-open=yes", "--loop-file=inf", str(root / "forge-everyday.mp4")], ("mpv",), None),
         ("browser", ["firefox", "--no-remote", "--profile", str(profile), "--new-window", page.as_uri()], ("firefox",), "Forge Everyday Validation"),
     ]
     for name, command, classes, title in applications:
@@ -65,6 +67,8 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
                 while time.monotonic() < deadline:
                     matched = next((item for item in clients() if item["address"] not in baseline and item.get("class", "").lower() in classes and (title is None or title in item.get("title", "")) and all(value > 0 for value in item.get("size", []))), None)
                     if matched:
+                        break
+                    if process.poll() not in (None, 0):
                         break
                     time.sleep(0.2)
                 if not matched:
