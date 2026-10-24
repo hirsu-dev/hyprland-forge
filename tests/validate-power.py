@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 
@@ -38,10 +39,23 @@ ShellRoot {
         battery.charge = 2
         if (events.length !== 4) throw new Error("Invalid telemetry emitted warning")
         console.log("FORGE_POWER_POLICY_PASSED")
-        Qt.quit()
     }
 }
 ''')
-    result = subprocess.run(["quickshell", "-p", str(path / "shell.qml")], env={**os.environ, "QT_QUICK_BACKEND": "software"}, text=True, capture_output=True, timeout=15)
-    assert result.returncode == 0 and "FORGE_POWER_POLICY_PASSED" in result.stdout + result.stderr, result.stdout + result.stderr
+    with tempfile.TemporaryFile(mode="w+") as output:
+        process = subprocess.Popen(["quickshell", "-p", str(path / "shell.qml")], env={**os.environ, "QT_QUICK_BACKEND": "software", "QT_QPA_PLATFORM": "xcb"}, stdout=output, stderr=subprocess.STDOUT, text=True)
+        captured = ""
+        try:
+            deadline = time.monotonic() + 12
+            while time.monotonic() < deadline:
+                output.seek(0)
+                captured = output.read()
+                if "FORGE_POWER_POLICY_PASSED" in captured or process.poll() is not None:
+                    break
+                time.sleep(0.1)
+        finally:
+            if process.poll() is None:
+                process.terminate()
+            process.wait(timeout=5)
+        assert "FORGE_POWER_POLICY_PASSED" in captured, captured
 print("Native QML battery thresholds, charging rearm, duplicate suppression and invalid telemetry checks passed")
