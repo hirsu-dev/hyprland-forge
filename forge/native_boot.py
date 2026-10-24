@@ -86,7 +86,10 @@ def build(output, provision, runner=subprocess.run, telemetry=False):
         config.write_bytes(provision)
         config.chmod(0o600)
         environment = {**os.environ, "FORGE_BOOT_CONFIG": str(config.resolve()), "CARGO_TARGET_DIR": str((stage / "compile").resolve())}
-        runner(["cargo", "build", "--locked", "--release", "--target", "x86_64-unknown-uefi", "--features", "firmware-test" if telemetry else "firmware", "--bin", "forge-startup"], cwd=project, env=environment, check=True, capture_output=True, text=True)
+        try:
+            runner(["cargo", "build", "--locked", "--release", "--target", "x86_64-unknown-uefi", "--features", "firmware-test" if telemetry else "firmware", "--bin", "forge-startup"], cwd=project, env=environment, check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as exc:
+            raise ForgeError("Native build failed:\n" + (exc.stderr or "")[-8000:]) from exc
         dependencies = licenses(project, stage / "licenses", runner)
         efi = stage / "EFI/Forge/forge-startup-x64.efi"
         efi.parent.mkdir(parents=True)

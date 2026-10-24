@@ -143,9 +143,10 @@ fn launch(config: &Config, target: Target) -> Result {
     for handle in handles {
         if let Ok(info) = boot::open_protocol_exclusive::<PartitionInfo>(handle) {
             if info.is_system()
-                && info
-                    .gpt_partition_entry()
-                    .is_some_and(|partition| partition.unique_partition_guid == expected)
+                && info.gpt_partition_entry().is_some_and(|partition| {
+                    let guid = partition.unique_partition_guid;
+                    guid == expected
+                })
             {
                 if selected.is_some() {
                     return Err(Status::SECURITY_VIOLATION.into());
