@@ -9,6 +9,7 @@ ForgeFrame {
     cut: 12
     ornament: false
     color: ForgeTheme.surface
+    borderColor: entry.critical ? ForgeTheme.danger : ForgeTheme.accent
     ColumnLayout {
         id: body
         anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }

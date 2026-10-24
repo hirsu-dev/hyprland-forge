@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: python -c 'import json,subprocess; p=json.load(open("project.json")); subprocess.run(["pacman","-S","--noconfirm","--needed","--", "firefox", "xdg-user-dirs", *next(s["packages"] for s in p["stages"] if s["id"]=="everyday")],check=True)'
       - run: python tests/validate-everyday.py
+      - run: xvfb-run -a dbus-run-session -- python tests/validate-power.py
       - run: python -m unittest discover -s tests -v
       - run: python tests/validate-login.py
       - run: python tests/validate-setup.py

@@ -13,6 +13,7 @@
   },
   "taskbar": {"implementation": "original Quickshell Wayland taskbar", "features": ["pinned-apps", "running-windows", "focus-and-cycle", "context-actions", "monitor-scope", "window-labels", "fullscreen-aware", "clipboard-access"]},
   "ready_for_daily_use": false,
+  "everyday_safety": {"battery": "15-percent-low-5-percent-critical-on-battery-with-recharge-rearm", "critical_notifications": "visible-during-do-not-disturb", "power_actions": "explicit-user-action", "hardware_validation": "pending-on-device"},
   "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
   "visibility": "public",
   "target": {
@@ -128,6 +129,7 @@
         {"source": "configs/quickshell/forge/ForgeButton.qml", "target": ".config/quickshell/forge/ForgeButton.qml"},
         {"source": "configs/quickshell/forge/ForgeSlider.qml", "target": ".config/quickshell/forge/ForgeSlider.qml"},
         {"source": "configs/quickshell/forge/Laptop.qml", "target": ".config/quickshell/forge/Laptop.qml"},
+        {"source": "configs/quickshell/forge/BatteryPolicy.qml", "target": ".config/quickshell/forge/BatteryPolicy.qml"},
         {"source": "configs/quickshell/forge/PowerMenu.qml", "target": ".config/quickshell/forge/PowerMenu.qml"},
         {"source": "configs/quickshell/forge/Tasks.qml", "target": ".config/quickshell/forge/Tasks.qml"},
         {"source": "configs/quickshell/forge/Taskbar.qml", "target": ".config/quickshell/forge/Taskbar.qml"},

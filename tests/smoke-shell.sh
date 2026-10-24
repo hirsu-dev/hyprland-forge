@@ -72,6 +72,13 @@ done
 [[ "$forge_alerts" == 1 ]]
 quickshell -p "$forge_config" ipc call forgeAlerts quiet true
 quickshell -p "$forge_config" ipc call forgeAlerts status | python -c 'import json,sys; assert json.load(sys.stdin)["dnd"]'
+notify-send --urgency=critical --expire-time=10000 'Forge critical test' 'Power warning remains visible during quiet mode'
+for ((attempt = 0; attempt < 50; attempt++)); do
+    forge_critical="$(quickshell -p "$forge_config" ipc call forgeAlerts status | python -c 'import json,sys; d=json.load(sys.stdin); print(d["popups"] == 1 and any(n.get("critical") for n in d["history"]))')"
+    if [[ "$forge_critical" == True ]]; then break; fi
+    sleep 0.1
+done
+[[ "$forge_critical" == True ]]
 for forge_page in alerts connections customize wallpapers hardware capture recovery; do
     quickshell -p "$forge_config" ipc call forge hub "$forge_page"
     quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["hub"] and not d["overview"] and not d["settings"]'

@@ -36,6 +36,12 @@ Singleton {
     readonly property int volume: sink && sink.audio ? Math.round(sink.audio.volume * 100) : 0
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
     readonly property string battery: UPower.displayDevice.ready && UPower.displayDevice.isLaptopBattery ? Math.round(UPower.displayDevice.percentage * 100) + "%" : "AC"
+    BatteryPolicy {
+        available: UPower.displayDevice.ready && UPower.displayDevice.isLaptopBattery
+        discharging: UPower.onBattery
+        charge: UPower.displayDevice.percentage
+        onWarning: (title, message, critical) => Alerts.systemNotice(title, message, critical)
+    }
     readonly property string time: Qt.formatDateTime(clock.date, "hh:mm")
     readonly property string date: Qt.formatDateTime(clock.date, "dddd, MMMM d")
     PwObjectTracker { objects: [root.sink, root.source].filter(node => node !== null) }

@@ -10,12 +10,19 @@ Singleton {
     property var history: []
     property var popups: []
     property var deadlines: ({})
+    property int localIdentity: -1
     readonly property var active: server.trackedNotifications.values
+    function systemNotice(title, message, critical) {
+        const entry = { id: localIdentity--, app: "FORGE / POWER", title: title.slice(0, 256), body: message.slice(0, 4096), critical: critical, time: Qt.formatDateTime(new Date(), "hh:mm"), until: Date.now() + (critical ? 15000 : 8000) }
+        history = [entry].concat(history).slice(0, 80)
+        if (!dnd || critical) popups = [entry].concat(popups).slice(0, 3)
+    }
     function receive(notification) {
         notification.tracked = true
-        const entry = { id: notification.id, app: notification.appName.slice(0, 128), title: notification.summary.slice(0, 256), body: notification.body.slice(0, 4096), time: Qt.formatDateTime(new Date(), "hh:mm"), until: Date.now() + 6000 }
+        const critical = notification.urgency === NotificationUrgency.Critical
+        const entry = { id: notification.id, app: notification.appName.slice(0, 128), title: notification.summary.slice(0, 256), body: notification.body.slice(0, 4096), critical: critical, time: Qt.formatDateTime(new Date(), "hh:mm"), until: Date.now() + (critical ? 15000 : 6000) }
         if (!notification.transient) history = [entry].concat(history.filter(item => item.id !== entry.id)).slice(0, 80)
-        if (!dnd && !notification.lastGeneration) popups = [entry].concat(popups.filter(item => item.id !== entry.id)).slice(0, 3)
+        if ((!dnd || critical) && !notification.lastGeneration) popups = [entry].concat(popups.filter(item => item.id !== entry.id)).slice(0, 3)
         const next = Object.assign({}, deadlines)
         next[entry.id] = notification.expireTimeout === 0 ? 0 : Date.now() + (notification.expireTimeout > 0 ? notification.expireTimeout : 8000)
         deadlines = next
@@ -36,7 +43,7 @@ Singleton {
         popups = popups.filter(item => item.id !== id)
     }
     function clear() { for (const item of active.slice()) item.dismiss(); history = []; popups = [] }
-    onDndChanged: if (dnd) popups = []
+    onDndChanged: if (dnd) popups = popups.filter(item => item.critical)
     NotificationServer {
         id: server
         actionsSupported: true
