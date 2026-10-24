@@ -136,6 +136,8 @@ with tempfile.TemporaryDirectory(prefix="forge-uefi-") as temporary:
         vm.wait("Enter username:")
         time.sleep(.3)
         vm.screenshot("authentication")
+        with Image.open(ROOT / "authentication.png") as authentication:
+            assert authentication.getpixel((1200, 360)) == (252, 238, 10), "The password terminal must not cover the logo"
         assert b"Windows 11" not in vm.log and b"Forge OS" not in vm.log
         vm.console.sendall(b"forge\rwrong-test-password\r")
         vm.wait("Access denied")

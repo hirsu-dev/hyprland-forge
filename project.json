@@ -147,7 +147,7 @@
         "hardware_validation": "pending-on-device"
       }
     },
-    {"id": "appearance", "status": "ready", "requires": ["shell"], "packages": ["papirus-icon-theme", "python-pillow"], "files": [
+    {"id": "appearance", "status": "ready", "requires": ["shell"], "packages": ["papirus-icon-theme", "python-pillow", "grub"], "files": [
       {"source": "configs/bin/forge-boot", "target": ".local/bin/forge-boot", "executable": true},
       {"source": "forge/boot.py", "target": ".local/lib/hyprland-forge/forge/boot.py"},
       {"source": "forge/boot_art.py", "target": ".local/lib/hyprland-forge/forge/boot_art.py"},

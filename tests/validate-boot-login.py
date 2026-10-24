@@ -93,6 +93,13 @@ proxy.loginSucceeded.emit()
 QTest.qWait(50)
 assert password.property("text") == "" and root.property("reveal") == 0
 assert "ACCESS GRANTED" in root.property("notice")
+root.setProperty("motion", True)
+root.setProperty("reveal", 1)
+QTest.qWait(150)
+assert 0 < root.property("reveal") < 1, "The intro must animate through intermediate frames"
+assert view.grabWindow().save(str(results / "login-transition.png"))
+QTest.qWait(800)
+assert root.property("reveal") == 1
 view.close()
 command = ["sddm-greeter-qt6", "--test-mode", "--theme", str(Path("configs/boot/sddm").resolve())]
 try:

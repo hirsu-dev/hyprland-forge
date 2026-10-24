@@ -49,14 +49,13 @@ def render(destination, font=None):
         draw.line((96, 452, 790, 452), fill=red, width=3)
         draw.text((96, 478), "IDENTITY CHECK" if mode == "auth" else "CHOOSE YOUR ENVIRONMENT", font=fonts[24], fill=ink)
         if mode == "auth":
-            draw.rectangle((96, 536, 826, 926), fill="#100d16", outline="#693642", width=2)
-            draw.text((96, 940), "BOOT USER  forge  /  AUTHENTICATE TO REVEAL SYSTEMS", font=fonts[16], fill=cyan)
+            draw.rectangle((96, 506, 826, 956), fill="#100d16", outline="#693642", width=2)
         else:
             draw.rectangle((96, 538, 826, 790), fill="#100d16", outline="#693642", width=2)
             draw.text((96, 836), "UP / DOWN   SELECT     ENTER   LAUNCH", font=fonts[20], fill=cyan)
             draw.text((96, 904), "AUTHENTICATED  /  AWAITING YOUR COMMAND", font=fonts[20], fill=muted)
         draw.line((96, 972, 1824, 972), fill="#693642", width=2)
-        draw.text((96, 1000), "LOCAL CONSOLE  //  NO NETWORK REQUIRED", font=fonts[16], fill=muted)
+        draw.text((96, 1000), "BOOT USER  forge  //  AUTHENTICATE TO REVEAL SYSTEMS" if mode == "auth" else "LOCAL CONSOLE  //  NO NETWORK REQUIRED", font=fonts[16], fill=muted)
         draw.text((1370, 1000), "REDLINE / ORIGINAL SERIES", font=fonts[16], fill=red)
         return image
 

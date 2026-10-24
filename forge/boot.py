@@ -106,15 +106,29 @@ def theme(font, terminal=None, startup=False):
     terminal = terminal or font
     if not all(re.fullmatch(r"[a-zA-Z0-9 _-]{1,100}", name) for name in (font, terminal)):
         raise ForgeError("Invalid GRUB font identity")
-    return f'''title-text: ""
+    base = f'''title-text: ""
 desktop-image: "{'auth.png' if startup else 'selector.png'}"
 desktop-image-scale-method: "stretch"
 desktop-color: "#100d16"
 terminal-font: "{terminal}"
 terminal-left: "5%"
-terminal-top: "50%"
+terminal-top: "47%"
 terminal-width: "38%"
-terminal-height: "40%"
+terminal-height: "41%"
+'''
+    if startup:
+        return base + '''+ progress_bar {
+    id = "__timeout__"
+    left = 6%
+    top = 54%
+    width = 35%
+    height = 3
+    show_text = false
+    fg_color = "#74f7ef"
+    bg_color = "#693642"
+}
+'''
+    return base + f'''
 + boot_menu {{
     left = 6%
     top = 52%
@@ -130,17 +144,7 @@ terminal-height: "40%"
     icon_height = 0
     selected_item_pixmap_style = "select_*.png"
 }}
-''' + ('''+ progress_bar {
-    id = "__timeout__"
-    left = 6%
-    top = 72%
-    width = 35%
-    height = 3
-    show_text = false
-    fg_color = "#74f7ef"
-    bg_color = "#693642"
-}
-''' if startup else "")
+'''
 
 
 def font_name(path):
@@ -175,8 +179,8 @@ def build(output, forge_uuid, windows_uuid, hashed, runner=subprocess.run):
         stage.chmod(0o700)
         assets = stage / "grub"
         font = render(assets)
-        runner(["grub-mkfont", "--name=ForgeMono", "--size=28", "--output=" + str(assets / "forge.pf2"), str(font)], check=True, capture_output=True, text=True)
-        runner(["grub-mkfont", "--name=ForgeTerm", "--size=14", "--output=" + str(assets / "terminal.pf2"), str(font)], check=True, capture_output=True, text=True)
+        runner(["grub-mkfont", "--name=ForgeMono", "--size=28", "--range=0x20-0x7e", "--output=" + str(assets / "forge.pf2"), str(font)], check=True, capture_output=True, text=True)
+        runner(["grub-mkfont", "--name=ForgeTerm", "--size=14", "--range=0x20-0x7e", "--output=" + str(assets / "terminal.pf2"), str(font)], check=True, capture_output=True, text=True)
         menu_font, terminal_font = font_name(assets / "forge.pf2"), font_name(assets / "terminal.pf2")
         (assets / "theme.txt").write_text(theme(menu_font, terminal_font), encoding="utf-8", newline="\n")
         (assets / "startup.txt").write_text(theme(menu_font, terminal_font, startup=True), encoding="utf-8", newline="\n")
