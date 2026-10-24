@@ -3,6 +3,7 @@
   "name": "hyprland-forge",
   "release": "0.14.0",
   "guided_installer": {"entry": "install-online.sh", "default": "setup", "profiles": "automatic-laptop-or-vm", "prerequisites": "automatic", "gaming": "optional-with-multilib-backup", "accounts": "root-launch-with-normal-user-handoff", "arch_usb": "guided-archinstall-with-first-login-setup", "disk_selection": "explicit-in-archinstall"},
+  "boot_experience": {"status": "candidate-not-activated", "builder": "forge-boot", "target": "x86_64-UEFI", "flow": ["GRUB-local-username-and-password-gate", "Forge-or-Windows-picker", "existing-OS-loader", "OS-account-sign-in"], "pre_os_motion": "static-themed-GRUB", "forge_login_motion": "animated-SDDM", "firmware_changes": "never-automatic", "encryption": "not-provided-by-boot-password", "validation": "pending"},
   "gaming_wallpaper": {"launcher": ["NVIDIA-offload-on-physical-hardware", "GameMode", "optional-MangoHud", "optional-Gamescope", "1920x1080-120-FPS-Gamescope-default", "tracked-game-lifetime"], "wallpaper": ["optional-community-linux-wallpaperengine", "Steam-library-detection", "assets-and-project-picker", "30-FPS-muted-default", "game-aware-unload-and-restore", "fullscreen-pause", "static-fallback"], "lifecycle_fixture_validation": "passed-game-pause-exit-restore-preset-pause-disable", "renderer_validation": "requires-user-owned-Steam-assets-and-physical-GPU", "performance_benchmarks": "pending-on-device"},
   "system_deck": {"features": ["memory-only-notification-history", "do-not-disturb", "audio-brightness-microphone-hud", "native-audio-device-picker", "wifi-and-bluetooth-controls", "window-overview", "input-and-shortcut-editor", "per-output-wallpapers", "display-profile-preview", "hardware-telemetry", "gamemode-launcher", "capture-and-annotation", "screen-recording", "update-preview", "config-recovery", "session-logs"], "validation": {"python_tests": 193, "native_arch_vm": "passed", "checks": ["notification-history-expiry-dnd-actions", "seven-system-deck-pages", "panel-exclusivity", "input-and-gaming-apply-restore", "display-profile-preview-revert", "cpu-memory-telemetry", "pipewire-output-switch", "volume-hud-expiry", "screenshot-file", "recording-finalization", "taskbar-fullscreen-and-hotplug-regression"]}, "hardware_validation": "pending-on-device", "advanced_connectivity": "enterprise-WPA3-only-WiFi-and-new-Bluetooth-pairing-use-external-tools"},
   "desktop_settings": {
@@ -147,6 +148,12 @@
       }
     },
     {"id": "appearance", "status": "ready", "requires": ["shell"], "packages": ["papirus-icon-theme", "python-pillow"], "files": [
+      {"source": "configs/bin/forge-boot", "target": ".local/bin/forge-boot", "executable": true},
+      {"source": "forge/boot.py", "target": ".local/lib/hyprland-forge/forge/boot.py"},
+      {"source": "forge/boot_art.py", "target": ".local/lib/hyprland-forge/forge/boot_art.py"},
+      {"source": "configs/boot/sddm/Main.qml", "target": ".local/share/hyprland-forge/boot/sddm/Main.qml"},
+      {"source": "configs/boot/sddm/metadata.desktop", "target": ".local/share/hyprland-forge/boot/sddm/metadata.desktop"},
+      {"source": "configs/boot/sddm/theme.conf", "target": ".local/share/hyprland-forge/boot/sddm/theme.conf"},
       {"source": "configs/gtk-3.0/settings.ini", "target": ".config/gtk-3.0/settings.ini"},
       {"source": "configs/gtk-4.0/settings.ini", "target": ".config/gtk-4.0/settings.ini"},
       {"source": "configs/qt6ct/qt6ct.conf", "target": ".config/qt6ct/qt6ct.conf"},
