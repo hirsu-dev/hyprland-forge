@@ -15,6 +15,7 @@ from .login import resolve_plan as resolve_login
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="hyprland-forge")
     modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--setup", action="store_true")
     modes.add_argument("--plan", action="store_true")
     modes.add_argument("--apply", action="store_true")
     modes.add_argument("--rollback", metavar="TRANSACTION")
@@ -22,10 +23,15 @@ def main(argv=None):
     parser.add_argument("--stage", action="append")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--login", choices=("auto", "sddm", "keep"), default="auto")
-    parser.add_argument("--profile", choices=("laptop", "virtual-machine"), default="laptop")
+    parser.add_argument("--profile", choices=("laptop", "virtual-machine"))
     args = parser.parse_args(argv)
     source_root = Path(__file__).resolve().parent.parent
     try:
+        if args.setup:
+            if args.json or args.stage:
+                raise ForgeError("Guided setup installs the full desktop; use --plan for individual stages")
+            from .setup import run
+            return run(source_root, args.profile, args.login)
         if args.doctor:
             report = doctor()
             print(json.dumps(report, indent=2))
@@ -39,7 +45,7 @@ def main(argv=None):
         if args.apply:
             preflight()
         if not args.rollback:
-            plan = resolve_plan(plan, apply=args.apply, profile=args.profile)
+            plan = resolve_plan(plan, apply=args.apply, profile=args.profile or "laptop")
             plan = resolve_login(plan, mode=args.login, apply=args.apply)
         if not args.apply and not args.rollback:
             print(json.dumps(plan, indent=2)) if args.json else show_plan(plan)

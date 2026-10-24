@@ -7,4 +7,10 @@ if [[ -f SHA256SUMS ]]; then
     command -v sha256sum >/dev/null || { printf '%s\n' 'sha256sum is required to verify this bundle.'; exit 1; }
     sha256sum --check --quiet SHA256SUMS || { printf '%s\n' 'Bundle integrity verification failed.'; exit 1; }
 fi
+if [[ $# -eq 0 ]]; then
+    set -- --setup
+fi
+if [[ $EUID -eq 0 && " $* " == *' --setup '* ]]; then
+    exec python3 -m forge.bootstrap "$@"
+fi
 exec python3 -m forge "$@"

@@ -19,7 +19,7 @@ def build_bundle(root, destination, revision):
         raise ForgeError("Invalid bundle identity")
     if not all(stage["status"] == "ready" for stage in manifest["stages"]):
         raise ForgeError("All modules must be released before packaging")
-    paths = {"install.sh", "live.sh", "project.json"}
+    paths = {"install.sh", "install-online.sh", "live.sh", "project.json"}
     paths.update(str(path.relative_to(root)).replace("\\", "/") for path in (root / "forge").glob("*.py"))
     paths.update(item["source"] for stage in manifest["stages"] for item in stage.get("files", []))
     payloads = {}
