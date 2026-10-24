@@ -110,6 +110,16 @@ class BootVM:
             image.save(path.with_suffix(".png"))
         path.unlink()
 
+    def type(self, value):
+        for byte in value.encode():
+            self.console.sendall(bytes([byte]))
+            time.sleep(.03)
+
+    def authenticate(self, password):
+        self.type("forge\r")
+        self.wait("Enter password:")
+        self.type(password + "\r")
+
     def __exit__(self, *args):
         (ROOT / (self.label + "-serial.log")).write_bytes(self.log)
         self.console.close()
@@ -139,14 +149,14 @@ with tempfile.TemporaryDirectory(prefix="forge-uefi-") as temporary:
         with Image.open(ROOT / "authentication.png") as authentication:
             assert authentication.getpixel((1200, 360)) == (252, 238, 10), "The password terminal must not cover the logo"
         assert b"Windows 11" not in vm.log and b"Forge OS" not in vm.log
-        vm.console.sendall(b"forge\rwrong-test-password\r")
+        vm.authenticate("wrong-test-password")
         vm.wait("Access denied")
         vm.wait("Enter username:")
         assert b"Windows 11" not in vm.log
         vm.console.sendall(b"\x1b")
         vm.wait("Access denied")
         vm.wait("Enter username:")
-        vm.console.sendall(("forge\r" + PASSWORD + "\r").encode())
+        vm.authenticate(PASSWORD)
         vm.wait("Windows 11")
         time.sleep(.3)
         vm.screenshot("selector")
@@ -154,7 +164,7 @@ with tempfile.TemporaryDirectory(prefix="forge-uefi-") as temporary:
         vm.wait("FORGE_TEST_WINDOWS_CHAINLOADER_OK")
     with BootVM(root, "forge") as vm:
         vm.wait("Enter username:")
-        vm.console.sendall(("forge\r" + PASSWORD + "\r").encode())
+        vm.authenticate(PASSWORD)
         vm.wait("Windows 11")
         vm.console.sendall(b"\r")
         vm.wait("FORGE_TEST_LINUX_CHAINLOADER_OK")
