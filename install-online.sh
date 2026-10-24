@@ -22,7 +22,7 @@ forge_online() {
             --setup|--apply|--rollback|--rollback=*) mode=install ;;
         esac
     done
-    if [[ "$(uname -s)" != Linux || "$(uname -m)" != x86_64 || ! -f /etc/arch-release || ! -r /etc/os-release ]] || [[ "$(. /etc/os-release; printf '%s' "${ID:-}")" != arch ]]; then
+    if [[ "$(uname -s)" != Linux || "$(uname -m)" != x86_64 || ! -f /etc/arch-release || ! -r /etc/os-release ]] || ! grep -Eq '^ID=(arch|"arch")$' /etc/os-release; then
         printf '%s\n' 'Forge needs x86_64 Arch Linux or the official Arch USB.' >&2
         return 1
     fi
