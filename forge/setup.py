@@ -32,6 +32,8 @@ def confirm(question, default=True, reader=None):
 
 def with_gaming(plan, source_root):
     packages = [p for p in GAMING if plan["profile"] != "virtual-machine" or p not in ("lib32-nvidia-utils", "lib32-vulkan-radeon")]
+    if plan["profile"] == "virtual-machine":
+        packages.extend(("vulkan-swrast", "lib32-vulkan-swrast"))
     plan["packages"] = list(dict.fromkeys([*plan["packages"], *packages]))
     plan["commands"] = [
         ["sudo", sys.executable, str(source_root / "forge/bootstrap.py"), "--multilib"],

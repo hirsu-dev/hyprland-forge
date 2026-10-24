@@ -25,6 +25,7 @@ class HardwareTests(unittest.TestCase):
         self.assertFalse(any(package.startswith("nvidia") for package in result["packages"]))
         self.assertNotIn("linux-headers", result["packages"])
         self.assertIn("mesa", result["packages"])
+        self.assertIn("vulkan-swrast", result["packages"])
         self.assertEqual(result["services"], ["NetworkManager.service", "fstrim.timer"])
         self.assertEqual(result["hardware"]["validation_scope"], "virtual-hardware-only")
 

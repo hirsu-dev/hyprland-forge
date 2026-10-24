@@ -48,6 +48,8 @@ class SetupTests(unittest.TestCase):
         result = with_gaming({"packages": [], "profile": "virtual-machine"}, ROOT)
         self.assertNotIn("lib32-nvidia-utils", result["packages"])
         self.assertIn("lib32-mesa", result["packages"])
+        self.assertIn("vulkan-swrast", result["packages"])
+        self.assertIn("lib32-vulkan-swrast", result["packages"])
 
     def test_cached_installer_is_complete_without_checkout_metadata(self):
         with tempfile.TemporaryDirectory() as directory:
