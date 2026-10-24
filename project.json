@@ -186,7 +186,10 @@
       "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/37661271001",
       "checks": ["native Kitty configuration parser", "native Fuzzel parser for all presets", "installed Qt palette and Papirus assets", "dynamic shell palette reload", "theme apply and conflict-preserving rollback"]
     }},
-    {"id": "everyday", "status": "ready", "requires": ["appearance"], "packages": ["gvfs", "gvfs-mtp", "gvfs-smb", "udisks2", "thunar-volman", "thunar-archive-plugin", "tumbler", "xarchiver", "7zip", "zip", "mousepad", "ristretto", "evince", "mpv", "noto-fonts-emoji", "desktop-file-utils", "shared-mime-info", "perl-file-mimeinfo"], "files": [], "features": ["removable-storage-and-trash", "MTP-phone-browsing", "SMB-network-shares", "archive-menu-and-7zip", "image-PDF-text-and-media-apps", "first-login-default-apps-preserve-existing-choices", "standard-user-folders", "supervised-session-with-backoff-and-owned-process-cleanup"], "hardware_validation": "pending-on-device"},
+    {"id": "everyday", "status": "ready", "requires": ["appearance"], "packages": ["gvfs", "gvfs-mtp", "gvfs-smb", "udisks2", "thunar-volman", "thunar-archive-plugin", "tumbler", "xarchiver", "7zip", "zip", "mousepad", "ristretto", "evince", "mpv", "noto-fonts-emoji", "desktop-file-utils", "shared-mime-info", "perl-file-mimeinfo"], "files": [
+      {"source": "configs/mpv/mpv.conf", "target": ".config/mpv/mpv.conf"},
+      {"source": "configs/mpv/virtual-machine.conf", "target": ".local/share/hyprland-forge/profiles/mpv-virtual-machine.conf"}
+    ], "features": ["removable-storage-and-trash", "MTP-phone-browsing", "SMB-network-shares", "archive-menu-and-7zip", "image-PDF-text-and-media-apps", "first-login-default-apps-preserve-existing-choices", "standard-user-folders", "supervised-session-with-backoff-and-owned-process-cleanup", "VM-compatible-media-rendering"], "hardware_validation": "pending-on-device"},
     {"id": "release", "status": "ready", "requires": ["everyday"], "packages": [], "files": [], "qualification": "automated-checks-only", "hardware_validation": "pending-on-device"}
   ]
 }

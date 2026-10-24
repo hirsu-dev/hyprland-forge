@@ -26,6 +26,7 @@ class HardwareTests(unittest.TestCase):
         self.assertNotIn("linux-headers", result["packages"])
         self.assertIn("mesa", result["packages"])
         self.assertIn("vulkan-swrast", result["packages"])
+        self.assertEqual(next(item["source"] for item in result["files"] if item["target"] == ".config/mpv/mpv.conf"), "configs/mpv/virtual-machine.conf")
         self.assertEqual(result["services"], ["NetworkManager.service", "fstrim.timer"])
         self.assertEqual(result["hardware"]["validation_scope"], "virtual-hardware-only")
 
@@ -40,6 +41,7 @@ class HardwareTests(unittest.TestCase):
             result = resolve_plan(plan)
         self.assertEqual(result["profile"], "laptop")
         self.assertIn("nvidia-open-dkms", result["packages"])
+        self.assertEqual(next(item["source"] for item in result["files"] if item["target"] == ".config/mpv/mpv.conf"), "configs/mpv/mpv.conf")
 
     def test_virtualbox_profile_installs_guest_integration(self):
         plan = make_plan(load_manifest(Path(__file__).resolve().parent.parent), None)

@@ -1,6 +1,7 @@
 import json
 import os
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -53,11 +54,11 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
         ("image", ["ristretto", str(root / "forge-everyday.png")], ("ristretto", "org.xfce.ristretto"), None),
         ("pdf", ["evince", str(root / "forge-everyday.pdf")], ("evince", "org.gnome.evince"), None),
         ("archive", ["xarchiver", str(root / "forge-everyday.zip")], ("xarchiver",), None),
-        ("media", ["mpv", "--no-config", "--keep-open=yes", "--loop-file=inf", str(root / "forge-everyday.mp4")], ("mpv",), None),
+        ("media", ["mpv", "--keep-open=yes", "--loop-file=inf", "--input-ipc-server=" + str(root / "mpv.sock"), str(root / "forge-everyday.mp4")], ("mpv",), None),
         ("browser", ["firefox", "--no-remote", "--profile", str(profile), "--new-window", page.as_uri()], ("firefox",), "Forge Everyday Validation"),
     ]
     for name, command, classes, title in applications:
-        baseline = {item["address"] for item in clients()}
+        baseline = {(item["address"], item["pid"]) for item in clients()}
         process = None
         with tempfile.TemporaryFile(mode="w+t") as errors:
             try:
@@ -65,7 +66,7 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
                 deadline = time.monotonic() + 45
                 matched = None
                 while time.monotonic() < deadline:
-                    matched = next((item for item in clients() if item["address"] not in baseline and item.get("class", "").lower() in classes and (title is None or title in item.get("title", "")) and all(value > 0 for value in item.get("size", []))), None)
+                    matched = next((item for item in clients() if (item["address"], item["pid"]) not in baseline and item.get("class", "").lower() in classes and (title is None or title in item.get("title", "")) and all(value > 0 for value in item.get("size", []))), None)
                     if matched:
                         break
                     if process.poll() not in (None, 0):
@@ -73,16 +74,30 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
                     time.sleep(0.2)
                 if not matched:
                     errors.seek(0)
-                    raise AssertionError({"app": name, "clients": clients(), "error": errors.read()[-4000:]})
+                    raise AssertionError({"app": name, "baseline": sorted(baseline), "clients": clients(), "exit_code": process.poll(), "error": errors.read()[-4000:]})
                 time.sleep(0.5)
+                if name == "media":
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+                        connection.settimeout(3)
+                        connection.connect(str(root / "mpv.sock"))
+                        connection.sendall(b'{"command":["get_property","time-pos"],"request_id":42}\n')
+                        with connection.makefile("r") as stream:
+                            for line in stream:
+                                state = json.loads(line)
+                                if state.get("request_id") == 42:
+                                    assert state.get("error") == "success" and type(state.get("data")) in (int, float) and state["data"] > 0.1, state
+                                    break
+                            else:
+                                raise AssertionError("No media playback position")
                 screenshot = Path.home() / "Pictures/Forge" / ("qualification-" + name + ".png")
                 screenshot.parent.mkdir(parents=True, exist_ok=True)
                 subprocess.run(["grim", str(screenshot)], capture_output=True, check=True, timeout=15)
                 assert screenshot.read_bytes().startswith(b"\x89PNG")
                 results[name] = {"opened": True, "title": matched.get("title"), "screenshot": str(screenshot)}
+                print(name + " opened", flush=True)
             finally:
                 for item in clients():
-                    if item["address"] not in baseline and item.get("class", "").lower() in classes:
+                    if (item["address"], item["pid"]) not in baseline and item.get("class", "").lower() in classes:
                         close(item["address"])
                 if process is not None:
                     try:

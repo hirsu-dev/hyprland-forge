@@ -95,6 +95,7 @@ def resolve_plan(plan, apply=False, profile="laptop"):
         excluded = {"amd-ucode", "nvidia-open-dkms", "nvidia-utils", "nvidia-prime", "egl-wayland", "vulkan-radeon"}
         plan["packages"] = [package for package in plan["packages"] if package not in excluded]
         plan["packages"].append("vulkan-swrast")
+        plan["files"] = [{**item, "source": "configs/mpv/virtual-machine.conf"} if item["target"] == ".config/mpv/mpv.conf" else item for item in plan.get("files", [])]
         plan["hardware"]["validation_scope"] = "virtual-hardware-only"
         plan["hardware"]["hypervisor"] = hypervisor
         if hypervisor == "oracle":
