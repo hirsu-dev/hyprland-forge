@@ -216,7 +216,11 @@ def main():
         if args.render_only:
             if args.output.exists() or args.output.is_symlink():
                 raise ForgeError("Choose a new output folder")
-            render(args.output)
+            if args.engine == "native":
+                from .native_boot import preview
+                preview(args.output)
+            else:
+                render(args.output)
         else:
             if args.engine == "native":
                 from .native_boot import partition_id, provisioning, build as native_build

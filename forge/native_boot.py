@@ -17,6 +17,55 @@ SOURCES = ("Cargo.toml", "Cargo.lock", "src/lib.rs", "src/state.rs", "src/visual
 ROUNDS = 600000
 
 
+def source_copy(destination):
+    destination.mkdir()
+    for name in SOURCES:
+        source = source_assets() / "native" / name
+        if source.is_symlink() or not source.is_file():
+            raise ForgeError("Missing or unsafe native source: " + name)
+        target = destination / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+
+
+def toolchain():
+    if os.name == "posix" and os.geteuid() == 0:
+        raise ForgeError("Build native startup as a normal user, not root")
+    if not shutil.which("cargo"):
+        raise ForgeError("Rust is required to compile this experimental boot application")
+
+
+def preview(output, runner=subprocess.run):
+    from PIL import Image
+    toolchain()
+    output = Path(output)
+    if output.exists() or output.is_symlink():
+        raise ForgeError("Choose a new output folder")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".forge-preview-", dir=output.parent) as directory:
+        stage = Path(directory)
+        project = stage / "source"
+        source_copy(project)
+        images = stage / "images"
+        environment = {**os.environ, "CARGO_TARGET_DIR": str(stage / "compile")}
+        try:
+            runner(["cargo", "run", "--locked", "--release", "--features", "preview", "--bin", "forge-preview", "--", str(images.resolve())], cwd=project, env=environment, check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as exc:
+            raise ForgeError("Native preview failed:\n" + (exc.stderr or "")[-8000:]) from exc
+        frames = []
+        for path in sorted(images.glob("*.ppm")):
+            with Image.open(path) as image:
+                image.save(path.with_suffix(".png"))
+                if path.name.startswith("intro-"):
+                    frames.append(image.convert("RGB"))
+            path.unlink()
+        if not frames:
+            raise ForgeError("Native renderer did not produce preview frames")
+        frames[0].save(images / "intro.gif", save_all=True, append_images=frames[1:], duration=40, loop=0)
+        os.rename(images, output)
+    return output
+
+
 def partition_id(value):
     try:
         parsed = uuid.UUID(value)
@@ -64,8 +113,7 @@ def licenses(project, destination, runner):
 def build(output, provision, runner=subprocess.run, telemetry=False):
     if len(provision) != 104 or provision[:4] != b"FGX1" or struct.unpack("<I", provision[4:8])[0] != ROUNDS or not all(any(provision[a:b]) for a,b in ((8,24),(24,40),(40,72),(72,104))):
         raise ForgeError("Invalid native boot provisioning")
-    if not shutil.which("cargo"):
-        raise ForgeError("Rust is required to compile this experimental boot application")
+    toolchain()
     output = Path(output)
     if output.exists() or output.is_symlink():
         raise ForgeError("Choose a new output folder; existing files will not be replaced")
@@ -74,18 +122,13 @@ def build(output, provision, runner=subprocess.run, telemetry=False):
         stage = Path(temporary)
         stage.chmod(0o700)
         project = stage / "source"
-        project.mkdir()
-        for name in SOURCES:
-            source = source_assets() / "native" / name
-            if source.is_symlink() or not source.is_file():
-                raise ForgeError("Missing or unsafe native source: " + name)
-            target = project / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, target)
+        source_copy(project)
         config = stage / "provision.bin"
         config.write_bytes(provision)
         config.chmod(0o600)
         environment = {**os.environ, "FORGE_BOOT_CONFIG": str(config.resolve()), "CARGO_TARGET_DIR": str((stage / "compile").resolve())}
+        if shutil.which("rustup"):
+            runner(["rustup", "target", "add", "x86_64-unknown-uefi"], check=True, capture_output=True, text=True)
         try:
             runner(["cargo", "build", "--locked", "--release", "--target", "x86_64-unknown-uefi", "--features", "firmware-test" if telemetry else "firmware", "--bin", "forge-startup"], cwd=project, env=environment, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as exc:

@@ -67,7 +67,7 @@ class IntegrationTests(unittest.TestCase):
         import os
         execute(make_plan(self.manifest, None), ROOT, self.user, self.state, runner=lambda command, **kwargs: None)
         wrapper = self.user / ".local/bin/forge-boot"
-        result = subprocess.run([sys.executable, str(wrapper), "--render-only", "--output", str(self.root / "preview")], cwd=self.root, env={**os.environ, "HOME": str(self.user), "USERPROFILE": str(self.user)}, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, str(wrapper), "--engine", "grub", "--render-only", "--output", str(self.root / "preview")], cwd=self.root, env={**os.environ, "HOME": str(self.user), "USERPROFILE": str(self.user)}, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
         self.assertTrue((self.root / "preview/selector.png").is_file())
         self.assertTrue((self.user / ".local/share/hyprland-forge/boot/sddm/Main.qml").is_file())

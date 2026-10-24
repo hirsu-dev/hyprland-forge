@@ -24,4 +24,7 @@ config = provisioning("fixture-password-123", "11111111-2222-4333-8444-555555555
 output = build(root / "private-fixture", config, telemetry=True)
 assert (output / "EFI/Forge/forge-startup-x64.efi").read_bytes().startswith(b"MZ")
 assert not (output / "provision.bin").exists()
+production = build(root / "private-production", config)
+assert b"FORGE:SELECTOR" not in (production / "EFI/Forge/forge-startup-x64.efi").read_bytes()
+assert not __import__("json").loads((production / "plan.json").read_text())["telemetry"]
 print("Native Rust unit, rendering, firmware build and dependency-license capture passed")
