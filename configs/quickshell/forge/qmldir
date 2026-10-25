@@ -10,6 +10,8 @@ ForgeSlider 1.0 ForgeSlider.qml
 PowerMenu 1.0 PowerMenu.qml
 Settings 1.0 Settings.qml
 ForgeFrame 1.0 ForgeFrame.qml
+ForgeSignal 1.0 ForgeSignal.qml
+InterfaceSettings 1.0 InterfaceSettings.qml
 singleton Tasks 1.0 Tasks.qml
 Taskbar 1.0 Taskbar.qml
 TaskButton 1.0 TaskButton.qml

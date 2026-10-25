@@ -10,8 +10,8 @@ ColumnLayout {
     signal save(var value)
     property bool overlay: settings.overlay
     property bool gamescope: settings.gamescope
-    spacing: 10
-    component Label: Text { Layout.fillWidth: true; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 11; wrapMode: Text.Wrap; textFormat: Text.PlainText }
+    spacing: ForgeTheme.gap(10)
+    component Label: Text { Layout.fillWidth: true; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11); wrapMode: Text.Wrap; textFormat: Text.PlainText }
     RowLayout {
         ForgeButton { text: "MANGOHUD OVERLAY"; selected: root.overlay; onClicked: root.overlay = !root.overlay }
         ForgeButton { text: "GAMESCOPE"; selected: root.gamescope; onClicked: root.gamescope = !root.gamescope }
@@ -20,9 +20,9 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         Label { text: "GAMESCOPE RENDER SIZE" }
-        TextField { id: widthField; Layout.preferredWidth: 90; text: String(root.settings.width); color: ForgeTheme.text; validator: IntValidator { bottom: 640; top: 3840 } background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line } }
+        TextField { id: widthField; Layout.preferredWidth: ForgeTheme.px(90); text: String(root.settings.width); color: ForgeTheme.text; validator: IntValidator { bottom: 640; top: 3840 } background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line } }
         Text { text: "×"; color: ForgeTheme.muted }
-        TextField { id: heightField; Layout.preferredWidth: 90; text: String(root.settings.height); color: ForgeTheme.text; validator: IntValidator { bottom: 480; top: 2160 } background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line } }
+        TextField { id: heightField; Layout.preferredWidth: ForgeTheme.px(90); text: String(root.settings.height); color: ForgeTheme.text; validator: IntValidator { bottom: 480; top: 2160 } background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line } }
     }
     RowLayout {
         Label { text: "GAMESCOPE FRAME CAP" }

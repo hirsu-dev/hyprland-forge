@@ -11,13 +11,19 @@ ForgeFrame {
     readonly property var running: window ? [window] : Tasks.windowsFor(entry)
     readonly property bool active: running.some(item => item.activated)
     readonly property string label: window ? window.title || window.appId || "Untitled window" : entry ? entry.name : "Application unavailable"
-    implicitWidth: showTitle ? 172 : 44
-    implicitHeight: 36
-    cut: 8
+    implicitWidth: ForgeTheme.px(showTitle ? 184 : 46)
+    implicitHeight: ForgeTheme.px(36)
+    cut: ForgeTheme.px(8)
     ornament: false
     activeFocusOnTab: true
     color: active ? ForgeTheme.raised : pointer.containsMouse || activeFocus ? ForgeTheme.surface : ForgeTheme.background
     borderColor: active ? ForgeTheme.accent : pointer.containsMouse || activeFocus ? ForgeTheme.cyan : ForgeTheme.line
+    Behavior on color { ColorAnimation { duration: ForgeTheme.duration / 2 } }
+    Behavior on borderColor { ColorAnimation { duration: ForgeTheme.duration / 2 } }
+    transform: Translate {
+        y: ForgeTheme.motion && pointer.containsMouse ? -ForgeTheme.px(2) : 0
+        Behavior on y { NumberAnimation { duration: ForgeTheme.duration / 2; easing.type: Easing.OutCubic } }
+    }
     Accessible.role: Accessible.Button
     Accessible.name: label
     Accessible.onPressAction: activate()
@@ -26,13 +32,13 @@ ForgeFrame {
     function activate() { if (window) Tasks.activate(window); else Tasks.launchOrFocus(entry) }
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
-        spacing: 9
+        anchors.leftMargin: ForgeTheme.gap(12)
+        anchors.rightMargin: ForgeTheme.gap(12)
+        spacing: ForgeTheme.gap(9)
         Image {
             source: Quickshell.iconPath(root.entry && root.entry.icon ? root.entry.icon : root.window ? root.window.appId : "", "application-x-executable")
-            sourceSize.width: 20; sourceSize.height: 20
-            Layout.preferredWidth: 20; Layout.preferredHeight: 20
+            sourceSize.width: ForgeTheme.px(20); sourceSize.height: ForgeTheme.px(20)
+            Layout.preferredWidth: ForgeTheme.px(20); Layout.preferredHeight: ForgeTheme.px(20)
         }
         Text {
             visible: root.showTitle
@@ -42,7 +48,7 @@ ForgeFrame {
             elide: Text.ElideRight
             color: root.active ? ForgeTheme.text : ForgeTheme.muted
             font.family: ForgeTheme.font
-            font.pixelSize: 11
+            font.pixelSize: ForgeTheme.fontSize(11)
         }
     }
     Rectangle {
@@ -55,16 +61,16 @@ ForgeFrame {
     }
     Text {
         visible: !root.window && root.running.length > 1
-        anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 3
+        anchors.right: parent.right; anchors.top: parent.top; anchors.margins: ForgeTheme.gap(3)
         text: root.running.length
-        font.family: ForgeTheme.font; font.pixelSize: 8
+        font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(8)
         color: ForgeTheme.cyan
     }
     ToolTip {
         visible: pointer.containsMouse && !context.visible
         delay: 450
         text: root.label
-        contentItem: Text { text: root.label; textFormat: Text.PlainText; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 11 }
+        contentItem: Text { text: root.label; textFormat: Text.PlainText; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11) }
         background: Rectangle { color: ForgeTheme.background; border.color: ForgeTheme.cyan }
     }
     Menu {

@@ -12,36 +12,36 @@ PanelWindow {
     screen: modelData
     visible: !Tasks.fullscreenOn(modelData)
     anchors { top: true; left: true; right: true }
-    implicitHeight: 56
+    implicitHeight: ForgeTheme.px(56)
     color: "transparent"
-    exclusiveZone: 56
+    exclusiveZone: implicitHeight
     ForgeFrame {
         anchors.fill: parent
-        anchors.margins: 6
-        cut: 12
+        anchors.margins: ForgeTheme.gap(6)
+        cut: ForgeTheme.px(12)
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 12
-            anchors.rightMargin: 14
-            spacing: 6
+            anchors.leftMargin: ForgeTheme.gap(12)
+            anchors.rightMargin: ForgeTheme.gap(14)
+            spacing: ForgeTheme.gap(6)
             ForgeButton {
                 text: "FORGE /"
                 selected: true
-                implicitHeight: 30
+                implicitHeight: ForgeTheme.px(30)
                 onClicked: Desktop.toggleLauncher(bar.screen)
             }
-            Rectangle { Layout.leftMargin: 5; Layout.rightMargin: 5; width: 1; height: 20; color: ForgeTheme.line }
+            Rectangle { Layout.leftMargin: ForgeTheme.gap(5); Layout.rightMargin: ForgeTheme.gap(5); width: 1; height: 20; color: ForgeTheme.line }
             Row {
-                spacing: 3
+                spacing: ForgeTheme.gap(3)
                 Repeater {
-                    model: 10
+                    model: bar.width < ForgeTheme.px(1100) ? 4 : bar.width < ForgeTheme.px(1400) ? 6 : 10
                     ForgeButton {
                         required property int index
                         readonly property var monitor: Hyprland.monitorFor(bar.screen)
                         selected: monitor && monitor.activeWorkspace && monitor.activeWorkspace.id === index + 1
                         text: String(index + 1).padStart(2, "0")
-                        implicitWidth: selected ? 36 : 26
-                        implicitHeight: 28
+                        implicitWidth: ForgeTheme.px(selected ? 36 : 26)
+                        implicitHeight: ForgeTheme.px(28)
                         onClicked: Desktop.workspace(index + 1)
                     }
                 }
@@ -49,25 +49,25 @@ PanelWindow {
             Item { Layout.fillWidth: true }
             Text {
                 Layout.maximumWidth: Math.max(0, bar.width - 980)
-                visible: bar.width > 1020
+                visible: bar.width > ForgeTheme.px(1220)
                 text: Desktop.player ? "♫  " + Desktop.player.trackTitle : "OVERDRIVE // LOCAL SESSION"
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 color: ForgeTheme.cyan
                 font.family: ForgeTheme.font
-                font.pixelSize: 10
+                font.pixelSize: ForgeTheme.fontSize(10)
             }
             Item { Layout.fillWidth: true }
             Row {
-                spacing: 4
+                spacing: ForgeTheme.gap(4)
                 Repeater {
                     model: SystemTray.items
                     Rectangle {
                         id: trayIcon
                         required property var modelData
-                        width: 26; height: 28
+                        width: ForgeTheme.px(26); height: 28
                         color: trayMouse.containsMouse ? ForgeTheme.raised : "transparent"
-                        Image { anchors.centerIn: parent; source: trayIcon.modelData.icon; sourceSize.width: 18; sourceSize.height: 18; width: 18; height: 18 }
+                        Image { anchors.centerIn: parent; source: trayIcon.modelData.icon; sourceSize.width: ForgeTheme.px(18); sourceSize.height: ForgeTheme.px(18); width: 18; height: 18 }
                         ToolTip.visible: trayMouse.containsMouse
                         ToolTip.text: modelData.tooltipTitle || modelData.title || modelData.id
                         ToolTip.delay: 500
@@ -88,13 +88,13 @@ PanelWindow {
                     }
                 }
             }
-            ForgeButton { text: Desktop.muted ? "MUTE" : "VOL " + Desktop.volume; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { visible: Desktop.recording; text: "REC ■"; danger: true; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("capture") } }
-            ForgeButton { text: Alerts.dnd ? "DND" : "N " + Alerts.history.length; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("alerts") } }
-            ForgeButton { text: Desktop.battery; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { text: Desktop.time; implicitHeight: 28; onClicked: Desktop.toggleControls(bar.screen) }
-            ForgeButton { text: "SYS"; implicitHeight: 28; onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.toggleSettings() } }
-            ForgeButton { text: "⏻"; danger: true; implicitHeight: 28; onClicked: Desktop.togglePower(bar.screen) }
+            ForgeButton { text: Desktop.muted ? "MUTE" : "VOL " + Desktop.volume; implicitHeight: ForgeTheme.px(28); onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { visible: Desktop.recording; text: "REC ■"; danger: true; implicitHeight: ForgeTheme.px(28); onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("capture") } }
+            ForgeButton { text: Alerts.dnd ? "DND" : "N " + Alerts.history.length; implicitHeight: ForgeTheme.px(28); onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.openHub("alerts") } }
+            ForgeButton { visible: bar.width > ForgeTheme.px(1000); text: Desktop.battery; implicitHeight: ForgeTheme.px(28); onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { visible: bar.width > ForgeTheme.px(900); text: Desktop.time; implicitHeight: ForgeTheme.px(28); onClicked: Desktop.toggleControls(bar.screen) }
+            ForgeButton { text: "SYS"; implicitHeight: ForgeTheme.px(28); onClicked: { Desktop.selectedScreen = bar.screen.name; Desktop.toggleSettings() } }
+            ForgeButton { text: "⏻"; danger: true; implicitHeight: ForgeTheme.px(28); onClicked: Desktop.togglePower(bar.screen) }
         }
     }
 }

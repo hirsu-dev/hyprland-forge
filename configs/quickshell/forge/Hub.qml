@@ -10,8 +10,8 @@ PanelWindow {
     id: panel
     screen: Desktop.panelScreen
     visible: Desktop.hubOpen
-    implicitWidth: Math.min(1050, screen ? screen.width - 32 : 1050)
-    implicitHeight: Math.min(790, screen ? screen.height - 100 : 790)
+    implicitWidth: Math.min(ForgeTheme.px(1050), screen ? screen.width - ForgeTheme.gap(32) : ForgeTheme.px(1050))
+    implicitHeight: ForgeTheme.panelHeight(screen, 790)
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
@@ -45,6 +45,7 @@ PanelWindow {
     readonly property var inputs: audioNodes.filter(node => !node.isSink)
     readonly property var pages: ["alerts", "connections", "customize", "wallpapers", "hardware", "capture", "recovery"]
     readonly property bool busy: worker.running
+    readonly property bool compact: width < ForgeTheme.px(900) || height < ForgeTheme.px(620)
     Component.onCompleted: request("preferences")
     function request(action, extra) {
         if (busy) return
@@ -133,18 +134,18 @@ PanelWindow {
         }
     }
     Timer { interval: 3000; running: panel.visible && Desktop.hubPage === "hardware"; repeat: true; onTriggered: if (!panel.busy) panel.request("metrics") }
-    component Label: Text { Layout.fillWidth: true; textFormat: Text.PlainText; wrapMode: Text.Wrap; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 12 }
-    component Heading: Label { color: ForgeTheme.cyan; font.pixelSize: 13; font.bold: true; topPadding: 12 }
+    component Label: Text { Layout.fillWidth: true; textFormat: Text.PlainText; wrapMode: Text.Wrap; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(12) }
+    component Heading: Label { color: ForgeTheme.cyan; font.pixelSize: ForgeTheme.fontSize(13); font.bold: true; topPadding: 12 }
     component Field: TextField {
         Layout.fillWidth: true
-        color: ForgeTheme.text; placeholderTextColor: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 12
+        color: ForgeTheme.text; placeholderTextColor: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(12)
         selectByMouse: true
         background: Rectangle { color: ForgeTheme.surface; border.color: parent.activeFocus ? ForgeTheme.cyan : ForgeTheme.line }
     }
     component Choice: ComboBox {
         Layout.fillWidth: true
         palette.buttonText: ForgeTheme.text; palette.text: ForgeTheme.text; palette.base: ForgeTheme.surface; palette.highlight: ForgeTheme.accent; palette.highlightedText: ForgeTheme.accentText
-        font.family: ForgeTheme.font; font.pixelSize: 12
+        font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(12)
         background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line }
     }
     ForgeFrame {
@@ -152,11 +153,12 @@ PanelWindow {
         anchors.fill: parent
         Keys.onEscapePressed: Desktop.closePanels()
         RowLayout {
-            anchors.fill: parent; anchors.margins: 24; spacing: 20
+            anchors.fill: parent; anchors.margins: Math.min(ForgeTheme.gap(24), panel.height / 16); spacing: Math.min(ForgeTheme.gap(20), panel.width / 32)
             ColumnLayout {
-                Layout.preferredWidth: 164; Layout.fillHeight: true; spacing: 10
-                Label { text: "FORGE /"; color: ForgeTheme.accent; font.pixelSize: 23; font.bold: true }
-                Label { text: "SYSTEM DECK"; color: ForgeTheme.muted; font.pixelSize: 10 }
+                visible: !panel.compact
+                Layout.preferredWidth: ForgeTheme.px(164); Layout.fillHeight: true; spacing: ForgeTheme.gap(10)
+                Label { text: "FORGE /"; color: ForgeTheme.accent; font.pixelSize: ForgeTheme.fontSize(23); font.bold: true }
+                Label { text: "SYSTEM DECK"; color: ForgeTheme.muted; font.pixelSize: ForgeTheme.fontSize(10) }
                 Repeater {
                     model: panel.pages
                     ForgeButton {
@@ -173,19 +175,25 @@ PanelWindow {
                 ForgeButton { Layout.fillWidth: true; text: "REFRESH"; enabled: !panel.busy; onClicked: panel.refresh() }
                 ForgeButton { Layout.fillWidth: true; text: "CLOSE"; onClicked: Desktop.closePanels() }
             }
-            Rectangle { width: 1; Layout.fillHeight: true; color: ForgeTheme.line }
+            Rectangle { visible: !panel.compact; width: 1; Layout.fillHeight: true; color: ForgeTheme.line }
             ColumnLayout {
-                Layout.fillWidth: true; Layout.fillHeight: true; spacing: 10
-                Label { text: "LOCAL SYSTEM / " + Desktop.hubPage.toUpperCase(); color: ForgeTheme.accent; font.pixelSize: 22 }
+                Layout.fillWidth: true; Layout.fillHeight: true; spacing: ForgeTheme.gap(10)
+                RowLayout {
+                    visible: panel.compact
+                    Layout.fillWidth: true
+                    Choice { model: panel.pages.map(page => page.toUpperCase()); currentIndex: panel.pages.indexOf(Desktop.hubPage); onActivated: index => Desktop.hubPage = panel.pages[index] }
+                    ForgeButton { text: "×"; implicitWidth: ForgeTheme.px(34); onClicked: Desktop.closePanels() }
+                }
+                Label { text: "LOCAL SYSTEM / " + Desktop.hubPage.toUpperCase(); color: ForgeTheme.accent; font.pixelSize: ForgeTheme.fontSize(22) }
                 Label { visible: panel.busy || panel.error !== "" || panel.message !== ""; text: panel.busy ? "WORKING…" : panel.error || panel.message; color: panel.error ? ForgeTheme.danger : ForgeTheme.cyan }
                 ScrollView {
                     id: scroll
                     Layout.fillWidth: true; Layout.fillHeight: true; clip: true
                     ColumnLayout {
                         width: scroll.availableWidth
-                        spacing: 12
+                        spacing: ForgeTheme.gap(12)
                         ColumnLayout {
-                            visible: Desktop.hubPage === "alerts"; Layout.fillWidth: true; spacing: 12
+                            visible: Desktop.hubPage === "alerts"; Layout.fillWidth: true; spacing: ForgeTheme.gap(12)
                             RowLayout {
                                 Layout.fillWidth: true
                                 ForgeButton { text: Alerts.dnd ? "DND / ON" : "DND / OFF"; selected: Alerts.dnd; onClicked: Alerts.dnd = !Alerts.dnd }
@@ -196,7 +204,7 @@ PanelWindow {
                             Repeater { model: Alerts.history; NotificationCard { required property var modelData; Layout.fillWidth: true; entry: modelData } }
                         }
                         ColumnLayout {
-                            visible: Desktop.hubPage === "connections"; Layout.fillWidth: true; spacing: 10
+                            visible: Desktop.hubPage === "connections"; Layout.fillWidth: true; spacing: ForgeTheme.gap(10)
                             Heading { text: "01 / AUDIO DEVICES" }
                             Label { text: "OUTPUT" }
                             Choice { model: panel.outputs.map(node => node.description || node.name); currentIndex: panel.outputs.indexOf(Desktop.sink); onActivated: Pipewire.preferredDefaultAudioSink = panel.outputs[currentIndex] }
@@ -235,7 +243,7 @@ PanelWindow {
                             Label { text: "Pairing and enterprise/WPA3-only Wi-Fi use the advanced tools. Device availability depends on real hardware."; color: ForgeTheme.muted }
                         }
                         ColumnLayout {
-                            visible: Desktop.hubPage === "customize"; Layout.fillWidth: true; spacing: 10
+                            visible: Desktop.hubPage === "customize"; Layout.fillWidth: true; spacing: ForgeTheme.gap(10)
                             Heading { text: "01 / POINTER & TOUCHPAD" }
                             Label { text: "POINTER SENSITIVITY / " + Number(panel.inputDraft.sensitivity).toFixed(2) }
                             ForgeSlider { Layout.fillWidth: true; from: -1; to: 1; value: panel.inputDraft.sensitivity; onMoved: panel.draft("sensitivity", Math.round(value * 100) / 100) }
@@ -250,7 +258,7 @@ PanelWindow {
                                 RowLayout {
                                     required property string modelData
                                     Layout.fillWidth: true
-                                    Label { text: modelData.toUpperCase(); Layout.preferredWidth: 100; Layout.fillWidth: false }
+                                    Label { text: modelData.toUpperCase(); Layout.preferredWidth: ForgeTheme.px(100); Layout.fillWidth: false }
                                     Field { text: panel.shortcutDraft[modelData]; onTextEdited: { const next = Object.assign({}, panel.shortcutDraft); next[modelData] = text; panel.shortcutDraft = next } }
                                 }
                             }
@@ -260,7 +268,7 @@ PanelWindow {
                             ForgeButton { text: "BROWSE IMAGES"; onClicked: wallpaperDialog.open() }
                             Choice { id: wallpaperOutput; model: ["default"].concat(Quickshell.screens.map(output => output.name)) }
                             Field { id: wallpaperPath; placeholderText: "Absolute image path / e.g. /home/forge/Pictures/background.png" }
-                            Image { Layout.fillWidth: true; Layout.preferredHeight: 150; fillMode: Image.PreserveAspectFit; source: wallpaperPath.text.startsWith("/") ? "file://" + wallpaperPath.text : ""; asynchronous: true; visible: source !== "" }
+                            Image { Layout.fillWidth: true; Layout.preferredHeight: ForgeTheme.px(150); fillMode: Image.PreserveAspectFit; source: wallpaperPath.text.startsWith("/") ? "file://" + wallpaperPath.text : ""; asynchronous: true; visible: source !== "" }
                             RowLayout {
                                 ForgeButton { text: "APPLY IMAGE"; enabled: !panel.busy && wallpaperPath.text !== ""; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); next[wallpaperOutput.currentText] = wallpaperPath.text; panel.request("save", { patch: { wallpapers: next } }) } }
                                 ForgeButton { text: "RESET OUTPUT"; enabled: !panel.busy; onClicked: { const next = Object.assign({}, panel.preferences.wallpapers); delete next[wallpaperOutput.currentText]; panel.request("save", { patch: { wallpapers: next } }) } }
@@ -291,9 +299,9 @@ PanelWindow {
                             }
                         }
                         ColumnLayout {
-                            visible: Desktop.hubPage === "hardware"; Layout.fillWidth: true; spacing: 12
+                            visible: Desktop.hubPage === "hardware"; Layout.fillWidth: true; spacing: ForgeTheme.gap(12)
                             Heading { text: "01 / SYSTEM TELEMETRY" }
-                            Label { text: "CPU / " + panel.cpuPercent + "%"; font.pixelSize: 25; color: ForgeTheme.accent }
+                            Label { text: "CPU / " + panel.cpuPercent + "%"; font.pixelSize: ForgeTheme.fontSize(25); color: ForgeTheme.accent }
                             Label { text: "RAM / " + ((panel.statistics.memoryUsed || 0) / 1048576).toFixed(1) + " / " + ((panel.statistics.memoryTotal || 0) / 1048576).toFixed(1) + " GiB" }
                             Label { text: panel.statistics.gpu ? panel.statistics.gpu.name + " / " + panel.statistics.gpu.usage + "% / " + panel.statistics.gpu.temperature + "°C" : "NVIDIA / NOT AVAILABLE (normal in this VM)" }
                             Repeater { model: panel.statistics.temperatures || []; Label { required property var modelData; text: modelData.name + " / " + modelData.celsius.toFixed(1) + "°C" } }
@@ -319,7 +327,7 @@ PanelWindow {
                             Label { text: "Telemetry refreshes only while this page is open. Battery, temperatures and GPU readings are unavailable when hardware does not expose them."; color: ForgeTheme.muted }
                         }
                         ColumnLayout {
-                            visible: Desktop.hubPage === "capture"; Layout.fillWidth: true; spacing: 12
+                            visible: Desktop.hubPage === "capture"; Layout.fillWidth: true; spacing: ForgeTheme.gap(12)
                             Heading { text: "CAPTURE / LOCAL FILES ONLY" }
                             Label { text: "Screenshots: ~/Pictures/Forge · Recordings: ~/Videos/Forge. Screenshots also copy to the clipboard. Recording uses a region or the focused display at 30 FPS." }
                             Label { text: "CAPTURE AREA" }
@@ -337,7 +345,7 @@ PanelWindow {
                             ForgeButton { text: "OPEN CAPTURE FOLDER"; onClicked: Desktop.exec(["thunar", Quickshell.env("HOME") + "/Pictures/Forge"]) }
                         }
                         ColumnLayout {
-                            visible: Desktop.hubPage === "recovery"; Layout.fillWidth: true; spacing: 12
+                            visible: Desktop.hubPage === "recovery"; Layout.fillWidth: true; spacing: ForgeTheme.gap(12)
                             Heading { text: "01 / SYSTEM HEALTH" }
                             ForgeButton { text: "CHECK THIS SESSION"; enabled: !panel.busy; onClicked: panel.request("health") }
                             Repeater {
@@ -345,13 +353,13 @@ PanelWindow {
                                 ColumnLayout {
                                     required property var modelData
                                     Layout.fillWidth: true
-                                    spacing: 3
+                                    spacing: ForgeTheme.gap(3)
                                     RowLayout {
                                         Layout.fillWidth: true
                                         Label { text: modelData.name }
-                                        Text { text: modelData.status === "passed" ? "OK" : modelData.status.replace(/-/g, " ").toUpperCase(); color: modelData.status === "passed" || modelData.status === "not-applicable" ? ForgeTheme.cyan : ForgeTheme.danger; font.family: ForgeTheme.font; font.pixelSize: 10 }
+                                        Text { text: modelData.status === "passed" ? "OK" : modelData.status.replace(/-/g, " ").toUpperCase(); color: modelData.status === "passed" || modelData.status === "not-applicable" ? ForgeTheme.cyan : ForgeTheme.danger; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10) }
                                     }
-                                    Label { visible: modelData.detail !== ""; text: modelData.detail; color: ForgeTheme.muted; font.pixelSize: 10 }
+                                    Label { visible: modelData.detail !== ""; text: modelData.detail; color: ForgeTheme.muted; font.pixelSize: ForgeTheme.fontSize(10) }
                                 }
                             }
                             Heading { text: "02 / SYSTEM UPDATES" }
@@ -372,7 +380,7 @@ PanelWindow {
                             }
                             Heading { text: "04 / SESSION LOGS" }
                             ForgeButton { text: "READ USER SESSION LOGS"; enabled: !panel.busy; onClicked: panel.request("logs") }
-                            TextArea { Layout.fillWidth: true; visible: panel.logs !== ""; text: panel.logs; readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap; textFormat: TextEdit.PlainText; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 10; background: Rectangle { color: ForgeTheme.surface } }
+                            TextArea { Layout.fillWidth: true; visible: panel.logs !== ""; text: panel.logs; readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap; textFormat: TextEdit.PlainText; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10); background: Rectangle { color: ForgeTheme.surface } }
                         }
                     }
                 }

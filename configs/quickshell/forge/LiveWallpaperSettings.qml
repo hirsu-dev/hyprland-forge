@@ -17,9 +17,9 @@ ColumnLayout {
     property string folderTarget: "project"
     signal save(var value)
     signal scan()
-    spacing: 10
+    spacing: ForgeTheme.gap(10)
     onAssetsChanged: if (!assetPath.text && assets.length) assetPath.text = assets[0]
-    component Label: Text { Layout.fillWidth: true; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 11; wrapMode: Text.Wrap; textFormat: Text.PlainText }
+    component Label: Text { Layout.fillWidth: true; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11); wrapMode: Text.Wrap; textFormat: Text.PlainText }
     component Field: TextField { Layout.fillWidth: true; color: ForgeTheme.text; placeholderTextColor: ForgeTheme.muted; selectByMouse: true; font.family: ForgeTheme.font; background: Rectangle { color: ForgeTheme.surface; border.color: ForgeTheme.line } }
     component Choice: ComboBox { Layout.fillWidth: true; palette.buttonText: ForgeTheme.text; palette.button: ForgeTheme.surface; palette.base: ForgeTheme.surface; palette.text: ForgeTheme.text }
     Label { text: "WALLPAPER ENGINE / LINUX COMPATIBILITY"; color: ForgeTheme.cyan; font.bold: true }
@@ -46,7 +46,7 @@ ColumnLayout {
         Choice { id: cap; model: [15, 24, 30, 60]; currentIndex: Math.max(0, model.indexOf(root.settings.fps)) }
     }
     Flow {
-        Layout.fillWidth: true; spacing: 6
+        Layout.fillWidth: true; spacing: ForgeTheme.gap(6)
         ForgeButton { text: "LIVE WALLPAPER"; selected: root.useLive; enabled: root.installed; onClicked: root.useLive = !root.useLive }
         ForgeButton { text: "MUTE + NO AUDIO PROCESSING"; selected: root.silent; onClicked: root.silent = !root.silent }
         ForgeButton { text: "PAUSE WHILE GAMING"; selected: root.pauseGaming; onClicked: root.pauseGaming = !root.pauseGaming }

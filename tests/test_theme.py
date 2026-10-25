@@ -11,7 +11,7 @@ from unittest.mock import patch
 from forge.manifest import ForgeError
 from forge.runtime import restore
 from forge.runtime import lock
-from forge.theme import PRESETS, apply_theme, interface_payload, main, palette, render, rgb, sample_image
+from forge.theme import INTERFACE_DEFAULTS, PRESETS, apply_theme, interface_payload, main, palette, render, rgb, sample_image
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -52,7 +52,7 @@ class ThemeTests(unittest.TestCase):
             target.parent.mkdir(parents=True)
             target.write_text('{"motion": false, "effects": true}')
             payload = interface_payload(user, effects="off")
-            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {"motion": False, "effects": False})
+            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {**INTERFACE_DEFAULTS, "motion": False, "effects": False})
             self.assertEqual(json.loads(target.read_text()), {"motion": False, "effects": True})
 
     def test_interface_defaults_and_rollback(self):
@@ -60,7 +60,7 @@ class ThemeTests(unittest.TestCase):
             user = Path(directory)
             state = user / ".local/state/hyprland-forge/themes"
             payload = interface_payload(user, motion="off")
-            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {"motion": False, "effects": True})
+            self.assertEqual(json.loads(payload[".config/forge/interface.json"]), {**INTERFACE_DEFAULTS, "motion": False})
             from forge.theme import apply_files
             with patch("forge.theme.lock", side_effect=lambda path: contextlib.nullcontext()):
                 transaction = apply_files(payload, user, state)
@@ -83,6 +83,26 @@ class ThemeTests(unittest.TestCase):
                 main(args)
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(main(["--motion", "off", "--rollback", "example"]), 1)
+
+    def test_interface_patch_migrates_legacy_and_preserves_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            user = Path(directory)
+            target = user / ".config/forge/interface.json"
+            target.parent.mkdir(parents=True)
+            target.write_text('{"motion":false,"effects":true,"scale":1.25}')
+            value = json.loads(interface_payload(user, patch={"spacing": 1.5, "jaggedness": 2, "ambient": False})[".config/forge/interface.json"])
+            self.assertFalse(value["motion"])
+            self.assertEqual(value["scale"], 1.25)
+            self.assertEqual(value["spacing"], 1.5)
+            self.assertEqual(value["jaggedness"], 2)
+            self.assertFalse(value["ambient"])
+            self.assertEqual(json.loads(target.read_text())["scale"], 1.25)
+
+    def test_interface_patch_rejects_unbounded_or_mistyped_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for patch_value in ([], {"scale": True}, {"scale": 0.1}, {"scale": 2}, {"spacing": "wide"}, {"intensity": float("nan")}, {"speed": float("inf")}, {"jaggedness": -1}, {"ambient": "on"}, {"extra": 1}):
+                with self.subTest(value=patch_value), self.assertRaises(ForgeError):
+                    interface_payload(Path(directory), patch=patch_value)
 
     def test_interface_cannot_read_through_symlink(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -3,7 +3,7 @@ import QtQuick.Controls
 
 Slider {
     id: slider
-    implicitHeight: 28
+    implicitHeight: ForgeTheme.px(28)
     opacity: enabled ? 1 : 0.35
     background: Rectangle {
         x: slider.leftPadding
@@ -16,7 +16,7 @@ Slider {
     handle: Rectangle {
         x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
         y: slider.topPadding + slider.availableHeight / 2 - height / 2
-        width: 10; height: 20
+        width: ForgeTheme.px(10); height: 20
         color: slider.activeFocus ? ForgeTheme.accent : ForgeTheme.cyan
         Rectangle { anchors.centerIn: parent; width: 2; height: 10; color: ForgeTheme.background }
     }

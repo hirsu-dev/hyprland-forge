@@ -10,9 +10,9 @@ PanelWindow {
     screen: Desktop.panelScreen
     visible: Desktop.controlsOpen
     anchors { top: true; right: true }
-    margins { top: 64; right: 12 }
-    implicitWidth: Math.min(430, screen ? screen.width - 24 : 430)
-    implicitHeight: Math.min(830, screen ? screen.height - 90 : 830)
+    margins { top: ForgeTheme.px(56) + ForgeTheme.gap(8); right: ForgeTheme.gap(12) }
+    implicitWidth: Math.min(ForgeTheme.px(430), screen ? screen.width - ForgeTheme.gap(24) : ForgeTheme.px(430))
+    implicitHeight: ForgeTheme.panelHeight(screen, 830)
     exclusionMode: ExclusionMode.Ignore
     focusable: true
     color: "transparent"
@@ -20,7 +20,7 @@ PanelWindow {
     component Caption: Text {
         color: ForgeTheme.muted
         font.family: ForgeTheme.font
-        font.pixelSize: 10
+        font.pixelSize: ForgeTheme.fontSize(10)
         font.letterSpacing: 1
     }
     ForgeFrame {
@@ -29,26 +29,28 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: Desktop.closePanels()
         ScrollView {
+            id: controlScroll
+            contentWidth: availableWidth
             anchors.fill: parent
-            anchors.margins: 24
+            anchors.margins: ForgeTheme.gap(24)
             clip: true
             ColumnLayout {
-                width: panel.width - 62
-                spacing: 14
+                width: controlScroll.availableWidth
+                spacing: ForgeTheme.gap(14)
                 RowLayout {
                     Layout.fillWidth: true
                     Caption { text: "FORGE / CONTROL LINK"; color: ForgeTheme.danger }
                     Item { Layout.fillWidth: true }
-                    ForgeButton { text: "×"; implicitWidth: 30; implicitHeight: 28; onClicked: Desktop.closePanels() }
+                    ForgeButton { text: "×"; implicitWidth: ForgeTheme.px(30); implicitHeight: ForgeTheme.px(28); onClicked: Desktop.closePanels() }
                 }
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: Desktop.time; font.pixelSize: 46; font.bold: true; font.family: ForgeTheme.font; color: ForgeTheme.accent }
+                    Text { text: Desktop.time; font.pixelSize: ForgeTheme.fontSize(46); font.bold: true; font.family: ForgeTheme.font; color: ForgeTheme.accent }
                     Item { Layout.fillWidth: true }
                     Column {
-                        spacing: 5
+                        spacing: ForgeTheme.gap(5)
                         Caption { text: "POWER SOURCE" }
-                        Text { text: Desktop.battery; color: ForgeTheme.cyan; font.family: ForgeTheme.font; font.pixelSize: 18 }
+                        Text { text: Desktop.battery; color: ForgeTheme.cyan; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(18) }
                     }
                 }
                 Caption { text: Desktop.date.toUpperCase() }
@@ -62,17 +64,17 @@ PanelWindow {
                 Caption { text: "01 / AUDIO SIGNAL"; color: ForgeTheme.cyan }
                 ForgeFrame {
                     Layout.fillWidth: true
-                    implicitHeight: 92
-                    cut: 9
+                    implicitHeight: ForgeTheme.px(92)
+                    cut: ForgeTheme.px(9)
                     ornament: false
                     color: ForgeTheme.surface
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: ForgeTheme.gap(14)
                         RowLayout {
-                            Text { text: "OUTPUT GAIN"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 11 }
+                            Text { text: "OUTPUT GAIN"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11) }
                             Item { Layout.fillWidth: true }
-                            ForgeButton { text: Desktop.muted ? "MUTED" : Desktop.volume + "%"; implicitHeight: 28; onClicked: Desktop.toggleMute() }
+                            ForgeButton { text: Desktop.muted ? "MUTED" : Desktop.volume + "%"; implicitHeight: ForgeTheme.px(28); onClicked: Desktop.toggleMute() }
                         }
                         ForgeSlider {
                             Layout.fillWidth: true
@@ -85,27 +87,27 @@ PanelWindow {
                 }
                 ForgeFrame {
                     Layout.fillWidth: true
-                    implicitHeight: 128
-                    cut: 10
+                    implicitHeight: ForgeTheme.px(128)
+                    cut: ForgeTheme.px(10)
                     ornament: false
                     color: ForgeTheme.surface
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 16
+                        anchors.margins: ForgeTheme.gap(16)
+                        spacing: ForgeTheme.gap(16)
                         Rectangle {
-                            width: 42; height: 80
+                            width: ForgeTheme.px(42); height: 80
                             color: ForgeTheme.background
                             border.color: ForgeTheme.line
-                            Text { anchors.centerIn: parent; text: "♫"; color: ForgeTheme.cyan; font.pixelSize: 28 }
+                            Text { anchors.centerIn: parent; text: "♫"; color: ForgeTheme.cyan; font.pixelSize: ForgeTheme.fontSize(28) }
                             Rectangle { x: 0; y: parent.height - 3; width: parent.width; height: 3; color: Desktop.player ? ForgeTheme.accent : ForgeTheme.line }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackTitle || "Untitled" : "NO ACTIVE STREAM"; textFormat: Text.PlainText; elide: Text.ElideRight; font.family: ForgeTheme.font; font.bold: true; color: ForgeTheme.text; font.pixelSize: 12 }
-                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackArtist : "Your media appears here"; textFormat: Text.PlainText; elide: Text.ElideRight; font.family: ForgeTheme.font; color: ForgeTheme.muted; font.pixelSize: 10 }
+                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackTitle || "Untitled" : "NO ACTIVE STREAM"; textFormat: Text.PlainText; elide: Text.ElideRight; font.family: ForgeTheme.font; font.bold: true; color: ForgeTheme.text; font.pixelSize: ForgeTheme.fontSize(12) }
+                            Text { Layout.fillWidth: true; text: Desktop.player ? Desktop.player.trackArtist : "Your media appears here"; textFormat: Text.PlainText; elide: Text.ElideRight; font.family: ForgeTheme.font; color: ForgeTheme.muted; font.pixelSize: ForgeTheme.fontSize(10) }
                             Row {
-                                spacing: 5
+                                spacing: ForgeTheme.gap(5)
                                 ForgeButton { text: "PREV"; enabled: Desktop.player !== null; onClicked: Desktop.media("previous") }
                                 ForgeButton { text: Desktop.player && Desktop.player.playbackState === MprisPlaybackState.Playing ? "PAUSE" : "PLAY"; enabled: Desktop.player !== null; selected: true; onClicked: Desktop.media("toggle") }
                                 ForgeButton { text: "NEXT"; enabled: Desktop.player !== null; onClicked: Desktop.media("next") }
@@ -128,17 +130,17 @@ PanelWindow {
                 }
                 ForgeFrame {
                     Layout.fillWidth: true
-                    implicitHeight: 82
-                    cut: 9
+                    implicitHeight: ForgeTheme.px(82)
+                    cut: ForgeTheme.px(9)
                     ornament: false
                     color: ForgeTheme.surface
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: ForgeTheme.gap(14)
                         RowLayout {
-                            Text { text: "PANEL LUMINANCE"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: 11 }
+                            Text { text: "PANEL LUMINANCE"; color: ForgeTheme.text; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11) }
                             Item { Layout.fillWidth: true }
-                            Text { text: Laptop.available ? Laptop.brightness + "%" : "NO BACKLIGHT"; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: 10 }
+                            Text { text: Laptop.available ? Laptop.brightness + "%" : "NO BACKLIGHT"; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10) }
                         }
                         ForgeSlider {
                             Layout.fillWidth: true
@@ -162,7 +164,7 @@ PanelWindow {
                         }
                     }
                 }
-                Caption { text: "LOCAL CONTROL / NO CLOUD REQUIRED"; font.pixelSize: 9 }
+                Caption { text: "LOCAL CONTROL / NO CLOUD REQUIRED"; font.pixelSize: ForgeTheme.fontSize(9) }
             }
         }
     }

@@ -3,20 +3,20 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
-    spacing: 18
+    spacing: ForgeTheme.gap(18)
     component Caption: Text {
         color: ForgeTheme.muted
         font.family: ForgeTheme.font
-        font.pixelSize: 11
+        font.pixelSize: ForgeTheme.fontSize(11)
         wrapMode: Text.WordWrap
     }
     Caption { text: "01 / EXECUTION RAIL"; color: ForgeTheme.cyan; font.letterSpacing: 1 }
-    Text { text: "YOUR TASKS. YOUR RULES."; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.bold: true; font.italic: true; font.pixelSize: 24 }
+    Text { text: "YOUR TASKS. YOUR RULES."; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.bold: true; font.italic: true; font.pixelSize: ForgeTheme.fontSize(24) }
     Caption { Layout.fillWidth: true; text: "Pinned launchers, real running windows, and quick access to your clipboard. Right-click an app for window and pin controls."; lineHeight: 1.5 }
     GridLayout {
         Layout.fillWidth: true
         columns: 2
-        columnSpacing: 18; rowSpacing: 14
+        columnSpacing: ForgeTheme.gap(18); rowSpacing: ForgeTheme.gap(14)
         enabled: !Tasks.busy
         Caption { text: "TASKBAR" }
         ForgeButton { Layout.fillWidth: true; text: Tasks.enabled ? "ENABLED" : "DISABLED"; selected: Tasks.enabled; onClicked: Tasks.change("enabled", !Tasks.enabled) }
@@ -31,7 +31,7 @@ ColumnLayout {
     Caption { text: "02 / PINNED APPLICATIONS"; color: ForgeTheme.cyan; font.letterSpacing: 1 }
     Flow {
         Layout.fillWidth: true
-        spacing: 8
+        spacing: ForgeTheme.gap(8)
         Repeater {
             model: Tasks.pins
             ForgeButton {
@@ -51,7 +51,7 @@ ColumnLayout {
             model: Tasks.applications.map(entry => entry.name)
             enabled: !Tasks.busy
             font.family: ForgeTheme.font
-            font.pixelSize: 12
+            font.pixelSize: ForgeTheme.fontSize(12)
             palette.buttonText: ForgeTheme.text
             palette.text: ForgeTheme.text
             palette.base: ForgeTheme.surface

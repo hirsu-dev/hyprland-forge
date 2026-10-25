@@ -12,8 +12,8 @@ PanelWindow {
     visible: active
     anchors { bottom: true }
     margins.bottom: 96
-    implicitWidth: 340
-    implicitHeight: 86
+    implicitWidth: ForgeTheme.px(340)
+    implicitHeight: ForgeTheme.px(86)
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     function show(label, amount) { panel.label = label; panel.amount = amount; active = true; hide.restart() }
@@ -32,9 +32,9 @@ PanelWindow {
     ForgeFrame {
         anchors.fill: parent
         ColumnLayout {
-            anchors.fill: parent; anchors.margins: 18
+            anchors.fill: parent; anchors.margins: ForgeTheme.gap(18)
             RowLayout {
-                Text { text: panel.label; font.family: ForgeTheme.font; font.pixelSize: 11; color: ForgeTheme.cyan }
+                Text { text: panel.label; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(11); color: ForgeTheme.cyan }
                 Item { Layout.fillWidth: true }
                 Text { text: panel.amount + "%"; font.family: ForgeTheme.font; color: ForgeTheme.accent }
             }

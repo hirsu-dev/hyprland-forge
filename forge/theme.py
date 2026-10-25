@@ -104,19 +104,43 @@ def apply_theme(accent, user_root, state_root):
     return apply_files(render(accent), user_root, state_root)
 
 
-def interface_payload(user_root, motion=None, effects=None):
+INTERFACE_DEFAULTS = {"motion": True, "effects": True, "scale": 1.0, "textScale": 1.0, "spacing": 1.2, "jaggedness": 1.4, "speed": 1.0, "intensity": 0.65, "ambient": True, "scanlines": True}
+INTERFACE_RANGES = {"scale": (0.75, 1.75), "textScale": (0.85, 1.25), "spacing": (0.75, 1.6), "jaggedness": (0, 2), "speed": (0.5, 2), "intensity": (0, 1)}
+
+
+def validate_interface(value):
+    if not isinstance(value, dict) or set(value) - set(INTERFACE_DEFAULTS):
+        raise ForgeError("Invalid interface preferences")
+    result = {**INTERFACE_DEFAULTS, **value}
+    for key in ("motion", "effects", "ambient", "scanlines"):
+        if type(result[key]) is not bool:
+            raise ForgeError("Interface switches must be booleans")
+    for key, (low, high) in INTERFACE_RANGES.items():
+        number = result[key]
+        if type(number) not in (int, float) or not low <= number <= high:
+            raise ForgeError(f"{key} must be between {low} and {high}")
+    return result
+
+
+def interface_payload(user_root, motion=None, effects=None, patch=None):
     target = safe_target(user_root, ".config/forge/interface.json")
-    settings = {"motion": True, "effects": True}
+    settings = dict(INTERFACE_DEFAULTS)
     if target.exists():
         if target.stat().st_size > 8192:
             raise ForgeError("Interface preferences exceed the size limit")
         current = json.loads(target.read_text(encoding="utf-8"))
-        if not isinstance(current, dict) or any(key not in settings or not isinstance(value, bool) for key, value in current.items()):
-            raise ForgeError("Invalid interface preferences")
-        settings.update(current)
+        settings = validate_interface(current)
+    if patch is not None:
+        if not isinstance(patch, dict):
+            raise ForgeError("Interface changes must be an object")
+        settings = validate_interface({**settings, **patch})
     if motion is not None:
+        if motion not in ("on", "off"):
+            raise ForgeError("Motion must be on or off")
         settings["motion"] = motion == "on"
     if effects is not None:
+        if effects not in ("on", "off"):
+            raise ForgeError("Effects must be on or off")
         settings["effects"] = effects == "on"
     return {".config/forge/interface.json": json.dumps(settings, indent=2) + "\n"}
 
@@ -129,18 +153,19 @@ def main(argv=None):
     source.add_argument("--wallpaper", type=Path)
     source.add_argument("--motion", choices=("on", "off"))
     source.add_argument("--effects", choices=("on", "off"))
+    source.add_argument("--interface")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true")
     mode.add_argument("--rollback", metavar="TRANSACTION")
     mode.add_argument("--plan", action="store_true")
     args = parser.parse_args(argv)
     try:
-        if args.rollback and (args.accent or args.preset or args.wallpaper or args.motion or args.effects):
+        if args.rollback and (args.accent or args.preset or args.wallpaper or args.motion or args.effects or args.interface is not None):
             raise ForgeError("Rollback cannot be combined with an accent or wallpaper")
         accent = args.accent or PRESETS[args.preset or "overdrive"]
         if args.wallpaper:
             accent = sample_image(args.wallpaper)
-        payload = interface_payload(Path.home(), args.motion, args.effects) if args.motion or args.effects else render(accent)
+        payload = interface_payload(Path.home(), args.motion, args.effects, json.loads(args.interface) if args.interface is not None else None) if args.motion or args.effects or args.interface is not None else render(accent)
         if not args.apply and not args.rollback:
             print(json.dumps(payload, indent=2))
             return 0
