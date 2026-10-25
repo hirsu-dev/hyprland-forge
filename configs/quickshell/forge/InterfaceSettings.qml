@@ -8,6 +8,7 @@ ColumnLayout {
     readonly property bool animationsActive: preview.signalRunning || meter.animating
     signal applyRequested(var patch)
     Layout.fillWidth: true
+    Layout.minimumWidth: 0
     spacing: ForgeTheme.gap(16)
     function queue(patch) { queued = Object.assign({}, queued, patch); save.restart() }
     Timer {
@@ -34,7 +35,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: ForgeTheme.gap(5)
                 Text { Layout.fillWidth: true; text: "SIGNAL / ONLINE_"; elide: Text.ElideRight; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(22); font.bold: true; font.italic: true }
-                Text { text: "YOUR INTERFACE. YOUR FREQUENCY."; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(9) }
+                Text { Layout.fillWidth: true; elide: Text.ElideRight; text: "YOUR INTERFACE. YOUR FREQUENCY."; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(9) }
             }
             ForgeSignal { id: meter; Layout.alignment: Qt.AlignVCenter; visible: root.width > ForgeTheme.px(420) }
             ForgeButton { text: "REPLAY"; onClicked: preview.enter() }

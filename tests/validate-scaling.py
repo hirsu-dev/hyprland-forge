@@ -38,6 +38,7 @@ try:
         ipc("forge", "appearance")
         state = wait(lambda state: state["open"] and state["viewportWidth"] > 100 and state["viewportHeight"] > 20 and state["animationsActive"])
         assert state["width"] > 300 and state["height"] > 150, state
+        assert state["viewportWidth"] <= state["width"] and state["viewportHeight"] <= state["height"], state
         if os.environ.get("QT_QPA_PLATFORM") == "wayland":
             time.sleep(0.4)
             subprocess.run(["grim", "-o", "HEADLESS-1", str(screenshots / ("interface-scale-" + str(scale) + ".png"))], check=True, timeout=10)

@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from forge.manifest import load_manifest, make_plan
+from forge.hardware import resolve_plan
 from forge.runtime import execute, lock
 
 assert "--disposable-vm" in sys.argv
@@ -12,7 +13,7 @@ assert subprocess.check_output(["systemd-detect-virt", "--vm"], text=True).strip
 assert os.geteuid() != 0
 root = Path(__file__).resolve().parent.parent
 home = Path.home()
-plan = make_plan(load_manifest(root), [])
+plan = resolve_plan(make_plan(load_manifest(root), []), profile="virtual-machine")
 plan["commands"] = []
 plan["services"] = []
 plan.pop("default_target", None)

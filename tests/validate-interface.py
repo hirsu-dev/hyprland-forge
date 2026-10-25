@@ -64,9 +64,32 @@ try:
     status(power=True, powerAction="reboot", controls=False)
     ipc("close")
     status(power=False, powerAction="", launcher=False, controls=False, settings=False)
+    for scale in (0.75, 1, 1.25, 1.75):
+        appearance("--interface", json.dumps({"motion": True, "effects": True, "ambient": True, "scanlines": True, "scale": scale, "textScale": 1.25, "spacing": 1.6, "jaggedness": 2, "intensity": 1}))
+        ipc("appearance")
+        view = None
+        for attempt in range(60):
+            view = json.loads(subprocess.check_output(["quickshell", "-c", "forge", "ipc", "call", "forgeInterface", "status"], text=True, timeout=10))
+            if view["values"]["scale"] == scale and view["open"] and view["viewportWidth"] > 100 and view["viewportHeight"] > 20 and view["animationsActive"]:
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError(view)
+        assert view["viewportWidth"] <= view["width"] and view["viewportHeight"] <= view["height"], view
+        time.sleep(0.5)
+        subprocess.run(["grim", str(home / "Pictures/Forge" / ("interface-scale-" + str(scale) + ".png"))], check=True, timeout=10)
+        ipc("close")
+        time.sleep(0.2)
+        view = json.loads(subprocess.check_output(["quickshell", "-c", "forge", "ipc", "call", "forgeInterface", "status"], text=True, timeout=10))
+        assert not view["animationsActive"], view
+    appearance("--interface", json.dumps({"motion": False}))
+    ipc("appearance")
+    time.sleep(0.4)
+    view = json.loads(subprocess.check_output(["quickshell", "-c", "forge", "ipc", "call", "forgeInterface", "status"], text=True, timeout=10))
+    assert not view["animationsActive"] and not view["values"]["motion"], view
     errors = json.loads(subprocess.check_output(["hyprctl", "-j", "configerrors"], text=True))
     assert not [error for error in errors if error.strip()], errors
-    print(json.dumps({"live_palettes": True, "motion_preference": True, "clean_effects": True, "panel_exclusivity": True, "power_cancellation": True, "configuration_errors": []}))
+    print(json.dumps({"live_palettes": True, "motion_preference": True, "clean_effects": True, "panel_exclusivity": True, "power_cancellation": True, "ui_scale_extremes": True, "independent_text_and_spacing": True, "hidden_animations_stopped": True, "configuration_errors": []}))
 finally:
     ipc("close")
     with lock(home / ".local/state/hyprland-forge"):

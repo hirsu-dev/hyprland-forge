@@ -184,6 +184,8 @@ PanelWindow {
                 Rectangle { visible: !panel.compact; Layout.fillHeight: true; width: 1; color: ForgeTheme.line }
                 ScrollView {
                     id: settingsScroll
+                    Layout.minimumWidth: 0
+                    Layout.minimumHeight: 0
                     contentWidth: availableWidth
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -253,6 +255,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             visible: panel.page === 1
                             spacing: ForgeTheme.gap(18)
+                            InterfaceSettings { id: interfaceControls; busy: appearanceProcess.running; onApplyRequested: patch => panel.appearance("--interface", JSON.stringify(patch)) }
                             Caption { text: "01 / COLOR FREQUENCY"; color: ForgeTheme.cyan; font.letterSpacing: 1 }
                             Text { text: "OVERDRIVE"; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.italic: true; font.bold: true; font.pixelSize: ForgeTheme.fontSize(42) }
                             Caption { Layout.fillWidth: true; text: "Sharp geometry. Redline signal. Your interface, on your terms."; lineHeight: 1.5 }
@@ -276,7 +279,6 @@ PanelWindow {
                                 }
                             }
                             Rectangle { Layout.fillWidth: true; height: 1; color: ForgeTheme.line }
-                            InterfaceSettings { id: interfaceControls; busy: appearanceProcess.running; onApplyRequested: patch => panel.appearance("--interface", JSON.stringify(patch)) }
                         }
                         TaskbarSettings { Layout.fillWidth: true; visible: panel.page === 2 }
                     }

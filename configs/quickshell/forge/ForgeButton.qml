@@ -41,7 +41,7 @@ ForgeFrame {
         textFormat: Text.PlainText
         font.family: ForgeTheme.font
         font.pixelSize: ForgeTheme.fontSize(11)
-        width: Math.max(0, root.width - ForgeTheme.gap(16))
+        width: Math.max(0, root.width - Math.min(ForgeTheme.gap(16), root.width / 4))
         horizontalAlignment: Text.AlignHCenter
         elide: Text.ElideRight
         font.bold: root.selected
