@@ -10,6 +10,7 @@ Item {
     property real progress: 1
     property real signalPhase: 0
     property bool ornament: true
+    property bool managedProgress: false
     readonly property real edge: Math.max(0, Math.min(cut * ForgeTheme.jaggedness, width / 7, height / 3))
     readonly property real notch: ornament ? Math.min(ForgeTheme.px(7) * ForgeTheme.jaggedness, edge / 2) : 0
     readonly property bool onScreen: visible && !!Window.window && Window.window.visible
@@ -17,12 +18,13 @@ Item {
     opacity: progress
     transform: [Translate { x: (1 - root.progress) * ForgeTheme.px(32); y: (1 - root.progress) * ForgeTheme.px(5) }, Scale { origin.x: root.width / 2; origin.y: root.height / 2; xScale: 0.98 + root.progress * 0.02; yScale: xScale }]
     function enter() {
+        if (managedProgress) return
         if (ForgeTheme.motion) entry.restart()
         else progress = 1
     }
     Connections {
         target: ForgeTheme
-        function onMotionChanged() { if (!ForgeTheme.motion) { entry.stop(); root.progress = 1 } }
+        function onMotionChanged() { if (!ForgeTheme.motion && !root.managedProgress) { entry.stop(); root.progress = 1 } }
     }
     NumberAnimation {
         id: entry

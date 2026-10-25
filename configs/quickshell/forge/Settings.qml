@@ -4,14 +4,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-PanelWindow {
+ForgePanel {
     id: panel
     screen: Desktop.panelScreen
-    visible: Desktop.settingsOpen
+    opened: Desktop.settingsOpen
     implicitWidth: Math.min(ForgeTheme.px(1040), screen ? screen.width - ForgeTheme.gap(32) : ForgeTheme.px(1040))
     implicitHeight: ForgeTheme.panelHeight(screen, 800)
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
     color: "transparent"
     readonly property int page: Desktop.settingsPage
     readonly property bool compact: width < ForgeTheme.px(900) || height < ForgeTheme.px(620)
@@ -83,7 +82,7 @@ PanelWindow {
         appearanceProcess.command = [Quickshell.env("HOME") + "/.local/bin/forge-appearance", option, value, "--apply"]
         appearanceProcess.running = true
     }
-    onVisibleChanged: if (visible) { content.forceActiveFocus(); content.enter(); run("--query") }
+    onOpenedChanged: if (opened) { Qt.callLater(() => content.forceActiveFocus()); run("--query") }
     IpcHandler {
         target: "forgeInterface"
         function status(): string { return JSON.stringify({ values: ForgeTheme.interfaceValues, open: panel.visible, width: panel.width, height: panel.height, compact: panel.compact, viewportWidth: settingsScroll.availableWidth, viewportHeight: settingsScroll.availableHeight, animationsActive: interfaceControls.animationsActive }) }
@@ -135,6 +134,8 @@ PanelWindow {
     }
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: panel.reveal
         anchors.fill: parent
         focus: true
         Keys.onEscapePressed: Desktop.closePanels()

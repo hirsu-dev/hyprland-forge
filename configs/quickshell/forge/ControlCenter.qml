@@ -5,18 +5,17 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-PanelWindow {
+ForgePanel {
     id: panel
     screen: Desktop.panelScreen
-    visible: Desktop.controlsOpen
+    opened: Desktop.controlsOpen
     anchors { top: true; right: true }
     margins { top: ForgeTheme.px(56) + ForgeTheme.gap(8); right: ForgeTheme.gap(12) }
     implicitWidth: Math.min(ForgeTheme.px(430), screen ? screen.width - ForgeTheme.gap(24) : ForgeTheme.px(430))
     implicitHeight: ForgeTheme.panelHeight(screen, 830)
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
     color: "transparent"
-    onVisibleChanged: if (visible) { content.forceActiveFocus(); content.enter() }
+    onOpenedChanged: if (opened) Qt.callLater(() => content.forceActiveFocus())
     component Caption: Text {
         color: ForgeTheme.muted
         font.family: ForgeTheme.font
@@ -25,6 +24,8 @@ PanelWindow {
     }
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: panel.reveal
         anchors.fill: parent
         focus: true
         Keys.onEscapePressed: Desktop.closePanels()
@@ -54,6 +55,7 @@ PanelWindow {
                     }
                 }
                 Caption { text: Desktop.date.toUpperCase() }
+                ForgeCalendar {}
                 Rectangle { Layout.fillWidth: true; height: 1; color: ForgeTheme.line }
                 ForgeButton { Layout.fillWidth: true; text: "SYSTEM CONFIGURATION  ↗"; onClicked: Desktop.toggleSettings() }
                 RowLayout {

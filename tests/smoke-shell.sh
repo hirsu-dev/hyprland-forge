@@ -207,6 +207,7 @@ cp configs/forge/interface.json "$XDG_CONFIG_HOME/forge/interface.json"
 quickshell -p "$forge_config" ipc call forge power
 quickshell -p "$forge_config" ipc call forge close
 python tests/validate-scaling.py "$forge_config"
+python tests/validate-motion.py "$forge_config"
 quickshell -p "$forge_config" ipc call forge power
 quickshell -p "$forge_config" ipc call forge powerChoice reboot
 quickshell -p "$forge_config" ipc call forge status | python -c 'import json,sys; d=json.load(sys.stdin); assert d["power"] and d["powerAction"] == "reboot" and not d["launcher"] and not d["controls"]'

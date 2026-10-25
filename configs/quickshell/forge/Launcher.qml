@@ -1,24 +1,37 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "Actions.js" as Actions
 
-PanelWindow {
+ForgePanel {
     id: launcher
     screen: Desktop.panelScreen
-    visible: Desktop.launcherOpen
+    opened: Desktop.launcherOpen
     implicitWidth: Math.min(ForgeTheme.px(720), screen ? screen.width - ForgeTheme.gap(40) : ForgeTheme.px(720))
     implicitHeight: ForgeTheme.panelHeight(screen, 560)
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
     color: "transparent"
-    readonly property var entries: DesktopEntries.applications.values.filter(a => a.name.toLowerCase().includes(search.text.toLowerCase())).sort((a,b) => a.name.localeCompare(b.name))
-    onVisibleChanged: if (visible) { search.text = ""; search.forceActiveFocus(); apps.currentIndex = 0; content.enter() }
+    readonly property bool actionMode: search.text.trim().startsWith(">")
+    readonly property var entries: actionMode ? Actions.search(search.text.trim().slice(1)) : DesktopEntries.applications.values.filter(a => a.name.toLowerCase().includes(search.text.toLowerCase())).sort((a,b) => a.name.localeCompare(b.name))
+    onOpenedChanged: if (opened) { search.text = ""; apps.currentIndex = 0; Qt.callLater(() => search.forceActiveFocus()) }
     function launchCurrent() {
-        if (entries[apps.currentIndex]) { Tasks.launch(entries[apps.currentIndex]) }
+        const entry = entries[apps.currentIndex]
+        if (!entry) return
+        if (!actionMode) { Tasks.launch(entry); return }
+        Desktop.closePanels()
+        if (entry.id === "appearance") { Desktop.settingsPage = 1; Desktop.toggleSettings() }
+        else if (entry.id === "settings") { Desktop.settingsPage = 0; Desktop.toggleSettings() }
+        else if (entry.id === "overview") Desktop.overview()
+        else if (entry.id === "power") Desktop.togglePower(null)
+        else if (entry.id === "clipboard") Desktop.exec([Quickshell.env("HOME") + "/.local/bin/forge-clipboard"])
+        else Desktop.openHub(entry.id)
     }
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: launcher.reveal
         anchors.fill: parent
         ColumnLayout {
             anchors.fill: parent
@@ -39,7 +52,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 implicitHeight: ForgeTheme.px(50)
                 leftPadding: 16
-                placeholderText: "> SEARCH INSTALLED APPLICATIONS"
+                placeholderText: "SEARCH APPS / > QUICK ACTIONS"
                 color: ForgeTheme.cyan
                 placeholderTextColor: ForgeTheme.muted
                 selectionColor: ForgeTheme.accent
@@ -71,12 +84,15 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     readonly property bool current: index === apps.currentIndex
+                    managedProgress: true
+                    progress: Math.max(0, Math.min(1, (launcher.reveal - Math.min(index, 6) * 0.035) / 0.79))
                     width: apps.width
                     height: ForgeTheme.px(52)
                     cut: ForgeTheme.px(8)
                     ornament: false
                     color: current ? ForgeTheme.accent : mouse.containsMouse ? ForgeTheme.raised : ForgeTheme.surface
                     borderColor: current ? ForgeTheme.accent : ForgeTheme.line
+                    Behavior on color { ColorAnimation { duration: ForgeTheme.duration / 2 } }
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: ForgeTheme.gap(14)
@@ -89,7 +105,7 @@ PanelWindow {
                     }
                     Menu {
                         id: appMenu
-                        MenuItem { text: Tasks.pinned(entry.modelData) ? "Unpin from taskbar" : "Pin to taskbar"; enabled: !Tasks.busy; onTriggered: Tasks.togglePin(entry.modelData) }
+                        MenuItem { text: launcher.actionMode ? "Quick action" : Tasks.pinned(entry.modelData) ? "Unpin from taskbar" : "Pin to taskbar"; enabled: !launcher.actionMode && !Tasks.busy; onTriggered: Tasks.togglePin(entry.modelData) }
                     }
                     MouseArea {
                         id: mouse
@@ -99,8 +115,8 @@ PanelWindow {
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
                         onClicked: event => {
                             apps.currentIndex = entry.index
-                            if (event.button === Qt.RightButton) appMenu.popup()
-                            else launcher.launchCurrent()
+                            if (event.button === Qt.RightButton && !launcher.actionMode) appMenu.popup()
+                            else if (event.button === Qt.LeftButton) launcher.launchCurrent()
                         }
                     }
                 }
@@ -110,8 +126,14 @@ PanelWindow {
                 Layout.fillWidth: true
                 Text { text: "↑ ↓ SELECT   /   ENTER EXECUTE"; color: ForgeTheme.muted; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10) }
                 Item { Layout.fillWidth: true }
-                Text { text: launcher.entries.length + " FILES"; color: ForgeTheme.cyan; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10) }
+                Text { text: launcher.entries.length + (launcher.actionMode ? " ACTIONS" : " APPS"); color: ForgeTheme.cyan; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10) }
             }
         }
+    }
+    IpcHandler {
+        target: "forgeLauncher"
+        function status(): string { return JSON.stringify({ query: search.text, actions: launcher.actionMode, count: launcher.entries.length, first: launcher.entries.length ? launcher.entries[0].name : "", opened: launcher.opened }) }
+        function query(value: string): void { search.text = value; apps.currentIndex = 0 }
+        function activate(): void { if (launcher.opened) launcher.launchCurrent() }
     }
 }

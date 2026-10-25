@@ -4,19 +4,20 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-PanelWindow {
+ForgePanel {
     id: panel
     screen: Desktop.panelScreen
-    visible: Desktop.overviewOpen
+    opened: Desktop.overviewOpen
     implicitWidth: Math.min(ForgeTheme.px(960), screen ? screen.width - ForgeTheme.gap(32) : ForgeTheme.px(960))
     implicitHeight: Math.min(ForgeTheme.px(640), screen ? screen.height - ForgeTheme.gap(130) : ForgeTheme.px(640))
     color: "transparent"
-    focusable: true
     exclusionMode: ExclusionMode.Ignore
     property int selected: 0
-    onVisibleChanged: if (visible) { selected = Math.max(0, Tasks.windows.indexOf(Tasks.activeWindow)); content.forceActiveFocus(); content.enter() }
+    onOpenedChanged: if (opened) { selected = Math.max(0, Tasks.windows.indexOf(Tasks.activeWindow)); Qt.callLater(() => content.forceActiveFocus()) }
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: panel.reveal
         anchors.fill: parent
         Keys.onEscapePressed: Desktop.closePanels()
         Keys.onTabPressed: panel.selected = (panel.selected + 1) % Math.max(1, Tasks.windows.length)

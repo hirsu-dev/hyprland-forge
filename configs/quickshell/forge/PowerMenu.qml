@@ -2,18 +2,19 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-PanelWindow {
+ForgePanel {
     id: panel
     screen: Desktop.panelScreen
-    visible: Desktop.powerOpen
+    opened: Desktop.powerOpen
     implicitWidth: Math.min(ForgeTheme.px(520), screen ? screen.width - ForgeTheme.gap(40) : ForgeTheme.px(520))
     implicitHeight: ForgeTheme.px(350)
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
     color: "transparent"
-    onVisibleChanged: if (visible) { content.forceActiveFocus(); content.enter() }
+    onOpenedChanged: if (opened) Qt.callLater(() => content.forceActiveFocus())
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: panel.reveal
         anchors.fill: parent
         borderColor: ForgeTheme.danger
         focus: true

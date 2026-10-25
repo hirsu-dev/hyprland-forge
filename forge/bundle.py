@@ -28,7 +28,7 @@ def build_bundle(root, destination, revision):
         if source.is_symlink() or not source.resolve().is_relative_to(root.resolve()) or not source.is_file():
             raise ForgeError("Unsafe bundle source: " + name)
         content = source.read_bytes()
-        if source.suffix.lower() in (".sh", ".py", ".json", ".qml", ".conf", ".ini", ".lua", ".svg", ".desktop") or name.startswith("configs/bin/") or source.name in ("config", "qmldir"):
+        if source.suffix.lower() in (".sh", ".py", ".js", ".json", ".qml", ".conf", ".ini", ".lua", ".svg", ".desktop") or name.startswith("configs/bin/") or source.name in ("config", "qmldir"):
             content = content.replace(b"\r\n", b"\n")
         payloads[name] = content
     payloads["build.json"] = (json.dumps({"name": manifest["name"], "version": manifest["release"], "revision": revision, "hardware_validation": "pending-on-device"}, indent=2) + "\n").encode()

@@ -6,14 +6,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-PanelWindow {
+ForgePanel {
     id: panel
     screen: Desktop.panelScreen
-    visible: Desktop.hubOpen
+    opened: Desktop.hubOpen
     implicitWidth: Math.min(ForgeTheme.px(1050), screen ? screen.width - ForgeTheme.gap(32) : ForgeTheme.px(1050))
     implicitHeight: ForgeTheme.panelHeight(screen, 790)
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
     color: "transparent"
     property var preferences: ({ bindings: {}, wallpapers: {}, profiles: {}, sensitivity: 0, naturalScroll: true, tapToClick: true, disableWhileTyping: true, gaming: false })
     property var wifi: ({ networks: [], connections: [], wifi: false })
@@ -95,8 +94,8 @@ PanelWindow {
         Desktop.closePanels()
         captureWorker.running = true
     }
-    onVisibleChanged: if (visible) { content.forceActiveFocus(); content.enter(); refresh() }
-    Connections { target: Desktop; function onHubPageChanged() { if (panel.visible) panel.refresh() } }
+    onOpenedChanged: if (opened) { Qt.callLater(() => content.forceActiveFocus()); refresh() }
+    Connections { target: Desktop; function onHubPageChanged() { if (panel.opened) panel.refresh() } }
     PwObjectTracker { objects: panel.audioNodes }
     Process {
         id: worker
@@ -152,6 +151,8 @@ PanelWindow {
     }
     ForgeFrame {
         id: content
+        managedProgress: true
+        progress: panel.reveal
         anchors.fill: parent
         Keys.onEscapePressed: Desktop.closePanels()
         RowLayout {

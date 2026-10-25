@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 ShellRoot {
@@ -10,12 +11,16 @@ ShellRoot {
         model: Quickshell.screens
         Taskbar {}
     }
-    ControlCenter {}
-    Settings {}
-    PowerMenu {}
-    Launcher {}
+    ControlCenter { id: controls }
+    Settings { id: settings }
+    PowerMenu { id: power }
+    Launcher { id: launcher }
     NotificationPopups {}
     Hud {}
-    Overview {}
-    Hub {}
+    Overview { id: overview }
+    Hub { id: hub }
+    IpcHandler {
+        target: "forgeMotion"
+        function status(): string { return JSON.stringify([controls.motionState("controls"), settings.motionState("settings"), power.motionState("power"), launcher.motionState("launcher"), overview.motionState("overview"), hub.motionState("hub")]) }
+    }
 }
