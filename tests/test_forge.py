@@ -131,6 +131,18 @@ class DeploymentTests(unittest.TestCase):
         deployment.rollback()
         self.assertEqual(self.target.read_text(), "new content")
 
+    def test_preserved_defaults_are_created_but_existing_preferences_survive(self):
+        self.files[0]["preserve"] = True
+        first = Deployment(self.user, self.transaction)
+        first.apply(self.files, self.source)
+        self.assertEqual(self.target.read_text(), "new content")
+        self.target.write_text("my preference", encoding="utf-8")
+        upgrade = Deployment(self.user, self.state / "transactions/upgrade")
+        upgrade.apply(self.files, self.source)
+        self.assertEqual(upgrade.entries, [])
+        self.assertEqual(upgrade.rollback(), [])
+        self.assertEqual(self.target.read_text(), "my preference")
+
     @unittest.skipIf(os.name == "nt", "POSIX permissions required")
     def test_identical_script_permissions_are_repaired_and_restored(self):
         self.target.parent.mkdir(parents=True)

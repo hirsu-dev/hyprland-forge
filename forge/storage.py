@@ -62,6 +62,8 @@ class Deployment:
             if not source.is_relative_to(source_root.resolve()) or not source.is_file():
                 raise ForgeError("Unsafe config source")
             target = safe_target(self.user_root, item["target"])
+            if item.get("preserve") is True and target.exists():
+                continue
             content = source.read_bytes()
             new_hash = hashlib.sha256(content).hexdigest()
             mode = 0o755 if item.get("executable", False) else 0o644

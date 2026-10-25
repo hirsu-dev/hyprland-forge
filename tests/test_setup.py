@@ -193,7 +193,7 @@ class BootstrapTerminalTests(unittest.TestCase):
                 output.add(package, arcname="hyprland-forge")
             digest = hashlib.sha256(archive.read_bytes()).hexdigest()
             metadata = root / "metadata.json"
-            metadata.write_text(json.dumps([{"tag_name": "v0.14.0", "assets": [{"name": "hyprland-forge-0.14.0.tar.gz", "digest": "sha256:" + digest}]}]))
+            metadata.write_text(json.dumps([{"tag_name": "v0.14.0", "draft": False, "prerelease": True, "assets": [{"name": "hyprland-forge-0.14.0.tar.gz", "digest": "sha256:" + digest}]}]))
             binaries = root / "bin"
             binaries.mkdir()
             (binaries / "curl").write_text('#!/bin/bash\nif [[ "$*" == *api.github.com* ]]; then cat "$FIXTURE_ROOT/metadata.json"; else cp "$FIXTURE_ROOT/fixture.tar.gz" "${@: -1}"; fi\n')

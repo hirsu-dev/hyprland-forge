@@ -302,6 +302,9 @@ def dispatch(request, home, runner=subprocess.run):
         return {"backups": backups(home), "preferences": load(home)}
     if action == "updates":
         return {"updates": run(["checkupdates"], runner, accepted=(0, 2), timeout=90).splitlines(), "message": "Preview only. Official repository packages; AUR packages are not managed here."}
+    if action == "forge-release":
+        from .releases import status
+        return {"forgeRelease": status(), "message": "Stable releases are preferred when available. Desktop updates keep your interface, theme, taskbar and personal overrides."}
     if action == "logs":
         path = safe_target(home, ".local/state/hyprland-forge/session.log")
         logs = path.read_text(errors="replace")[-12000:] if path.is_file() else ""

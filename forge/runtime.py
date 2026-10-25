@@ -166,7 +166,8 @@ def show_plan(plan):
     for command in plan["commands"]:
         print(shlex.join(command))
     for item in plan["files"]:
-        print(f"{item['source']} -> ~/{item['target']}")
+        suffix = " (keep existing preferences)" if item.get("preserve") else ""
+        print(f"{item['source']} -> ~/{item['target']}{suffix}")
     for service in plan.get("services", []):
         print(f"Enable on next boot: {service}")
     if plan.get("login"):

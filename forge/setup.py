@@ -48,6 +48,8 @@ def cache_installer(source_root, home, manifest):
     parent.mkdir(parents=True, exist_ok=True)
     target = Path(tempfile.mkdtemp(prefix=manifest["release"] + "-", dir=parent))
     names = {"install.sh", "live.sh", "install-online.sh", "project.json"}
+    if (source_root / "build.json").is_file():
+        names.add("build.json")
     names.update("forge/" + p.name for p in (source_root / "forge").glob("*.py"))
     names.update(item["source"] for stage in manifest["stages"] for item in stage.get("files", []))
     for name in sorted(names):
@@ -107,16 +109,26 @@ def run(source_root, profile=None, login="auto"):
     profile = profile or ("virtual-machine" if virtualization() else "laptop")
     manifest = load_manifest(source_root)
     plan = resolve_login(resolve_plan(make_plan(manifest, None), apply=True, profile=profile), mode=login, apply=True)
+    home = Path.home()
+    previous = safe_target(home, ".local/state/hyprland-forge/setup.json")
+    gaming_default = True
+    if previous.is_file() and previous.stat().st_size < 8192:
+        try:
+            settings = json.loads(previous.read_text(encoding="utf-8"))
+            if isinstance(settings, dict) and settings.get("status") == "complete" and type(settings.get("gaming")) is bool:
+                gaming_default = settings["gaming"]
+        except (ValueError, OSError):
+            pass
     print(f"\nHYPRLAND FORGE  {manifest['release']}\n")
     print("Cyberpunk desktop, apps, audio, networking, display controls and hardware drivers.")
     print("Arch will receive a full update. Existing managed configs are backed up.")
+    print("Your interface, palette, taskbar, display profiles and personal overrides are kept.")
     print("Hardware: " + ("virtual machine" if profile == "virtual-machine" else "AMD / NVIDIA laptop"))
     print("Login: " + ("SDDM" if plan.get("login", {}).get("action") == "enable-sddm" else "keep current login"))
     if not confirm("Install Forge on this Arch system?"):
         print("Setup cancelled.")
         return 0
-    gaming = confirm("Include Steam and gaming support?")
-    home = Path.home()
+    gaming = confirm("Include Steam and gaming support?", default=gaming_default)
     state = home / ".local/state/hyprland-forge"
     safe_target(home, ".local/state/hyprland-forge/setup.json")
     safe_target(home, ".local/state/hyprland-forge/setup-complete")
@@ -141,7 +153,7 @@ def run(source_root, profile=None, login="auto"):
             print(f"Setup stopped. Details are saved in {log}", file=sys.stderr)
             print("Re-run the same installation command to retry.", file=sys.stderr)
             raise
-        write_json(state / "setup.json", {"status": "complete", "release": manifest["release"], "transaction": transaction, "installer": str(cached), "gaming": gaming, "log": str(log)})
+        write_json(state / "setup.json", {"status": "complete", "release": manifest["release"], "profile": profile, "transaction": transaction, "installer": str(cached), "gaming": gaming, "log": str(log)})
         atomic_write(state / "setup-complete", (manifest["release"] + "\n").encode())
     print(f"\nForge is installed. Configuration backup: {transaction}")
     print("After restarting, choose Hyprland at the graphical login.")

@@ -51,11 +51,20 @@ forge_online() {
     for arg in curl python3 tar sha256sum; do
         command -v "$arg" >/dev/null || { printf 'Required command is missing: %s\n' "$arg" >&2; return 1; }
     done
-    release_json="$(curl -fsSL --retry 2 -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$repo/releases?per_page=1")"
+    release_json="$(curl -fsSL --retry 2 --connect-timeout 10 --max-time 120 -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$repo/releases?per_page=100")"
     release_info="$(python3 -c '
-import json,re,sys
+import json,os,re,sys
 try:
-    release=json.load(sys.stdin)[0]
+    channel=os.environ.get("FORGE_RELEASE_CHANNEL","recommended")
+    if channel not in ("recommended","stable","preview"):
+        raise ValueError("invalid release channel")
+    releases=json.load(sys.stdin)
+    if not isinstance(releases,list):
+        raise ValueError("invalid metadata")
+    releases=[r for r in releases if isinstance(r,dict) and r.get("draft") is False and type(r.get("prerelease")) is bool and isinstance(r.get("tag_name"),str) and re.fullmatch(r"v[0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}",r["tag_name"])]
+    stable=[r for r in releases if not r["prerelease"]]
+    pool=stable if channel=="stable" or channel=="recommended" and stable else releases
+    release=max(pool,key=lambda r:tuple(map(int,r["tag_name"][1:].split("."))))
     tag=release["tag_name"]
     if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+",tag):
         raise ValueError("invalid release version")
@@ -72,7 +81,7 @@ except (ValueError,KeyError,IndexError,StopIteration,TypeError):
     archive="hyprland-forge-${tag#v}.tar.gz"
     work="$(mktemp -d -t forge-download-XXXXXXXX)"
     printf 'Downloading Forge %s\n' "$tag"
-    if ! curl -fsSL --retry 2 "https://github.com/$repo/releases/download/$tag/$archive" -o "$work/$archive"; then
+    if ! curl -fsSL --retry 2 --connect-timeout 10 --max-time 300 "https://github.com/$repo/releases/download/$tag/$archive" -o "$work/$archive"; then
         rm -r -- "$work"
         return 1
     fi

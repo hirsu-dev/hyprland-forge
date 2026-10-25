@@ -37,6 +37,8 @@ def load_manifest(root):
             if not re.fullmatch(r"[a-z0-9][a-z0-9@+_.-]*", package):
                 raise ForgeError(f"Invalid package name: {package}")
         for item in stage.get("files", []):
+            if type(item.get("preserve", False)) is not bool:
+                raise ForgeError("File preservation must be a boolean")
             source = relative_path(item["source"])
             target = relative_path(item["target"])
             if source.parts[0] not in ("configs", "forge"):

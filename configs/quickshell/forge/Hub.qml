@@ -23,6 +23,7 @@ PanelWindow {
     property int cpuPercent: 0
     property var backupList: []
     property var updateList: []
+    property var forgeRelease: null
     property var healthList: []
     property var wallpaperProjects: []
     property var wallpaperAssets: []
@@ -74,6 +75,7 @@ PanelWindow {
         }
         if (result.backups) backupList = result.backups
         if (result.updates) updateList = result.updates
+        if (result.forgeRelease) forgeRelease = result.forgeRelease
         if (result.health) healthList = result.health
         if (result.logs !== undefined) logs = result.logs
         if (result.message) message = result.message
@@ -367,6 +369,10 @@ PanelWindow {
                             ForgeButton { text: "CHECK OFFICIAL UPDATES"; enabled: !panel.busy; onClicked: panel.request("updates") }
                             Repeater { model: panel.updateList; Label { required property string modelData; text: modelData } }
                             ForgeButton { text: panel.updateArmed ? "CONFIRM / OPEN PACMAN UPDATE" : "UPDATE ENTIRE SYSTEM"; danger: true; enabled: !panel.busy; onClicked: { if (!panel.updateArmed) panel.updateArmed = true; else { panel.updateArmed = false; Desktop.exec(["kitty", "-e", Quickshell.env("HOME") + "/.local/bin/forge-update"]) } } }
+                            Label { text: "Forge desktop updates are checked separately. Your theme, interface, taskbar, display profiles, shortcuts and user.lua overrides are kept."; color: ForgeTheme.muted }
+                            ForgeButton { text: "CHECK FORGE DESKTOP"; enabled: !panel.busy; onClicked: panel.request("forge-release") }
+                            Label { visible: panel.forgeRelease !== null; text: panel.forgeRelease ? "INSTALLED / " + panel.forgeRelease.installed + "   AVAILABLE / " + panel.forgeRelease.available + (panel.forgeRelease.prerelease ? " / PRERELEASE" : " / STABLE") : "" }
+                            ForgeButton { visible: panel.forgeRelease !== null && panel.forgeRelease.updateAvailable; text: "OPEN DESKTOP UPDATER"; enabled: !panel.busy; onClicked: Desktop.exec(["kitty", "--hold", "-e", Quickshell.env("HOME") + "/.local/bin/forge-update", "desktop"]) }
                             Heading { text: "03 / CONFIG RECOVERY" }
                             Label { text: "Undo restores config files only, preserving conflicting external edits. It does not undo package upgrades, restore boot files, or replace a full disk backup."; color: ForgeTheme.muted }
                             Repeater {

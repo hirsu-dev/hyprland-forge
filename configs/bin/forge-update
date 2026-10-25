@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 [[ "$(uname -s)" == Linux && -f /etc/arch-release && $EUID -ne 0 ]] || exit 1
+case "${1:-system}" in
+    desktop) shift; exec "$HOME/.local/bin/forge-upgrade" --apply "$@" ;;
+    system) [[ $# -le 1 ]] || exit 2 ;;
+    *) printf '%s\n' 'Choose system or desktop.' >&2; exit 2 ;;
+esac
 printf '%s\n' 'Forge full system update. Review pacman prompts; config rollback does not undo packages.'
 sudo pacman -Syu
 printf '%s\n' 'Update finished. Press Enter to close.'

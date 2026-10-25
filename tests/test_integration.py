@@ -51,6 +51,22 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(json.loads(result.stdout)), 4)
 
+    def test_upgrade_preserves_user_settings_and_override_files(self):
+        plan = make_plan(self.manifest, None)
+        execute(plan, ROOT, self.user, self.state, runner=lambda *a, **k: None)
+        from forge.theme import interface_payload, render
+        preferences = {**render("#74f7ef"), **interface_payload(self.user, patch={"scale": 1.5, "spacing": 1.6, "motion": False}), ".config/forge/taskbar.json": '{"pins": [], "scope": "all", "labels": false}', ".config/hypr/user.lua": "hl.config({general={gaps_out=30}})\n", ".config/forge/preferences.json": '{"sensitivity": 0.25}'}
+        for name, text in preferences.items():
+            path = self.user / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        transaction = execute(plan, ROOT, self.user, self.state, runner=lambda *a, **k: None)
+        for name, text in preferences.items():
+            self.assertEqual((self.user / name).read_text(encoding="utf-8"), text)
+        self.assertEqual(restore(transaction, self.user, self.state), [])
+        for name, text in preferences.items():
+            self.assertEqual((self.user / name).read_text(encoding="utf-8"), text)
+
     def source_copy(self):
         source = self.root / "source"
         source.mkdir()
