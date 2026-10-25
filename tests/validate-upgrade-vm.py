@@ -22,6 +22,9 @@ original = {name: (home / name).read_bytes() if (home / name).is_file() else Non
 process = None
 master, slave = pty.openpty()
 transcript = bytearray()
+questions = [b"Install Forge on this Arch system?", b"Include Steam and gaming support?", b"Restart now?"]
+answers = [b"y\n", b"y\n", b"n\n"]
+answered = 0
 try:
     subprocess.run([str(home / ".local/bin/forge-appearance"), "--preset", "icewire", "--apply"], capture_output=True, check=True, timeout=20)
     subprocess.run([str(home / ".local/bin/forge-appearance"), "--interface", '{"scale":1.1,"spacing":1.4,"jaggedness":1.8,"speed":1.25}', "--apply"], capture_output=True, check=True, timeout=20)
@@ -35,7 +38,6 @@ try:
     before = {name: (home / name).read_bytes() for name in paths}
     process = subprocess.Popen(["bash", str(root / "install.sh"), "--setup", "--profile", "virtual-machine"], cwd=root, stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
     os.close(slave)
-    os.write(master, b"y\ny\nn\n")
     deadline = time.monotonic() + 600
     while time.monotonic() < deadline:
         if select.select([master], [], [], 0.2)[0]:
@@ -46,6 +48,10 @@ try:
             if not data:
                 break
             transcript.extend(data)
+            (output / "upgrade.log").write_bytes(transcript)
+            if answered < len(questions) and questions[answered] in transcript:
+                os.write(master, answers[answered])
+                answered += 1
         elif process.poll() is not None:
             break
     assert process.wait(timeout=10) == 0, transcript.decode(errors="replace")[-5000:]
