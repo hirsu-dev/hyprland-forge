@@ -1,7 +1,9 @@
 import hashlib
 import io
 import json
+import os
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -34,6 +36,15 @@ def archive_bytes(payloads, extra=None):
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_one_link_installer_and_desktop_updater_choose_the_same_channel(self):
+        script = (ROOT / "install-online.sh").read_text(encoding="utf-8")
+        selector = script.split("release_info=\"$(python3 -c '\n", 1)[1].split("\n' <<<", 1)[0]
+        items = [release("v2.0.0", True), release("v1.2.0"), release("v1.10.0")]
+        for channel in ("recommended", "stable", "preview"):
+            result = subprocess.run([sys.executable, "-c", selector], input=json.dumps(items), text=True, capture_output=True, env={**os.environ, "FORGE_RELEASE_CHANNEL": channel})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout.split()[0], select_release(items, channel)["tag"])
+
     def test_recommended_prefers_stable_and_preview_explicitly_includes_candidates(self):
         items = [release("v1.2.0"), release("v2.0.0", True), release("v1.10.0")]
         self.assertEqual(select_release(items)["version"], "1.10.0")
