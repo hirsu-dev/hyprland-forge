@@ -144,6 +144,7 @@ PanelWindow {
             spacing: Math.min(ForgeTheme.gap(18), panel.height / 32)
             RowLayout {
                 Layout.fillWidth: true
+                visible: panel.height >= ForgeTheme.px(320)
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -155,12 +156,15 @@ PanelWindow {
                 ForgeButton { text: "ESC / CLOSE"; onClicked: Desktop.closePanels() }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: ForgeTheme.line }
-            Choice {
+            RowLayout {
                 visible: panel.compact
                 Layout.fillWidth: true
-                model: ["01 / WORKSPACE", "02 / INTERFACE", "03 / TASKBAR"]
-                currentIndex: panel.page
-                onActivated: index => Desktop.settingsPage = index
+                Choice {
+                    model: ["01 / WORKSPACE", "02 / INTERFACE", "03 / TASKBAR"]
+                    currentIndex: panel.page
+                    onActivated: index => Desktop.settingsPage = index
+                }
+                ForgeButton { visible: panel.height < ForgeTheme.px(320); text: "×"; implicitWidth: ForgeTheme.px(34); implicitHeight: ForgeTheme.px(32); onClicked: Desktop.closePanels() }
             }
             RowLayout {
                 Layout.fillWidth: true
