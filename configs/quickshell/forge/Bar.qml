@@ -15,6 +15,10 @@ PanelWindow {
     implicitHeight: ForgeTheme.px(56)
     color: "transparent"
     exclusiveZone: implicitHeight
+    readonly property var workspaceMonitor: Hyprland.monitorFor(bar.screen)
+    readonly property int workspaceSlots: bar.width < ForgeTheme.px(1100) ? 4 : bar.width < ForgeTheme.px(1400) ? 6 : 10
+    readonly property int workspaceStart: Math.max(1, Math.min((workspaceMonitor && workspaceMonitor.activeWorkspace ? workspaceMonitor.activeWorkspace.id : 1) - Math.floor(workspaceSlots / 2), 11 - workspaceSlots))
+    readonly property var workspaceIds: Array.from({length: workspaceSlots}, (_, index) => workspaceStart + index)
     ForgeFrame {
         anchors.fill: parent
         anchors.margins: ForgeTheme.gap(6)
@@ -34,15 +38,15 @@ PanelWindow {
             Row {
                 spacing: ForgeTheme.gap(3)
                 Repeater {
-                    model: bar.width < ForgeTheme.px(1100) ? 4 : bar.width < ForgeTheme.px(1400) ? 6 : 10
+                    model: bar.workspaceIds
                     ForgeButton {
-                        required property int index
+                        required property int modelData
                         readonly property var monitor: Hyprland.monitorFor(bar.screen)
-                        selected: monitor && monitor.activeWorkspace && monitor.activeWorkspace.id === index + 1
-                        text: String(index + 1).padStart(2, "0")
+                        selected: monitor && monitor.activeWorkspace && monitor.activeWorkspace.id === modelData
+                        text: String(modelData).padStart(2, "0")
                         implicitWidth: ForgeTheme.px(selected ? 36 : 26)
                         implicitHeight: ForgeTheme.px(28)
-                        onClicked: Desktop.workspace(index + 1)
+                        onClicked: Desktop.workspace(modelData)
                     }
                 }
             }
