@@ -146,6 +146,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 ColumnLayout {
                     Layout.fillWidth: true
+                    Layout.minimumWidth: 0
                     spacing: ForgeTheme.gap(4)
                     Text { visible: !panel.compact; text: "FORGE / SYSTEM CONFIGURATION"; color: ForgeTheme.danger; font.family: ForgeTheme.font; font.pixelSize: ForgeTheme.fontSize(10); font.letterSpacing: 1.5 }
                     Text { Layout.fillWidth: true; elide: Text.ElideRight; text: "CONTROL YOUR RIG_"; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.bold: true; font.italic: true; font.pixelSize: ForgeTheme.fontSize(panel.compact ? 20 : 28) }
@@ -154,14 +155,12 @@ PanelWindow {
                 ForgeButton { text: "ESC / CLOSE"; onClicked: Desktop.closePanels() }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: ForgeTheme.line }
-            Flow {
+            Choice {
                 visible: panel.compact
                 Layout.fillWidth: true
-                spacing: ForgeTheme.gap(6)
-                Repeater {
-                    model: ["WORKSPACE", "INTERFACE", "TASKBAR"]
-                    ForgeButton { required property string modelData; required property int index; text: modelData; implicitHeight: ForgeTheme.px(34); selected: panel.page === index; onClicked: Desktop.settingsPage = index }
-                }
+                model: ["01 / WORKSPACE", "02 / INTERFACE", "03 / TASKBAR"]
+                currentIndex: panel.page
+                onActivated: index => Desktop.settingsPage = index
             }
             RowLayout {
                 Layout.fillWidth: true
