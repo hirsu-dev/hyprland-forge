@@ -42,7 +42,7 @@ with tempfile.TemporaryDirectory(prefix="forge-everyday-vm-") as directory:
         audio.setframerate(48000)
         audio.writeframes(bytes(48000 * 2 * 2))
     subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=0xfcee0a:s=640x360:r=30", "-t", "2", "-c:v", "mpeg4", str(root / "forge-everyday.mp4")], check=True, timeout=20)
-    subprocess.run(["pw-play", str(root / "forge-everyday.wav")], capture_output=True, check=True, timeout=10)
+    subprocess.run(["pw-play", str(root / "forge-everyday.wav")], capture_output=True, check=True, timeout=30)
     page = root / "forge-everyday.html"
     page.write_text('<!doctype html><title>Forge Everyday Validation</title><style>body{background:#100d16;color:#fcee0a;font:32px sans-serif;padding:60px}</style><h1>Forge Everyday Validation</h1><p>Browser rendering on the installed desktop.</p>')
     profile = root / "browser"

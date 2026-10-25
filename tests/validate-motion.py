@@ -32,14 +32,16 @@ def wait(target, predicate):
 try:
     atomic_write(path, json.dumps({**INTERFACE_DEFAULTS, "speed": 0.5}).encode())
     wait("forge", lambda state: state["motion"])
+    wait("forgeInterface", lambda state: state["values"]["speed"] == 0.5)
     for name, command in (("launcher", "launcher"), ("controls", "controls"), ("settings", "settings"), ("power", "power"), ("overview", "overview"), ("hub", "hub")):
         ipc("forge", "close")
         wait("forgeMotion", lambda states: not any(state["shown"] for state in states))
         ipc("forge", command, *(["hardware"] if name == "hub" else []))
-        wait("forgeMotion", lambda states: any(state["name"] == name and state["opened"] and state["shown"] for state in states))
+        wait("forgeMotion", lambda states: any(state["name"] == name and state["opened"] and state["shown"] and state["moving"] and 0 < state["reveal"] < 1 for state in states))
         wait("forgeMotion", lambda states: any(state["name"] == name and state["reveal"] == 1 and not state["moving"] for state in states))
         ipc("forge", "close")
-        wait("forgeMotion", lambda states: not any(state["focusable"] for state in states))
+        closing = wait("forgeMotion", lambda states: not any(state["focusable"] for state in states))
+        assert any(state["name"] == name and state["shown"] and state["moving"] and 0 < state["reveal"] < 1 for state in closing), closing
         wait("forgeMotion", lambda states: not any(state["shown"] or state["moving"] for state in states))
     for _ in range(3):
         ipc("forge", "launcher")
