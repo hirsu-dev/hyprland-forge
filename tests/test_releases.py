@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import io
 import json
@@ -105,7 +106,7 @@ class ReleaseTests(unittest.TestCase):
         unsafe.linkname = "../../outside"
         huge = tarfile.TarInfo("hyprland-forge/huge")
         huge.size = 33 * 1024 ** 2
-        for data in (archive_bytes({}, unsafe), archive_bytes({"../../outside": b"keep"}), archive_bytes({}, huge)):
+        for data in (archive_bytes({}, unsafe), archive_bytes({"../../outside": b"keep"}), gzip.compress(huge.tobuf() + bytes(1024))):
             with tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 selected = {"url": "fixture", "sha256": hashlib.sha256(data).hexdigest()}
