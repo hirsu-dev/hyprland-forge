@@ -21,6 +21,8 @@ scripts = {"runtime": "validate-vm.py", "apps": "validate-everyday-vm.py", "desk
 commands = {name: [[sys.executable, str(root / "tests" / script), "--disposable-vm"]] for name, script in scripts.items()}
 commands["desktop"] += [[sys.executable, str(root / "tests" / name), "--disposable-vm"] for name in ("validate-monitor-memory.py", "validate-taskbar.py")]
 commands["runtime"].append([sys.executable, str(root / "tests/validate-supervision-vm.py"), "--disposable-vm"])
+commands["runtime"].append([sys.executable, str(root / "tests/validate-lock-vm.py"), "--disposable-vm"])
+commands["appearance"].append([sys.executable, str(root / "tests/validate-motion.py"), str(Path.home() / ".config/quickshell/forge/shell.qml")])
 commands["unit"] = [[sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"]]
 build = json.loads((root / "build.json").read_text())
 report = {"scope": "virtual-machine", "version": build["version"], "revision": build["revision"], "kernel": os.uname().release, "boot_id": Path("/proc/sys/kernel/random/boot_id").read_text().strip(), "packages": subprocess.check_output(["pacman", "-Q", "hyprland", "quickshell", "mesa", "vulkan-swrast"], text=True).splitlines(), "started": time.time(), "checks": [], "physical_hardware_qualified": False, "result": "running"}

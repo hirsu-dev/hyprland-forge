@@ -22,7 +22,7 @@ ACTIONS = {
     "launcher": ("SUPER + Space", "~/.local/bin/forge-launcher"),
     "controls": ("SUPER + A", "quickshell -c forge ipc call forge controls"),
     "settings": ("SUPER + I", "quickshell -c forge ipc call forge settings"),
-    "lock": ("SUPER + L", "hyprlock"),
+    "lock": ("SUPER + L", "~/.local/bin/forge-lock"),
 }
 LIVE = {"enabled": False, "project": "", "assets": "", "output": "primary", "fps": 30, "silent": True, "pauseOnGaming": True}
 GAME = {"overlay": False, "gamescope": False, "width": 1920, "height": 1080, "fps": 120}

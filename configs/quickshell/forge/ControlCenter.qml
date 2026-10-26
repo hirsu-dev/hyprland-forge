@@ -119,7 +119,7 @@ ForgePanel {
                 }
                 RowLayout {
                     Layout.fillWidth: true
-                    ForgeButton { Layout.fillWidth: true; text: "LOCK"; onClicked: { Desktop.exec(["hyprlock"]); Desktop.closePanels() } }
+                    ForgeButton { Layout.fillWidth: true; text: "LOCK"; onClicked: { Desktop.exec([Quickshell.env("HOME") + "/.local/bin/forge-lock"]); Desktop.closePanels() } }
                     ForgeButton { Layout.fillWidth: true; text: "DEVICES"; onClicked: Desktop.openHub("connections") }
                     ForgeButton { Layout.fillWidth: true; text: "ALERTS " + Alerts.history.length; onClicked: Desktop.openHub("alerts") }
                 }

@@ -79,9 +79,13 @@ try:
         time.sleep(0.5)
         subprocess.run(["grim", str(home / "Pictures/Forge" / ("interface-scale-" + str(scale) + ".png"))], check=True, timeout=10)
         ipc("close")
-        time.sleep(0.2)
-        view = json.loads(subprocess.check_output(["quickshell", "-c", "forge", "ipc", "call", "forgeInterface", "status"], text=True, timeout=10))
-        assert not view["animationsActive"], view
+        for attempt in range(60):
+            view = json.loads(subprocess.check_output(["quickshell", "-c", "forge", "ipc", "call", "forgeInterface", "status"], text=True, timeout=10))
+            if not view["open"] and not view["animationsActive"]:
+                break
+            time.sleep(0.05)
+        else:
+            raise AssertionError(view)
     appearance("--interface", json.dumps({"motion": False}))
     ipc("appearance")
     time.sleep(0.4)

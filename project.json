@@ -98,6 +98,7 @@
         {"source": "configs/hypr/hypridle.conf", "target": ".config/hypr/hypridle.conf"},
         {"source": "configs/hypr/hyprlock.conf", "target": ".config/hypr/hyprlock.conf"},
         {"source": "configs/bin/forge-session", "target": ".local/bin/forge-session", "executable": true},
+        {"source": "configs/bin/forge-lock", "target": ".local/bin/forge-lock", "executable": true},
         {"source": "configs/bin/forge-launcher", "target": ".local/bin/forge-launcher", "executable": true},
         {"source": "configs/bin/forge-screenshot", "target": ".local/bin/forge-screenshot", "executable": true},
         {"source": "configs/bin/forge-clipboard", "target": ".local/bin/forge-clipboard", "executable": true},
