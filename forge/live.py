@@ -16,7 +16,7 @@ from .setup import confirm
 from .storage import atomic_write
 
 
-REPOSITORY = "hrushikbarani-hub/hyprland-forge"
+REPOSITORY = "hirsu-dev/hyprland-forge"
 
 
 def release_asset(version):

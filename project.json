@@ -27,7 +27,7 @@
     "virtual_graphics_warnings": "vmwgfx-host-channel-errors-observed; applications-verified-with-software-compatibility-path"
   },
   "everyday_safety": {"battery": "15-percent-low-5-percent-critical-on-battery-with-recharge-rearm", "critical_notifications": "visible-during-do-not-disturb", "power_actions": "explicit-user-action", "hardware_validation": "pending-on-device"},
-  "repository": "https://github.com/hrushikbarani-hub/hyprland-forge",
+  "repository": "https://github.com/hirsu-dev/hyprland-forge",
   "visibility": "public",
   "target": {
     "distribution": "arch",
@@ -44,7 +44,7 @@
   },
   "design": {
     "implementation": "original",
-    "primary_reference": "https://hrushikbarani-hub.github.io/",
+    "primary_reference": "https://hirsu-dev.github.io/",
     "direction": "Overdrive / Redline cyberpunk desktop",
     "references": [
       "thread://01a15736-b678-7f72-ad25-8fbfb49822aa",
@@ -109,7 +109,7 @@
       "configuration_validation": {
         "result": "passed",
         "commit": "491b0cdaa6187236e720aa08b96a853558a9a126",
-        "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/37661271001",
+        "run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/37661271001",
         "environment": "Arch native Hyprland configuration verifier"
       }
     },
@@ -164,7 +164,7 @@
       "runtime_validation": {
         "result": "passed",
         "commit": "491b0cdaa6187236e720aa08b96a853558a9a126",
-        "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/37661271001",
+        "run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/37661271001",
         "environments": ["Arch Xvfb", "Arch headless Sway Wayland"],
         "checks": ["QML startup without binding errors", "launcher and control center IPC", "two 1920x1080 outputs", "panel recovery after output removal", "wallpaper process", "captured panel screenshots", "live accent updates", "D-Bus tray arrival and removal", "MPRIS playback and track changes", "PipeWire null-sink volume and mute", "mock backlight read and write", "power-menu cancellation without executing actions"],
         "hardware_validation": "pending-on-device"
@@ -198,7 +198,7 @@
     ], "runtime_validation": {
       "result": "passed",
       "commit": "491b0cdaa6187236e720aa08b96a853558a9a126",
-      "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/37661271001",
+      "run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/37661271001",
       "checks": ["native Kitty configuration parser", "native Fuzzel parser for all presets", "installed Qt palette and Papirus assets", "dynamic shell palette reload", "theme apply and conflict-preserving rollback"]
     }},
     {"id": "everyday", "status": "ready", "requires": ["appearance"], "packages": ["gvfs", "gvfs-mtp", "gvfs-smb", "udisks2", "thunar-volman", "thunar-archive-plugin", "tumbler", "xarchiver", "7zip", "zip", "mousepad", "ristretto", "evince", "mpv", "noto-fonts-emoji", "desktop-file-utils", "shared-mime-info", "perl-file-mimeinfo"], "files": [

@@ -14,7 +14,7 @@ forge_admin() {
 }
 
 forge_online() {
-    local repo='hrushikbarani-hub/hyprland-forge' mode=setup arg answer release_json release_info tag digest archive work status use_su=false
+    local repo='hirsu-dev/hyprland-forge' mode=setup arg answer release_json release_info tag digest archive work status use_su=false
     command -v sudo >/dev/null || use_su=true
     for arg in "$@"; do
         case "$arg" in
