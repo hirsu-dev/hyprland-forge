@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="night" cx="73%" cy="32%" r="90%"><stop stop-color="#304955"/><stop offset=".48" stop-color="#14232e"/><stop offset="1" stop-color="#070d14"/></radialGradient>
+    <linearGradient id="steel"><stop stop-color="#080f17"/><stop offset=".25" stop-color="#526e7b"/><stop offset=".42" stop-color="#b8d1d9"/><stop offset=".46" stop-color="#edf8fa"/><stop offset=".5" stop-color="#314e5e"/><stop offset=".72" stop-color="#111f2b"/><stop offset=".88" stop-color="#718e9b"/><stop offset="1" stop-color="#09111b"/></linearGradient>
+    <linearGradient id="edge" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#0c1823"/><stop offset=".54" stop-color="#2c4857"/><stop offset=".65" stop-color="#a6c7d2"/><stop offset="1" stop-color="#172d3a"/></linearGradient>
+    <pattern id="grid" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M90 0H0V90" fill="none" stroke="#95b9ca" stroke-opacity=".045"/></pattern>
+  </defs>
+  <path fill="url(#night)" d="M0 0h1920v1080H0z"/>
+  <path fill="url(#grid)" d="M0 0h1920v1080H0z"/>
+  <g fill="none" stroke="#a3c5d1" stroke-width="1" opacity=".12">
+    <ellipse cx="1270" cy="560" rx="505" ry="285" transform="rotate(-32 1270 560)"/>
+    <ellipse cx="1270" cy="560" rx="530" ry="310" transform="rotate(-32 1270 560)"/>
+    <path d="M670 950 1510 40M820 1080 1660 170M540 540h1250M1270 0v1080"/>
+  </g>
+  <path d="M1460-130C1090 150 1580 340 1190 550S1020 910 770 1220L1020 1250C1270 920 1150 840 1450 640S1320 230 1700-90Z" fill="url(#steel)" stroke="#688999" stroke-opacity=".4"/>
+  <path d="M1260-100C860 220 1470 370 1080 600S1040 920 690 1160L760 1210C1110 950 1070 810 1260 650S1190 320 1440-100Z" fill="url(#edge)" stroke="#abcbd7" stroke-opacity=".38"/>
+  <path d="M1495-70C1170 175 1570 360 1240 550S1130 880 885 1130" fill="none" stroke="#d0e3e9" stroke-width="2" opacity=".55"/>
+  <path d="M1380-10C1110 210 1490 350 1170 550S1110 840 820 1110" fill="none" stroke="#91d4e1" stroke-width="1" opacity=".5"/>
+  <g fill="none" stroke="#7395a7" opacity=".3"><path d="m70 140 25-25h330m1425 850h-240l-20-20M70 945v40h40M1810 115h40v40"/><path d="M94 140v6m6-6v6m6-6v6m6-6v6m6-6v6"/></g>
+  <g fill="#b4d9de" font-family="monospace" font-size="14" letter-spacing="5"><text x="95" y="96">FORGE / GHOSTWIRE</text></g>
+  <path d="M95 1000h110" stroke="#8ac4d2" opacity=".6"/>
+  <g fill="#7893a3" font-family="monospace" font-size="10" letter-spacing="3"><text x="224" y="1004">LOCAL / PERSONAL / OPEN</text></g>
+</svg>

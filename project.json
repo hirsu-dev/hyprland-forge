@@ -107,7 +107,7 @@
         {"source": "configs/bin/forge-clipboard", "target": ".local/bin/forge-clipboard", "executable": true},
         {"source": "forge/clipboard.py", "target": ".local/lib/hyprland-forge/forge/clipboard.py"},
         {"source": "configs/bin/forge-wallpaper", "target": ".local/bin/forge-wallpaper", "executable": true},
-        {"source": "configs/backgrounds/forge.svg", "target": ".local/share/backgrounds/forge.svg"}
+        {"source": "configs/backgrounds/ghostwire.svg", "target": ".local/share/backgrounds/forge.svg"}
       ],
       "hardware_validation": "pending-on-device",
       "configuration_validation": {
