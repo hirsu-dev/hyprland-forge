@@ -11,7 +11,7 @@ from forge.live import configuration, first_login
 
 
 version = "0.14.0"
-url = f"https://github.com/hrushikbarani-hub/hyprland-forge/releases/download/v{version}/hyprland-forge-{version}.tar.gz"
+url = f"https://github.com/hirsu-dev/hyprland-forge/releases/download/v{version}/hyprland-forge-{version}.tar.gz"
 seed = configuration(version, url, "a" * 64)
 config = ArchConfig.from_config(seed, Arguments())
 assert config.disk_config is None

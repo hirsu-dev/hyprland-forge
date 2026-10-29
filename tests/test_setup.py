@@ -91,7 +91,7 @@ class SetupTests(unittest.TestCase):
 
     def test_live_seed_does_not_choose_or_wipe_any_disk(self):
         version = "0.14.0"
-        url = f"https://github.com/hrushikbarani-hub/hyprland-forge/releases/download/v{version}/hyprland-forge-{version}.tar.gz"
+        url = f"https://github.com/hirsu-dev/hyprland-forge/releases/download/v{version}/hyprland-forge-{version}.tar.gz"
         seed = configuration(version, url, "a" * 64)
         self.assertNotIn("disk_config", seed)
         self.assertNotIn("auth_config", seed)

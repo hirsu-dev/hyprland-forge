@@ -16,7 +16,7 @@ from .manifest import ForgeError, relative_path
 from .runtime import preflight
 
 
-REPOSITORY = "hrushikbarani-hub/hyprland-forge"
+REPOSITORY = "hirsu-dev/hyprland-forge"
 API = "https://api.github.com/repos/" + REPOSITORY + "/releases?per_page=100"
 MAX_ARCHIVE = 32 * 1024 ** 2
 
