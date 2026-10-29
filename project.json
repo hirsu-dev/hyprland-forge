@@ -44,9 +44,12 @@
   },
   "design": {
     "implementation": "original",
-    "primary_reference": "https://hrushikbarani-hub.github.io/",
-    "direction": "Overdrive / Redline cyberpunk desktop",
+    "primary_reference": "https://www.youtube.com/watch?v=uQtQiAjz2Gg",
+    "primary_reference_title": "43pr / That one linux desktop",
+    "reference_priority": ["https://www.youtube.com/watch?v=uQtQiAjz2Gg", "https://github.com/43PR/dotfiles", "https://github.com/ilyamiro/serpantinum", "https://hrushikbarani-hub.github.io/"],
+    "direction": "Ghostwire / cool industrial cyberpunk with smoky glass and angular frames",
     "references": [
+      "https://www.youtube.com/watch?v=uQtQiAjz2Gg",
       "thread://01a15736-b678-7f72-ad25-8fbfb49822aa",
       "https://www.cyberpunk.net/us/en/",
       "https://github.com/ilyamiro/serpantinum",
@@ -58,7 +61,7 @@
       "https://github.com/43PR/dotfiles"
     ],
     "shell": "original Quickshell QML",
-    "priorities": ["angular HUD panels", "Overdrive yellow and Redline signal accents", "original vector artwork", "switchable motion and effects", "external-display-first", "low idle overhead"],
+    "priorities": ["wallpaper-first desktop", "smoky glass panels", "cool silver and cyan accents", "thin angular frames", "visual theme and wallpaper previews", "spaced modular controls", "switchable motion and effects", "external-display-first", "low idle overhead"],
     "comments": false,
     "documentation": false
   },
@@ -151,6 +154,7 @@
         {"source": "configs/quickshell/forge/Actions.js", "target": ".config/quickshell/forge/Actions.js"},
         {"source": "configs/quickshell/forge/ForgeSignal.qml", "target": ".config/quickshell/forge/ForgeSignal.qml"},
         {"source": "configs/quickshell/forge/InterfaceSettings.qml", "target": ".config/quickshell/forge/InterfaceSettings.qml"},
+        {"source": "configs/quickshell/forge/ThemeCard.qml", "target": ".config/quickshell/forge/ThemeCard.qml"},
         {"source": "configs/quickshell/forge/ForgeButton.qml", "target": ".config/quickshell/forge/ForgeButton.qml"},
         {"source": "configs/quickshell/forge/ForgeSlider.qml", "target": ".config/quickshell/forge/ForgeSlider.qml"},
         {"source": "configs/quickshell/forge/Laptop.qml", "target": ".config/quickshell/forge/Laptop.qml"},

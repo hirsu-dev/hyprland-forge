@@ -14,6 +14,7 @@ ForgePanel 1.0 ForgePanel.qml
 ForgeCalendar 1.0 ForgeCalendar.qml
 ForgeSignal 1.0 ForgeSignal.qml
 InterfaceSettings 1.0 InterfaceSettings.qml
+ThemeCard 1.0 ThemeCard.qml
 singleton Tasks 1.0 Tasks.qml
 Taskbar 1.0 Taskbar.qml
 TaskButton 1.0 TaskButton.qml

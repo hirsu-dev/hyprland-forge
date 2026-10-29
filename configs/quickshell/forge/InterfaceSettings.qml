@@ -46,6 +46,7 @@ ColumnLayout {
         spacing: ForgeTheme.gap(8)
         Repeater {
             model: [
+                { label: "GHOST GLASS", patch: { motion: true, effects: true, panelOpacity: 0.86, jaggedness: 1.2, spacing: 1.3, speed: 0.9, intensity: 0.35, ambient: true, scanlines: false } },
                 { label: "BALANCED", patch: { motion: true, effects: true, scale: 1, textScale: 1, spacing: 1.2, jaggedness: 1.4, speed: 1, intensity: 0.65, ambient: true, scanlines: true } },
                 { label: "KINETIC", patch: { motion: true, effects: true, jaggedness: 1.8, speed: 1.25, intensity: 1, ambient: true, scanlines: true } },
                 { label: "SPACIOUS", patch: { scale: 1.1, textScale: 1.05, spacing: 1.45, jaggedness: 1.6 } },
@@ -70,6 +71,7 @@ ColumnLayout {
     }
     Repeater {
         model: [
+            { key: "panelOpacity", label: "GLASS OPACITY", low: 0.7, high: 1, step: 0.05 },
             { key: "scale", label: "UI SCALE", low: 0.75, high: 1.75, step: 0.05 },
             { key: "textScale", label: "TEXT SIZE", low: 0.85, high: 1.25, step: 0.05 },
             { key: "spacing", label: "SPACE & DENSITY", low: 0.75, high: 1.6, step: 0.05 },

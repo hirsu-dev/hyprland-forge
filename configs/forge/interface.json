@@ -8,5 +8,6 @@
   "speed": 1.0,
   "intensity": 0.65,
   "ambient": true,
-  "scanlines": true
+  "scanlines": true,
+  "panelOpacity": 0.9
 }

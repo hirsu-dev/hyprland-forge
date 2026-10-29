@@ -261,24 +261,20 @@ ForgePanel {
                             spacing: ForgeTheme.gap(18)
                             InterfaceSettings { id: interfaceControls; busy: appearanceProcess.running; onApplyRequested: patch => panel.appearance("--interface", JSON.stringify(patch)) }
                             Caption { text: "01 / COLOR FREQUENCY"; color: ForgeTheme.cyan; font.letterSpacing: 1 }
-                            Text { text: "OVERDRIVE"; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.italic: true; font.bold: true; font.pixelSize: ForgeTheme.fontSize(42) }
-                            Caption { Layout.fillWidth: true; text: "Sharp geometry. Redline signal. Your interface, on your terms."; lineHeight: 1.5 }
+                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: "GHOSTWIRE_"; elide: Text.ElideRight; color: ForgeTheme.accent; font.family: ForgeTheme.font; font.italic: true; font.bold: true; font.pixelSize: ForgeTheme.fontSize(36) }
+                            Caption { Layout.fillWidth: true; text: "Smoky glass. Cut metal edges. A quieter signal over your wallpaper."; lineHeight: 1.5 }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: panel.compact ? 1 : 2
                                 rowSpacing: ForgeTheme.gap(10); columnSpacing: ForgeTheme.gap(10)
                                 enabled: !appearanceProcess.running
                                 Repeater {
-                                    model: [{ name: "overdrive", color: "#fcee0a" }, { name: "redline", color: "#ff4d61" }, { name: "icewire", color: "#74f7ef" }, { name: "monolith", color: "#e9e1ec" }]
-                                    ForgeButton {
-                                        id: themeOption
+                                    model: [{ name: "ghostwire", color: "#b4d9de", base: "#10191f" }, { name: "overdrive", color: "#fcee0a", base: "#100d16" }, { name: "redline", color: "#ff4d61", base: "#100d16" }, { name: "icewire", color: "#74f7ef", base: "#100d16" }, { name: "monolith", color: "#e9e1ec", base: "#100d16" }]
+                                    ThemeCard {
                                         required property var modelData
                                         Layout.fillWidth: true
-                                        implicitHeight: ForgeTheme.px(58)
-                                        text: modelData.name.toUpperCase()
-                                        selected: ForgeTheme.accent.toString() === modelData.color
+                                        preview: modelData
                                         onClicked: panel.appearance("--preset", modelData.name)
-                                        Rectangle { x: 8; y: 15; width: 3; height: parent.height - 30; color: themeOption.modelData.color }
                                     }
                                 }
                             }

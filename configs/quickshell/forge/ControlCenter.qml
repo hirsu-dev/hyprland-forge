@@ -157,7 +157,7 @@ ForgePanel {
                 RowLayout {
                     Layout.fillWidth: true
                     Repeater {
-                        model: ["overdrive", "redline", "icewire", "monolith"]
+                        model: ["ghostwire", "overdrive", "redline", "icewire"]
                         ForgeButton {
                             required property string modelData
                             Layout.fillWidth: true

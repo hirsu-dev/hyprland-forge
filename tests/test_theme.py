@@ -36,7 +36,7 @@ class ThemeTests(unittest.TestCase):
             self.assertIn(colors["accent"][1:] + "ff", files[".config/fuzzel/forge-colors.ini"])
 
     def test_default_assets_match_generator(self):
-        for target, content in render(PRESETS["overdrive"]).items():
+        for target, content in render(PRESETS["ghostwire"]).items():
             source = ROOT / "configs" / target.removeprefix(".config/")
             self.assertEqual(source.read_text(encoding="utf-8"), content)
 
@@ -44,6 +44,18 @@ class ThemeTests(unittest.TestCase):
         for name in ("overdrive", "redline", "icewire", "monolith"):
             self.assertEqual(palette(PRESETS[name])["accent"], PRESETS[name])
         self.assertEqual(palette(PRESETS["overdrive"])["background"], "#100d16")
+
+    def test_ghostwire_has_a_coherent_cool_base_and_opacity_is_bounded(self):
+        value = palette(PRESETS["ghostwire"])
+        self.assertEqual(value["background"], "#10191f")
+        self.assertEqual(value["line"], "#536d78")
+        self.assertIn("536d78ff", render(PRESETS["ghostwire"])[".config/hypr/forge/colors.lua"])
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            self.assertEqual(json.loads(interface_payload(home, patch={"panelOpacity": 0.8})[".config/forge/interface.json"])["panelOpacity"], 0.8)
+            for invalid in (0.69, 1.01, True, "0.9", float("nan")):
+                with self.subTest(invalid=invalid), self.assertRaises(ForgeError):
+                    interface_payload(home, patch={"panelOpacity": invalid})
 
     def test_interface_toggles_preserve_other_preference(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -43,7 +43,7 @@ Item {
         ShapePath {
             strokeWidth: 1
             strokeColor: root.borderColor
-            fillColor: root.color
+            fillColor: Qt.rgba(root.color.r, root.color.g, root.color.b, root.color.a * (root.ornament && ForgeTheme.effects ? ForgeTheme.panelOpacity : 1))
             startX: 0; startY: root.edge
             PathLine { x: root.edge; y: 0 }
             PathLine { x: root.width - root.edge * 3; y: 0 }

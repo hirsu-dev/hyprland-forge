@@ -12,8 +12,9 @@ from .runtime import execute, lock, preflight, restore
 from .storage import atomic_write, safe_target
 
 
-PRESETS = {"overdrive": "#fcee0a", "redline": "#ff4d61", "icewire": "#74f7ef", "monolith": "#e9e1ec", "sage": "#b5c9a8", "ocean": "#9dbbd1", "plum": "#c6afd2", "ember": "#dec49a"}
+PRESETS = {"ghostwire": "#b4d9de", "overdrive": "#fcee0a", "redline": "#ff4d61", "icewire": "#74f7ef", "monolith": "#e9e1ec", "sage": "#b5c9a8", "ocean": "#9dbbd1", "plum": "#c6afd2", "ember": "#dec49a"}
 BASE = {"background": "#100d16", "surface": "#1d141f", "raised": "#2b1b2a", "text": "#f4edf5", "muted": "#bdaab8", "line": "#693642", "cyan": "#74f7ef", "danger": "#ff4d61"}
+GHOSTWIRE = {"background": "#10191f", "surface": "#19262e", "raised": "#253740", "text": "#e1edf0", "muted": "#a3b9c1", "line": "#536d78", "cyan": "#94dce5", "danger": "#d98992"}
 
 
 def rgb(value):
@@ -28,14 +29,14 @@ def hex_color(channels):
 
 def palette(accent):
     hue, lightness, saturation = colorsys.rgb_to_hls(*rgb(accent))
-    result = dict(BASE)
+    result = dict(GHOSTWIRE if accent.lower() == PRESETS["ghostwire"] else BASE)
     result["accent"] = hex_color(colorsys.hls_to_rgb(hue, max(0.5, lightness), saturation))
     def luminance(color):
         return sum(weight * (channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4) for weight, channel in zip((0.2126, 0.7152, 0.0722), rgb(color)))
     lightness = luminance(result["accent"])
-    dark_contrast = (lightness + 0.05) / (luminance(BASE["background"]) + 0.05)
-    light_contrast = (luminance(BASE["text"]) + 0.05) / (lightness + 0.05)
-    result["accentText"] = BASE["background"] if dark_contrast >= light_contrast else BASE["text"]
+    dark_contrast = (lightness + 0.05) / (luminance(result["background"]) + 0.05)
+    light_contrast = (luminance(result["text"]) + 0.05) / (lightness + 0.05)
+    result["accentText"] = result["background"] if dark_contrast >= light_contrast else result["text"]
     return result
 
 
@@ -66,7 +67,7 @@ def render(accent):
     border = colors["accent"][1:] + "ff"
     return {
         ".config/forge/theme.json": json.dumps(colors, indent=2) + "\n",
-        ".config/hypr/forge/colors.lua": 'hl.config({ general = { col = { active_border = "rgba(' + border + ')", inactive_border = "rgba(693642ff)" } } })\n',
+        ".config/hypr/forge/colors.lua": 'hl.config({ general = { col = { active_border = "rgba(' + border + ')", inactive_border = "rgba(' + colors["line"][1:] + 'ff)" } } })\n',
         ".config/kitty/forge-colors.conf": "\n".join(f"{key} {value}" for key, value in {
             "background": colors["background"], "foreground": colors["text"], "cursor": colors["accent"],
             "selection_background": colors["accent"], "selection_foreground": colors["accentText"],
@@ -104,8 +105,8 @@ def apply_theme(accent, user_root, state_root):
     return apply_files(render(accent), user_root, state_root)
 
 
-INTERFACE_DEFAULTS = {"motion": True, "effects": True, "scale": 1.0, "textScale": 1.0, "spacing": 1.2, "jaggedness": 1.4, "speed": 1.0, "intensity": 0.65, "ambient": True, "scanlines": True}
-INTERFACE_RANGES = {"scale": (0.75, 1.75), "textScale": (0.85, 1.25), "spacing": (0.75, 1.6), "jaggedness": (0, 2), "speed": (0.5, 2), "intensity": (0, 1)}
+INTERFACE_DEFAULTS = {"motion": True, "effects": True, "scale": 1.0, "textScale": 1.0, "spacing": 1.2, "jaggedness": 1.4, "speed": 1.0, "intensity": 0.65, "ambient": True, "scanlines": True, "panelOpacity": 0.9}
+INTERFACE_RANGES = {"scale": (0.75, 1.75), "textScale": (0.85, 1.25), "spacing": (0.75, 1.6), "jaggedness": (0, 2), "speed": (0.5, 2), "intensity": (0, 1), "panelOpacity": (0.7, 1)}
 
 
 def validate_interface(value):
@@ -162,7 +163,7 @@ def main(argv=None):
     try:
         if args.rollback and (args.accent or args.preset or args.wallpaper or args.motion or args.effects or args.interface is not None):
             raise ForgeError("Rollback cannot be combined with an accent or wallpaper")
-        accent = args.accent or PRESETS[args.preset or "overdrive"]
+        accent = args.accent or PRESETS[args.preset or "ghostwire"]
         if args.wallpaper:
             accent = sample_image(args.wallpaper)
         payload = interface_payload(Path.home(), args.motion, args.effects, json.loads(args.interface) if args.interface is not None else None) if args.motion or args.effects or args.interface is not None else render(accent)
