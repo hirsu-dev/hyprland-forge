@@ -90,17 +90,20 @@ fn interface(state: &mut State, config: &Config) -> Result<Target> {
     let events = [keyboard, timer];
     let mut action = Action::None;
     let mut last_phase = None;
+    let mut repaint = true;
     loop {
-        frame.draw(state);
-        for (destination, color) in pixels.iter_mut().zip(&frame.pixels) {
-            *destination = BltPixel::from(*color);
+        if repaint {
+            frame.draw(state);
+            for (destination, color) in pixels.iter_mut().zip(&frame.pixels) {
+                *destination = BltPixel::from(*color);
+            }
+            output.blt(BltOp::BufferToVideo {
+                buffer: &pixels,
+                src: BltRegion::Full,
+                dest: (0, 0),
+                dims: (width, height),
+            })?;
         }
-        output.blt(BltOp::BufferToVideo {
-            buffer: &pixels,
-            src: BltRegion::Full,
-            dest: (0, 0),
-            dims: (width, height),
-        })?;
         if last_phase != Some(state.phase()) {
             trace(state);
             last_phase = Some(state.phase());
@@ -109,6 +112,7 @@ fn interface(state: &mut State, config: &Config) -> Result<Target> {
             Action::Verify => {
                 state.verify(config);
                 action = Action::None;
+                repaint = true;
                 continue;
             }
             Action::Launch(target) => {
@@ -120,11 +124,16 @@ fn interface(state: &mut State, config: &Config) -> Result<Target> {
         }
         let event = boot::wait_for_event(&events).map_err(|error| Error::from(error.status()))?;
         if event == 1 {
+            let previous = state.phase();
             action = state.tick(33);
+            repaint = state.motion() || state.phase() != previous;
         } else if let Some(key) =
             uefi::system::with_stdin(|input| input.read_key())?.and_then(mapped)
         {
             action = state.key(key);
+            repaint = true;
+        } else {
+            repaint = false;
         }
     }
 }
