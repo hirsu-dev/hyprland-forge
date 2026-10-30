@@ -21,7 +21,7 @@ def boot(image, output, seconds=240, memory=1536):
     disk = output / 'disposable.qcow2'
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', str(disk), '64G'], check=True)
     command = ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
-    command += ['-machine', 'q35', '-m', str(memory), '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'virtio', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
+    command += ['-machine', 'q35', '-m', str(memory), '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'std', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
     with (output / 'qemu.log').open('wb') as log:
         with subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT) as process:
             try:
