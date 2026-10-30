@@ -28,7 +28,7 @@ greeter = shutil.which('sddm-greeter-qt6') or shutil.which('sddm-greeter')
 if not greeter:
     raise RuntimeError('The SDDM theme preview program is missing.')
 with (results / 'iso-greeter.log').open('w') as stream:
-    process = subprocess.Popen([greeter, '--test-mode', '--theme', str(root / 'iso/boot/sddm')], stdout=stream, stderr=subprocess.STDOUT)
+    process = subprocess.Popen([greeter, '--test-mode', '--theme', str(root / 'iso/boot/sddm')], stdout=stream, stderr=subprocess.STDOUT, env={**os.environ, 'QT_QUICK_CONTROLS_STYLE': 'Basic'})
     try:
         time.sleep(6)
         if process.poll() is not None:

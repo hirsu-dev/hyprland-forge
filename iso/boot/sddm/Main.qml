@@ -43,10 +43,23 @@ Rectangle {
         spacing: 24 * root.unit; opacity: root.reveal
         Text { text: "FORGE_"; color: "#e1edf0"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 64 * root.unit }
         Text { text: root.notice; color: "#94dce5"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13 * root.unit; font.letterSpacing: 3 }
-        TextField { id: username; Layout.fillWidth: true; placeholderText: "Username"; text: userModel.lastUser; enabled: !root.busy; padding: 18 * root.unit; font.pixelSize: 16 * root.unit; color: "#e1edf0"; background: Rectangle { color: "#19262e"; border.color: "#536d78" } }
-        TextField { id: password; Layout.fillWidth: true; placeholderText: "Password"; echoMode: TextInput.Password; enabled: !root.busy; padding: 18 * root.unit; font.pixelSize: 16 * root.unit; color: "#e1edf0"; onAccepted: root.login(); background: Rectangle { color: "#19262e"; border.color: password.activeFocus ? "#94dce5" : "#536d78" } }
-        ComboBox { id: sessions; Layout.fillWidth: true; model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex; enabled: !root.busy; palette.button: "#253740"; palette.buttonText: "#e1edf0"; font.pixelSize: 14 * root.unit }
-        Button { text: root.busy ? "SIGNING IN..." : "ENTER FORGE  →"; Layout.fillWidth: true; padding: 18 * root.unit; enabled: !root.busy; onClicked: root.login(); palette.button: "#94dce5"; palette.buttonText: "#10191f"; font.bold: true; font.pixelSize: 16 * root.unit }
+        TextField { id: username; Layout.fillWidth: true; placeholderText: "Username"; placeholderTextColor: "#a3b9c1"; text: userModel.lastUser; enabled: !root.busy; padding: 18 * root.unit; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 16 * root.unit; color: "#e1edf0"; background: Rectangle { color: "#19262e"; border.color: "#536d78" } }
+        TextField { id: password; Layout.fillWidth: true; placeholderText: "Password"; placeholderTextColor: "#a3b9c1"; echoMode: TextInput.Password; enabled: !root.busy; padding: 18 * root.unit; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 16 * root.unit; color: "#e1edf0"; onAccepted: root.login(); background: Rectangle { color: "#19262e"; border.color: password.activeFocus ? "#94dce5" : "#536d78" } }
+        ComboBox {
+            id: sessions; Layout.fillWidth: true; implicitHeight: 46 * root.unit
+            model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex; enabled: !root.busy
+            palette.button: "#253740"; palette.buttonText: "#e1edf0"; palette.text: "#e1edf0"; palette.base: "#19262e"
+            font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 14 * root.unit
+            background: Rectangle { color: "#253740"; border.color: "#536d78" }
+            contentItem: Text { text: sessions.displayText; font: sessions.font; color: "#e1edf0"; leftPadding: 14 * root.unit; verticalAlignment: Text.AlignVCenter }
+        }
+        Button {
+            id: enter; text: root.busy ? "SIGNING IN..." : "ENTER FORGE  →"; Layout.fillWidth: true; padding: 18 * root.unit
+            enabled: !root.busy && username.text.trim().length > 0 && password.text.length > 0 && sessions.currentIndex >= 0
+            onClicked: root.login(); font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 16 * root.unit
+            background: Rectangle { color: enter.enabled ? "#94dce5" : "#536d78" }
+            contentItem: Text { text: enter.text; font: enter.font; color: "#10191f"; horizontalAlignment: Text.AlignHCenter }
+        }
     }
     Row {
         anchors { right: parent.right; bottom: parent.bottom; margins: 40 * root.unit }

@@ -29,7 +29,7 @@ def render_assets(destination):
     Image.new('RGBA', (100, 3), '#94dce5').save(destination / 'beam.png')
 
 
-def install_boot_assets(root, source):
+def install_boot_assets(root, source, motion=True):
     theme = root / 'boot/grub/themes/forge'
     render_assets(theme)
     shutil.copyfile(source / 'iso/boot/grub-theme.txt', theme / 'theme.txt')
@@ -38,9 +38,13 @@ def install_boot_assets(root, source):
     for name in ('logo.png', 'beam.png'):
         shutil.copyfile(theme / name, plymouth / name)
     shutil.copyfile(source / 'iso/boot/forge.plymouth', plymouth / 'forge.plymouth')
-    shutil.copyfile(source / 'iso/boot/forge.script', plymouth / 'forge.script')
+    script = (source / 'iso/boot/forge.script').read_text()
+    if not motion:
+        script = script.replace('motion = 1;', 'motion = 0;', 1)
+    atomic_write(plymouth / 'forge.script', script.encode(), 0o644)
     atomic_write(root / 'etc/plymouth/plymouthd.conf', b'[Daemon]\nTheme=forge\nShowDelay=0\n', 0o644)
     greeter = root / 'usr/share/sddm/themes/forge'
     shutil.copytree(source / 'iso/boot/sddm', greeter)
+    atomic_write(greeter / 'theme.conf', ('[General]\nMotion=' + str(motion).lower() + '\n').encode(), 0o644)
     atomic_write(root / 'etc/sddm.conf.d/forge.conf', b'[Theme]\nCurrent=forge\n[General]\nDisplayServer=wayland\nGreeterEnvironment=QT_QUICK_CONTROLS_STYLE=Basic\n[Wayland]\nCompositorCommand=weston --shell=kiosk-shell.so\n', 0o644)
     subprocess.run(['arch-chroot', str(root), 'grub-mkfont', '-s', '20', '-o', '/boot/grub/themes/forge/font.pf2', '/usr/share/fonts/TTF/DejaVuSans.ttf'], check=True)

@@ -9,12 +9,27 @@ from forge.iso_install import base, finish, guard, keyboard_settings, mounted_ta
 from forge.manifest import ForgeError, load_manifest
 from forge.hardware import resolve_plan
 from forge.setup import with_gaming
+from forge.iso_assets import install_boot_assets
 
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_reduced_motion_is_applied_to_boot_and_login(self):
+        try:
+            import PIL
+        except ImportError:
+            self.skipTest('Boot asset rendering requires Pillow')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch('forge.iso_assets.subprocess.run') as run:
+                install_boot_assets(root, ROOT, False)
+            self.assertIn('Motion=false', (root / 'usr/share/sddm/themes/forge/theme.conf').read_text())
+            self.assertIn('motion = 0;', (root / 'usr/share/plymouth/themes/forge/forge.script').read_text())
+            self.assertTrue((root / 'boot/grub/themes/forge/background.png').is_file())
+            self.assertEqual(run.call_args.args[0][:2], ['arch-chroot', str(root)])
+
     def test_keyboard_layouts_and_variants_are_preserved(self):
         value = keyboard_settings('fr', 'oss', 'us', '', 'grp:alt_shift_toggle')
         self.assertEqual(value, {'kb_layout': 'fr,us', 'kb_variant': 'oss,', 'kb_options': 'grp:alt_shift_toggle'})
