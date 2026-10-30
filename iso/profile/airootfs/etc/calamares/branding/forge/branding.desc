@@ -1,0 +1,30 @@
+---
+componentName: forge
+welcomeStyleCalamares: false
+welcomeExpandingLogo: false
+windowExpanding: fullscreen
+windowPlacement: center
+sidebar: widget
+navigation: widget
+strings:
+  productName: Forge
+  shortProductName: Forge
+  version: Experimental
+  shortVersion: Preview
+  versionedName: Forge Experimental
+  shortVersionedName: Forge Preview
+  bootloaderEntryName: Forge
+  productUrl: https://github.com/hirsu-dev/hyprland-forge
+  supportUrl: https://github.com/hirsu-dev/hyprland-forge/issues
+  knownIssuesUrl: https://github.com/hirsu-dev/hyprland-forge/issues
+images:
+  productIcon: logo.svg
+  productLogo: logo.svg
+  productWelcome: welcome.svg
+style:
+  SidebarBackground: '#10191f'
+  SidebarText: '#a3b9c1'
+  SidebarTextCurrent: '#10191f'
+  SidebarBackgroundCurrent: '#94dce5'
+slideshow: show.qml
+slideshowAPI: 2

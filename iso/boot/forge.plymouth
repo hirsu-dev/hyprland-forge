@@ -1,0 +1,7 @@
+[Plymouth Theme]
+Name=Forge Ghostwire
+Description=Original animated Forge startup
+ModuleName=script
+[script]
+ImageDir=/usr/share/plymouth/themes/forge
+ScriptFile=/usr/share/plymouth/themes/forge/forge.script

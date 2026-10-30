@@ -1,0 +1,26 @@
+title-text: "Choose your session"
+title-color: "#e1edf0"
+title-font: "DejaVu Sans Regular 20"
+desktop-image: "background.png"
+desktop-color: "#10191f"
+terminal-font: "DejaVu Sans Regular 20"
++ boot_menu {
+  left = 7%
+  top = 38%
+  width = 43%
+  height = 35%
+  item_color = "#a3b9c1"
+  selected_item_color = "#94dce5"
+  item_font = "DejaVu Sans Regular 20"
+  item_height = 52
+  item_padding = 12
+  item_spacing = 16
+}
++ label {
+  left = 7%
+  top = 83%
+  width = 80%
+  text = "Arrow keys to choose  /  Enter to start"
+  color = "#a3b9c1"
+  font = "DejaVu Sans Regular 20"
+}

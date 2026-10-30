@@ -1,0 +1,30 @@
+Window.SetBackgroundTopColor(0.063, 0.098, 0.122);
+Window.SetBackgroundBottomColor(0.098, 0.149, 0.180);
+logo = Sprite(Image("logo.png"));
+logo.SetX(Window.GetWidth() / 2 - 220);
+logo.SetY(Window.GetHeight() / 2 - 90);
+beam = Sprite(Image("beam.png"));
+beam.SetY(Window.GetHeight() / 2 + 100);
+time = 0;
+fun refresh() {
+    global.time += 0.02;
+    global.logo.SetOpacity(0.8 + 0.2 * Math.Sin(global.time * 2));
+    global.beam.SetX(Window.GetWidth() / 2 - 150 + 100 * (1 + Math.Sin(global.time)));
+}
+fun message(text) {
+    image = Image.Text(text, 0.88, 0.93, 0.94);
+    global.status = Sprite(image);
+    global.status.SetPosition(Window.GetWidth() / 2 - image.GetWidth() / 2, Window.GetHeight() / 2 + 140, 1);
+}
+fun password(prompt, bullets) {
+    text = "";
+    for (i = 0; i < bullets; i++) text += "*";
+    message(prompt + "  " + text);
+}
+fun question(prompt, entry) { message(prompt + "  " + entry); }
+fun normal() { message(""); }
+Plymouth.SetRefreshFunction(refresh);
+Plymouth.SetDisplayMessageFunction(message);
+Plymouth.SetDisplayPasswordFunction(password);
+Plymouth.SetDisplayQuestionFunction(question);
+Plymouth.SetDisplayNormalFunction(normal);

@@ -1,0 +1,54 @@
+name: experimental-iso
+on:
+  push:
+    branches: [ codex/graphical-iso ]
+    paths: [ 'iso/**', 'forge/iso_*.py', 'tests/test_iso*.py', '.github/workflows/iso.yml' ]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  installer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container: archlinux:base-devel
+    steps:
+      - run: pacman -Syu --noconfirm --needed git cmake ninja extra-cmake-modules qt6-base qt6-declarative qt6-svg qt6-tools yaml-cpp kcoreaddons kconfig kpmcore polkit-qt6 python python-yaml boost boost-libs libpwquality icu hwinfo pyside6 python-pillow xorg-server-xvfb xorg-xauth dbus ttf-jetbrains-mono-nerd
+      - uses: actions/checkout@v4
+      - run: python -m unittest discover -s tests -p 'test_iso*.py' -v
+      - run: |
+          QT_QUICK_BACKEND=software xvfb-run -a -s '-screen 0 1280x800x24' python -m forge.iso_welcome --preview --screenshot test-results/iso-welcome.png
+          useradd -m forgebuild
+          chown -R forgebuild:forgebuild iso/calamares
+          cd iso/calamares
+          runuser -u forgebuild -- makepkg --noconfirm
+      - run: |
+          pacman -U --noconfirm iso/calamares/*.pkg.tar.zst
+          calamares --version
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-installer-components
+          path: |
+            iso/calamares/*.pkg.tar.zst
+            test-results/iso-*.png
+  image:
+    if: contains(github.event.head_commit.message, '[build-iso]')
+    needs: installer
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container:
+      image: archlinux:base
+      options: --privileged
+    steps:
+      - run: pacman -Syu --noconfirm --needed archiso git python
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-installer-components
+          path: /tmp/forge-components
+      - run: bash iso/build.sh /tmp/forge-components/iso/calamares/*.pkg.tar.zst /tmp/forge-iso-work /tmp/forge-iso-output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forge-experimental-iso
+          path: /tmp/forge-iso-output/
+          retention-days: 7
