@@ -20,8 +20,9 @@ def boot(image, output, seconds=240):
     shutil.copyfile(firmware.with_name(firmware.name.replace('CODE', 'VARS')), variables)
     disk = output / 'disposable.qcow2'
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', str(disk), '64G'], check=True)
-    command = ['qemu-system-x86_64', '-enable-kvm'] if Path('/dev/kvm').exists() else ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
-    command += ['-machine', 'q35', '-m', '3072', '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'virtio', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
+    accelerated = Path('/dev/kvm').exists()
+    command = ['qemu-system-x86_64', '-enable-kvm'] if accelerated else ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
+    command += ['-machine', 'q35', '-m', '3072', '-smp', '2', '-cpu', 'host' if accelerated else 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'virtio', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
     with (output / 'qemu.log').open('wb') as log:
         with subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT) as process:
             try:
@@ -29,7 +30,7 @@ def boot(image, output, seconds=240):
                     if monitor.exists():
                         break
                     if process.poll() is not None:
-                        raise RuntimeError('The disposable VM could not start.')
+                        raise RuntimeError('The disposable VM could not start: ' + (output / 'qemu.log').read_text(errors='replace')[:2000])
                     time.sleep(0.1)
                 with socket.socket(socket.AF_UNIX) as connection:
                     connection.settimeout(10)

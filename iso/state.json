@@ -30,7 +30,10 @@
     "qualify-selected-native-and-Flatpak-app-installation"
   ],
   "qualification": {
-    "iso_built": false,
+    "iso_built": true,
+    "first_built_revision": "20601742ed23469f87e9d7b649c024595c27be79",
+    "first_built_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41009967111",
+    "first_boot_test_result": "harness-failed-before-guest-start-missing-qemu-virtio-vga-module",
     "iso_booted": false,
     "installer_executed": false,
     "windows_dual_boot_tested": false,

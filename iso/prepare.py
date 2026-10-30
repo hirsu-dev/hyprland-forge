@@ -21,6 +21,7 @@ def prepare(source, profile, repository):
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     with (profile / "profiledef.sh").open("a") as stream:
         stream.write(f'\niso_name="forge-experimental"\niso_label="FORGE_{stamp}"\niso_publisher="Hirsu <https://github.com/hirsu-dev/hyprland-forge>"\niso_application="Forge Graphical Installer"\niso_version="{stamp}"\nfile_permissions+=(\n["/usr/local/bin/forge-live-session"]="0:0:0755"\n)\n')
+        stream.write("airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '8' '-b' '1M')\n")
     destination = root / "opt/hyprland-forge"
     destination.mkdir(parents=True)
     git = ['git', '-c', 'safe.directory=' + str(source), '-C', str(source)]
