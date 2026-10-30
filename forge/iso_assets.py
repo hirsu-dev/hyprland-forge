@@ -1,4 +1,5 @@
 import shutil
+import re
 import subprocess
 from pathlib import Path
 
@@ -29,7 +30,11 @@ def render_assets(destination):
     Image.new('RGBA', (100, 3), '#94dce5').save(destination / 'beam.png')
 
 
-def install_boot_assets(root, source, motion=True):
+def install_boot_assets(root, source, motion=True, username=''):
+    if username and not re.fullmatch(r'[a-z_][a-z0-9_-]{0,31}', username):
+        raise ValueError('The default login account is invalid.')
+    atomic_write(root / 'usr/local/bin/forge-start', (source / 'iso/boot/forge-start').read_bytes(), 0o755)
+    atomic_write(root / 'usr/share/wayland-sessions/forge.desktop', (source / 'iso/boot/forge.desktop').read_bytes(), 0o644)
     theme = root / 'boot/grub/themes/forge'
     render_assets(theme)
     shutil.copyfile(source / 'iso/boot/grub-theme.txt', theme / 'theme.txt')
@@ -45,6 +50,6 @@ def install_boot_assets(root, source, motion=True):
     atomic_write(root / 'etc/plymouth/plymouthd.conf', b'[Daemon]\nTheme=forge\nShowDelay=0\n', 0o644)
     greeter = root / 'usr/share/sddm/themes/forge'
     shutil.copytree(source / 'iso/boot/sddm', greeter)
-    atomic_write(greeter / 'theme.conf', ('[General]\nMotion=' + str(motion).lower() + '\n').encode(), 0o644)
+    atomic_write(greeter / 'theme.conf', ('[General]\nMotion=' + str(motion).lower() + '\nDefaultUser=' + username + '\n').encode(), 0o644)
     atomic_write(root / 'etc/sddm.conf.d/forge.conf', b'[Theme]\nCurrent=forge\n[General]\nDisplayServer=wayland\nGreeterEnvironment=QT_QUICK_CONTROLS_STYLE=Basic\n[Wayland]\nCompositorCommand=weston --shell=kiosk-shell.so\n', 0o644)
     subprocess.run(['arch-chroot', str(root), 'grub-mkfont', '-s', '20', '-o', '/boot/grub/themes/forge/font.pf2', '/usr/share/fonts/TTF/DejaVuSans.ttf'], check=True)

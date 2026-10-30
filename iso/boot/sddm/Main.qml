@@ -11,7 +11,7 @@ Rectangle {
     property bool restartRequested: false
     readonly property real unit: Math.max(0.7, Math.min(width / 1280, height / 800))
     readonly property bool motion: String(config.Motion).toLowerCase() !== "false"
-    Component.onCompleted: { reveal = 1; password.forceActiveFocus(); }
+    Component.onCompleted: { reveal = 1; if (username.text) password.forceActiveFocus(); else username.forceActiveFocus(); }
     Behavior on reveal { NumberAnimation { duration: root.motion ? 650 : 0; easing.type: Easing.OutCubic } }
     function login() {
         if (!busy && username.text.trim() && password.text && sessions.currentIndex >= 0) {
@@ -43,7 +43,7 @@ Rectangle {
         spacing: 24 * root.unit; opacity: root.reveal
         Text { text: "FORGE_"; color: "#e1edf0"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 64 * root.unit }
         Text { text: root.notice; color: "#94dce5"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13 * root.unit; font.letterSpacing: 3 }
-        TextField { id: username; Layout.fillWidth: true; placeholderText: "Username"; placeholderTextColor: "#a3b9c1"; text: userModel.lastUser; enabled: !root.busy; padding: 18 * root.unit; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 16 * root.unit; color: "#e1edf0"; background: Rectangle { color: "#19262e"; border.color: "#536d78" } }
+        TextField { id: username; Layout.fillWidth: true; placeholderText: "Username"; placeholderTextColor: "#a3b9c1"; text: userModel.lastUser || config.DefaultUser || ""; enabled: !root.busy; padding: 18 * root.unit; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 16 * root.unit; color: "#e1edf0"; onAccepted: password.forceActiveFocus(); background: Rectangle { color: "#19262e"; border.color: "#536d78" } }
         TextField { id: password; Layout.fillWidth: true; placeholderText: "Password"; placeholderTextColor: "#a3b9c1"; echoMode: TextInput.Password; enabled: !root.busy; padding: 18 * root.unit; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 16 * root.unit; color: "#e1edf0"; onAccepted: root.login(); background: Rectangle { color: "#19262e"; border.color: password.activeFocus ? "#94dce5" : "#536d78" } }
         ComboBox {
             id: sessions; Layout.fillWidth: true; implicitHeight: 46 * root.unit

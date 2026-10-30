@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+import os
+import subprocess
+import sys
+
+environment = dict(os.environ)
+virtual = subprocess.run(['systemd-detect-virt', '--vm', '--quiet'], timeout=5)
+if virtual.returncode == 0:
+    environment['LIBGL_ALWAYS_SOFTWARE'] = '1'
+    environment['QT_QUICK_BACKEND'] = 'software'
+os.execve('/usr/bin/start-hyprland', ['start-hyprland', *sys.argv[1:]], environment)

@@ -19,7 +19,7 @@ def main(argv=None):
     if args.screenshot and not args.preview:
         parser.error('Screenshots require preview mode.')
     os.environ.setdefault('QT_QUICK_CONTROLS_STYLE', 'Basic')
-    from PySide6.QtCore import QObject, Property, QProcess, QTimer, QUrl, Signal, Slot
+    from PySide6.QtCore import QIODevice, QObject, Property, QProcess, QTimer, QUrl, Signal, Slot
     from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine
     from PySide6.QtQuick import QQuickWindow
@@ -63,6 +63,18 @@ def main(argv=None):
                 self.changed.emit()
                 return
             write_json(directory / 'options.json', {'gaming': gaming, 'motion': motion, 'apps': apps})
+            log = Path('/var/log/forge-installer.log')
+            try:
+                if log.is_symlink() or log.exists() and not log.is_file():
+                    raise OSError('Unsafe installation log')
+                log.touch(mode=0o600, exist_ok=True)
+                log.chmod(0o600)
+            except OSError:
+                self._status = 'Could not prepare the installation log.'
+                self.changed.emit()
+                return
+            self.process.setProcessChannelMode(QProcess.MergedChannels)
+            self.process.setStandardOutputFile(str(log), QIODevice.Append)
             self._busy = True
             self._status = 'Setup is open. Review every disk change before installing.'
             self.changed.emit()

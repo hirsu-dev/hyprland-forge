@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Forge
+Type=Application
+Exec=/usr/local/bin/forge-start
+DesktopNames=Hyprland

@@ -1,4 +1,6 @@
 import json
+import os
+import runpy
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,6 +19,15 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_login_starts_software_graphics_only_inside_a_vm(self):
+        for virtual in (True, False):
+            with self.subTest(virtual=virtual), patch('subprocess.run', return_value=SimpleNamespace(returncode=0 if virtual else 1)), patch('os.execve') as execute, patch.dict(os.environ, {'LIBGL_ALWAYS_SOFTWARE': '0', 'QT_QUICK_BACKEND': 'rhi'}):
+                runpy.run_path(str(ROOT / 'iso/boot/forge-start'))
+            self.assertEqual(execute.call_args.args[0], '/usr/bin/start-hyprland')
+            environment = execute.call_args.args[2]
+            self.assertEqual(environment['LIBGL_ALWAYS_SOFTWARE'], '1' if virtual else '0')
+            self.assertEqual(environment['QT_QUICK_BACKEND'], 'software' if virtual else 'rhi')
+
     def test_existing_efi_mount_is_inspected_without_remounting_or_writing(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -47,8 +58,9 @@ class IsoInstallationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with patch('forge.iso_assets.subprocess.run') as run:
-                install_boot_assets(root, ROOT, False)
+                install_boot_assets(root, ROOT, False, 'forge')
             self.assertIn('Motion=false', (root / 'usr/share/sddm/themes/forge/theme.conf').read_text())
+            self.assertIn('DefaultUser=forge', (root / 'usr/share/sddm/themes/forge/theme.conf').read_text())
             self.assertIn('motion = 0;', (root / 'usr/share/plymouth/themes/forge/forge.script').read_text())
             self.assertTrue((root / 'boot/grub/themes/forge/background.png').is_file())
             self.assertEqual(run.call_args.args[0][:2], ['arch-chroot', str(root)])
@@ -71,7 +83,7 @@ class IsoInstallationTests(unittest.TestCase):
             device = {'virtual': 'qemu', 'gpus': set(), 'cpu': ''}
             with patch('forge.iso_install.subprocess.run') as run, patch('forge.iso_install.os.chown', create=True) as chown, patch('forge.iso_install.find_windows', return_value=['ABCD-1234']), patch('forge.iso_assets.install_boot_assets') as boot_assets:
                 finish(root, ROOT, settings, device, 'forge', keyboard_settings('fr', 'oss'))
-            boot_assets.assert_called_once_with(root, ROOT, False)
+            boot_assets.assert_called_once_with(root, ROOT, False, 'forge')
             state = json.loads((home / '.local/state/hyprland-forge/setup.json').read_text())
             self.assertEqual(state['profile'], 'virtual-machine')
             self.assertEqual(state['apps'], settings['apps'])
