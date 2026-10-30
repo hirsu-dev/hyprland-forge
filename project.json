@@ -8,9 +8,15 @@
     "engine": "original-native-Rust-UEFI",
     "builder": "forge-boot --engine native",
     "target": "x86_64-UEFI-GPT",
-    "flow": ["animated-local-startup", "password-only-gate", "Forge-or-Windows-picker", "existing-OS-loader", "OS-account-sign-in"],
+    "flow": [
+      "animated-local-startup",
+      "password-only-gate",
+      "Forge-or-Windows-picker",
+      "existing-OS-loader",
+      "OS-account-sign-in"
+    ],
     "pre_os_motion": "Redline-2200ms-clipped-vector-wordmark-diagonal-split-gates-72-sparks-optical-tracers-keystroke-pulses-unlock-sweep-reversible-picker-and-colored-launch-wipe",
-    "forge_login_motion": "animated-SDDM",
+    "forge_login_motion": "Ghostwire-optical-tracers-angular-reactive-controls-and-reduced-motion",
     "authentication": "PBKDF2-HMAC-SHA256-600000-random-salt-constant-time-compare-secret-clearing-bounded-input-and-backoff",
     "provisioning": "machine-specific-GPT-PARTUUIDs-and-hash-embedded-in-local-build-no-default-password",
     "build_requirements": "nonroot-Rust-toolchain-firmware-target-prepared-automatically",
@@ -20,18 +26,27 @@
     "secure_boot": "unsigned-experimental-image-signing-and-review-required-before-secure-boot-use",
     "legacy_grub": "preserved-with-explicit-engine-grub",
     "validation": {
-      "source_revision": "ef77149bea7e510bb3f6a7f9ca2250337505f1a4",
-      "run": "https://github.com/hrushikbarani-hub/hyprland-forge/actions/runs/40060298737",
+      "source_revision": "12981c5",
+      "run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083471859",
       "python_unit_tests": 225,
-      "rust_unit_tests": 6,
+      "rust_unit_tests": 9,
       "native_preview_and_production_build": "passed-including-telemetry-absent-from-production-and-dependency-license-capture",
       "uefi_qemu": "passed-real-animated-frames-password-only-rejection-unlock-two-GPT-loader-fixtures-missing-loader-return-and-relock",
-      "sddm": "passed-native-load-and-sign-in-state-tests",
-      "local_windows_compiler": "firmware-build-unavailable-without-MSVC-linker-used-isolated-Linux-CI",
+      "sddm": "passed-native-theme-load-session-popup-default-user-rejection-password-clearing-animated-optics-static-mode-and-resolution-checks",
+      "local_windows_compiler": "exact-animation-renderer-tested-through-WASI; native-EFI-build-and-execution-tested-in-Linux-QEMU",
       "physical_boot": "not-tested",
       "full_windows_and_linux_boot": "not-tested",
-      "boot_speed": "not-benchmarked-on-hardware"
-      ,"motion_refresh": {"local_rust_tests": 9, "local_python_tests": 225, "local_preview": "exact-Rust-renderer-executed-through-WASI", "firmware_regression": "pending-new-QEMU-run", "motion_toggle": "immediate-static-layout-without-replaying-old-selection-animation", "font": "original-five-by-seven-bitmap-glyphs", "preview": "full-intro-password-unlock-selector-and-launch-sequence"}
+      "boot_speed": "not-benchmarked-on-hardware",
+      "motion_refresh": {
+        "local_rust_tests": 9,
+        "local_python_tests": 225,
+        "local_preview": "exact-Rust-renderer-executed-through-WASI",
+        "firmware_regression": "passed-native-QEMU-unlock-both-loader-fixtures-reduced-motion-input-and-recovery",
+        "motion_toggle": "immediate-static-layout-without-replaying-old-selection-animation",
+        "font": "original-five-by-seven-bitmap-glyphs",
+        "preview": "full-intro-password-unlock-selector-and-launch-sequence",
+        "run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083471859"
+      }
     }
   },
   "gaming_wallpaper": {"launcher": ["NVIDIA-offload-on-physical-hardware", "GameMode", "optional-MangoHud", "optional-Gamescope", "1920x1080-120-FPS-Gamescope-default", "tracked-game-lifetime"], "wallpaper": ["optional-community-linux-wallpaperengine", "Steam-library-detection", "assets-and-project-picker", "30-FPS-muted-default", "game-aware-unload-and-restore", "fullscreen-pause", "static-fallback"], "lifecycle_fixture_validation": "passed-game-pause-exit-restore-preset-pause-disable", "renderer_validation": "requires-user-owned-Steam-assets-and-physical-GPU", "performance_benchmarks": "pending-on-device"},
