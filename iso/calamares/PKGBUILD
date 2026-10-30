@@ -5,6 +5,7 @@ pkgdesc='Graphical installation framework for the experimental Forge ISO'
 arch=('x86_64')
 url='https://calamares.codeberg.page/'
 license=('GPL-3.0-or-later')
+options=('!debug')
 depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'yaml-cpp' 'kcoreaddons' 'kconfig' 'kpmcore' 'polkit-qt6' 'python' 'python-yaml' 'boost-libs' 'libpwquality' 'icu' 'hwinfo')
 makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'boost')
 source=("https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz")

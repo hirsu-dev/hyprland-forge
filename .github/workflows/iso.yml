@@ -18,7 +18,7 @@ jobs:
       - uses: actions/cache@v4
         id: calamares-cache
         with:
-          path: iso/calamares/*.pkg.tar.zst
+          path: iso/calamares/calamares-[0-9]*.pkg.tar.zst
           key: forge-calamares-${{ hashFiles('iso/calamares/PKGBUILD') }}
       - name: Render welcome and app picker
         run: |
@@ -32,14 +32,14 @@ jobs:
           cd iso/calamares
           runuser -u forgebuild -- makepkg --noconfirm
       - run: |
-          pacman -U --noconfirm iso/calamares/*.pkg.tar.zst
-          calamares --version
+          pacman -U --noconfirm iso/calamares/calamares-[0-9]*.pkg.tar.zst
+          QT_QPA_PLATFORM=offscreen calamares --version
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: forge-installer-components
           path: |
-            iso/calamares/*.pkg.tar.zst
+            iso/calamares/calamares-[0-9]*.pkg.tar.zst
             test-results/iso-*.png
   image:
     if: contains(github.event.head_commit.message, '[build-iso]')
@@ -56,7 +56,7 @@ jobs:
         with:
           name: forge-installer-components
           path: /tmp/forge-components
-      - run: bash iso/build.sh /tmp/forge-components/iso/calamares/*.pkg.tar.zst /tmp/forge-iso-work /tmp/forge-iso-output
+      - run: bash iso/build.sh /tmp/forge-components/iso/calamares/calamares-[0-9]*.pkg.tar.zst /tmp/forge-iso-work /tmp/forge-iso-output
       - name: Boot the ISO in a disposable UEFI VM
         run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-boot
       - uses: actions/upload-artifact@v4

@@ -31,6 +31,22 @@ def prepare(source, profile, repository):
     revision = subprocess.run(["git", "-C", str(source), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
     manifest = json.loads((source / 'project.json').read_text())
     (destination / "build.json").write_text(json.dumps({"name": manifest['name'], "version": manifest['release'], "revision": revision, "channel": "experimental-iso", "hardware_validation": "pending-on-device"}) + "\n")
+    sys.path.insert(0, str(source))
+    from forge.iso_assets import render_assets
+    splash = root / 'usr/share/plymouth/themes/forge'
+    render_assets(splash)
+    for name in ('forge.plymouth', 'forge.script'):
+        shutil.copyfile(source / 'iso/boot' / name, splash / name)
+    config = root / 'etc/plymouth/plymouthd.conf'
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text('[Daemon]\nTheme=forge\nShowDelay=0\n')
+    hooks = root / 'etc/mkinitcpio.conf.d/archiso.conf'
+    if not hooks.is_file() or 'udev' not in hooks.read_text():
+        raise ValueError('The Arch live initramfs configuration needs review before adding the startup theme.')
+    text = hooks.read_text()
+    if 'plymouth' not in text:
+        text = text.replace('udev', 'udev plymouth', 1)
+    hooks.write_text(text)
     modules = root / "etc/calamares/modules"
     for name in ("forgeguard", "forgebase", "forgefinish"):
         target = modules / name
@@ -57,7 +73,8 @@ def prepare(source, profile, repository):
     network.write_text('[main]\ndns=default\nrc-manager=file\n')
     for path in profile.glob("grub/*.cfg"):
         text = path.read_text().replace("Arch Linux install medium", "Forge graphical installer")
-        path.write_text(text)
+        lines = [line + ' quiet splash' if line.lstrip().startswith(('linux ', 'linuxefi ')) else line for line in text.splitlines()]
+        path.write_text('\n'.join(lines) + '\n')
 
 
 if __name__ == "__main__":
