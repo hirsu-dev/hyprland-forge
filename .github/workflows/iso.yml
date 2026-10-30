@@ -117,6 +117,9 @@ jobs:
       - run: python iso/boot_vm.py /tmp/forge-existing-iso/*.iso /tmp/forge-iso-boot --expected-revision "$FORGE_SOURCE_REVISION"
         env:
           FORGE_SOURCE_REVISION: ${{ steps.source.outputs.revision }}
+      - run: |
+          cp /tmp/forge-existing-iso/artifact.json /tmp/forge-iso-boot/download-integrity.json
+          cp /tmp/forge-existing-iso/build-packages.txt /tmp/forge-iso-boot/live-packages.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -125,3 +128,4 @@ jobs:
             /tmp/forge-iso-boot/*.png
             /tmp/forge-iso-boot/*.log
             /tmp/forge-iso-boot/*.json
+            /tmp/forge-iso-boot/*.txt

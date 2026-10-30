@@ -65,8 +65,20 @@ def main():
         with Path('/tmp/forge-live-calamares.log').open('w') as stream:
             process = subprocess.Popen(['calamares', '-d'], env=environment, stdout=stream, stderr=subprocess.STDOUT)
             try:
-                time.sleep(10)
-                assert process.poll() is None, Path('/tmp/forge-live-calamares.log').read_text(errors='replace')[-4000:]
+                deadline = time.monotonic() + 75
+                while time.monotonic() < deadline:
+                    log = Path('/tmp/forge-live-calamares.log').read_text(errors='replace')
+                    assert process.poll() is None, log[-4000:]
+                    count = re.findall(r'Requirements model has (\d+) items', log)
+                    requirements = re.findall(r'requirement\s+\d+\s+"([^"]+)" satisfied\? (true|false) mandatory\? (true|false)', log)
+                    if count and len(requirements) >= int(count[-1]):
+                        report['installer_requirements'] = [{'name': name, 'satisfied': satisfied == 'true', 'mandatory': mandatory == 'true'} for name, satisfied, mandatory in requirements]
+                        assert {'partitions', 'ram', 'internet', 'root'} <= {item['name'] for item in report['installer_requirements']}
+                        assert all(item['satisfied'] for item in report['installer_requirements'] if item['mandatory']), report['installer_requirements']
+                        break
+                    time.sleep(.25)
+                else:
+                    raise AssertionError('Calamares did not finish checking installation prerequisites: ' + log[-4000:])
                 print('FORGE_ISO_INSTALLER_READY', flush=True)
                 time.sleep(12)
             finally:

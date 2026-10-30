@@ -3,9 +3,9 @@
   "status": "VM-qualified-final-image-verification-pending",
   "build_enabled": true,
   "disk_execution_enabled": false,
-  "last_built_run": 41083930693,
-  "last_built_artifact": 12990233994,
-  "last_built_revision": "50c6b50",
+  "last_built_run": 41089238948,
+  "last_built_artifact": 12994520093,
+  "last_built_revision": "219f859",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
@@ -74,8 +74,8 @@
     "login_theme_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41010146250",
     "password_authentication_tested": true,
     "password_authentication_result": "native-SDDM-Wayland-rejected-wrong-password-and-accepted-correct-VM-password",
-    "last_full_local_tests": 261,
-    "latest_focused_installation_tests": 22,
+    "last_full_local_tests": 267,
+    "latest_focused_installation_tests": 29,
     "virtualizer_limitation": "two-vCPU-VirtualBox-Windows-NEM-soft-lockup-in-VBoxService-TLB-shootdown; one-vCPU-retest-passed",
     "native_linux_unit_tests": 261,
     "nvidia_driver_build": "four-NVIDIA-open-615.78.08-modules-built-for-Arch-7.2.11; no-hardware-or-module-loading-test",
@@ -92,7 +92,7 @@
       "revision": "b0f252b",
       "sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f"
     },
-    "final_live_check": "pending-expanded-QEMU-network-screen-inhibitor-installer-and-service-checks"
+    "final_live_check": "219f859-in-guest-boot-network-inhibitor-and-installer-checks-passed; full-artifact-reverification-and-installer-navigation-check-pending"
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",
