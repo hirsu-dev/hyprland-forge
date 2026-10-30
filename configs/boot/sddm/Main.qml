@@ -131,19 +131,41 @@ Rectangle {
                 palette.buttonText: root.ink
                 palette.highlight: root.yellow
                 palette.highlightedText: "#080d16"
+                background: SignalPanel { motion: root.motion; stroke: sessions.activeFocus ? root.cyan : "#35535f" }
+                contentItem: Text { text: sessions.displayText; font: sessions.font; color: root.ink; leftPadding: 18; verticalAlignment: Text.AlignVCenter }
+                indicator: Text { x: sessions.width - 34; y: (sessions.height - height) / 2; text: sessions.popup.visible ? "-" : "+"; color: root.cyan; font.family: root.typeface; font.pixelSize: 22 }
+                delegate: ItemDelegate {
+                    id: sessionOption
+                    width: sessions.width; height: 48
+                    text: model.name; font: sessions.font
+                    highlighted: sessions.highlightedIndex === index
+                    background: SignalPanel { motion: root.motion; fill: sessionOption.highlighted ? "#18313b" : "#101c27"; stroke: sessionOption.highlighted ? root.cyan : "#263b48" }
+                    contentItem: Text { text: sessionOption.text; font: sessionOption.font; color: root.ink; leftPadding: 12; verticalAlignment: Text.AlignVCenter }
+                }
+                popup: Popup {
+                    y: sessions.height + 4; width: sessions.width
+                    implicitHeight: contentItem.implicitHeight + 8
+                    padding: 4
+                    background: SignalPanel { motion: root.motion; stroke: "#35535f" }
+                    contentItem: ListView {
+                        clip: true; implicitHeight: Math.min(contentHeight, 260)
+                        model: sessions.popup.visible ? sessions.delegateModel : null
+                        currentIndex: sessions.highlightedIndex
+                    }
+                }
                 KeyNavigation.tab: enter
             }
-            Button {
+            SignalButton {
                 id: enter
                 objectName: "forgeEnter"
                 width: parent.width
                 height: 62
                 text: "ENTER FORGE   >"
+                motion: root.motion
+                primary: true
                 font.pixelSize: 22
                 font.bold: true
                 font.family: root.typeface
-                palette.buttonText: "#080d16"
-                background: SignalPanel { motion: root.motion; fill: enter.down ? "#3aa89e" : root.cyan; stroke: enter.activeFocus || enter.hovered ? root.ink : root.cyan }
                 onClicked: root.login()
                 KeyNavigation.tab: username
             }
@@ -155,9 +177,9 @@ Rectangle {
             x: 96
             y: 990
             spacing: 16
-            Button { text: root.motion ? "MOTION ON" : "MOTION OFF"; onClicked: root.motion = !root.motion; palette.button: "#101c27"; palette.buttonText: root.ink }
-            Button { text: "RESTART"; enabled: sddm.canReboot && !root.busy; onClicked: restart.open(); palette.button: "#101c27"; palette.buttonText: root.ink }
-            Button { text: "POWER OFF"; enabled: sddm.canPowerOff && !root.busy; onClicked: shutdown.open(); palette.button: "#101c27"; palette.buttonText: root.ink }
+            SignalButton { text: root.motion ? "MOTION ON" : "MOTION OFF"; motion: root.motion; onClicked: root.motion = !root.motion }
+            SignalButton { text: "RESTART"; motion: root.motion; enabled: sddm.canReboot && !root.busy; onClicked: restart.open() }
+            SignalButton { text: "POWER OFF"; motion: root.motion; enabled: sddm.canPowerOff && !root.busy; onClicked: shutdown.open() }
         }
     }
     Dialog {
