@@ -1,6 +1,7 @@
 import hashlib
 import importlib.util
 import io
+import ssl
 import tempfile
 import unittest
 import urllib.error
@@ -69,6 +70,21 @@ class IsoArtifactTests(unittest.TestCase):
         remote, _ = self.remote()
         error = urllib.error.HTTPError(remote.url, 503, 'Busy', {'Retry-After': '120'}, None)
         with patch.object(fetcher.urllib.request, 'urlopen', side_effect=error) as request, patch.object(fetcher.time, 'sleep') as sleep, self.assertRaises(urllib.error.HTTPError):
+            remote.read(9)
+        self.assertEqual(request.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_wrapped_connection_reset_retries_the_same_range(self):
+        remote, response = self.remote()
+        error = urllib.error.URLError(ConnectionResetError('Connection reset'))
+        with patch.object(fetcher.urllib.request, 'urlopen', side_effect=[error, response]), patch.object(fetcher.time, 'sleep'):
+            self.assertEqual(remote.read(9), b'ISO bytes')
+        self.assertEqual(remote.position, 9)
+
+    def test_certificate_verification_failure_is_not_retried(self):
+        remote, _ = self.remote()
+        error = urllib.error.URLError(ssl.SSLCertVerificationError('Certificate verification failed'))
+        with patch.object(fetcher.urllib.request, 'urlopen', side_effect=error) as request, patch.object(fetcher.time, 'sleep') as sleep, self.assertRaises(urllib.error.URLError):
             remote.read(9)
         self.assertEqual(request.call_count, 1)
         sleep.assert_not_called()

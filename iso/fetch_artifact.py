@@ -61,7 +61,9 @@ class RemoteArchive(io.RawIOBase):
                     if len(data) != size:
                         raise http.client.IncompleteRead(data, size - len(data))
                 break
-            except (urllib.error.HTTPError, TimeoutError, ConnectionResetError, http.client.IncompleteRead) as error:
+            except (urllib.error.URLError, TimeoutError, ConnectionResetError, ConnectionAbortedError, http.client.IncompleteRead) as error:
+                if isinstance(error, urllib.error.URLError) and not isinstance(error, urllib.error.HTTPError) and not isinstance(error.reason, (TimeoutError, ConnectionResetError, ConnectionAbortedError, http.client.RemoteDisconnected)):
+                    raise
                 if isinstance(error, urllib.error.HTTPError) and error.code not in (429, 500, 502, 503, 504):
                     raise
                 if attempt == 5:
