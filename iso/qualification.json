@@ -1,0 +1,200 @@
+{
+  "schema": 1,
+  "scope": "virtual-machine-and-driver-compilation",
+  "date": "2026-10-30",
+  "installed_iso_revision": "b0f252b",
+  "runtime_overrides": {
+    "startup": "14100f9",
+    "panel_frame_diagnostics": "c1cd7f2"
+  },
+  "regression": {
+    "scope": "virtual-machine",
+    "version": "0.17.0",
+    "revision": "b0f252b8aa46387fdcfee07ed1a999a1ab6ac7e8",
+    "kernel": "7.2.11-arch1-1",
+    "boot_id": "3e2cd896-0c35-4caa-b635-18df1d12d1e0",
+    "packages": [
+      "hyprland 0.57.0-1",
+      "quickshell 0.3.2-1",
+      "mesa 1:26.2.6-1",
+      "vulkan-swrast 1:26.2.6-1"
+    ],
+    "started": 1793365185.0607004,
+    "checks": [
+      {
+        "suite": "runtime",
+        "script": "validate-vm.py",
+        "exit_code": 0,
+        "log": "runtime-0.log",
+        "sha256": "d25066b78c51e296474c97b326e018ccc2ecb0e8c1f1cbf0070be3e1fc86d228"
+      },
+      {
+        "suite": "runtime",
+        "script": "validate-supervision-vm.py",
+        "exit_code": 0,
+        "log": "runtime-1.log",
+        "sha256": "5f0931f65a9d445d033c8c3b19fb6921c3973250721a92888e5afb3022155add"
+      },
+      {
+        "suite": "runtime",
+        "script": "validate-lock-vm.py",
+        "exit_code": 0,
+        "log": "runtime-2.log",
+        "sha256": "9dafdf0851d72eb89a23da175a500bd544002685c605745f8c9da46efb0bf217"
+      },
+      {
+        "suite": "apps",
+        "script": "validate-everyday-vm.py",
+        "exit_code": 0,
+        "log": "apps-0.log",
+        "sha256": "491e93ab49deff8c5626f928d81e984c22d3bbc3e8766a3b0bd292684476e6bf"
+      },
+      {
+        "suite": "system",
+        "script": "validate-system-deck.py",
+        "exit_code": 0,
+        "log": "system-0.log",
+        "sha256": "bda72f09a6113d1a4478107cf442542d6efe4c323dcf428569819d7e4fd9a8d3"
+      },
+      {
+        "suite": "desktop",
+        "script": "validate-desktop.py",
+        "exit_code": 0,
+        "log": "desktop-0.log",
+        "sha256": "73f9443ca032d107f4688df5591e6194138d76e24c85305f16c74b018e812fb6"
+      },
+      {
+        "suite": "desktop",
+        "script": "validate-monitor-memory.py",
+        "exit_code": 0,
+        "log": "desktop-1.log",
+        "sha256": "968d528e49f506e978a14b4b9c44eef96a266256d83ff9cea50998ec912e5350"
+      },
+      {
+        "suite": "desktop",
+        "script": "validate-taskbar.py",
+        "exit_code": 0,
+        "log": "desktop-2.log",
+        "sha256": "ba4b7ce9dd42f41098a4bc79de9038596c3a8fa55e153fe2f07516e56c3f52c8"
+      },
+      {
+        "suite": "appearance",
+        "script": "validate-interface.py",
+        "exit_code": 0,
+        "log": "appearance-0.log",
+        "sha256": "f76746da6dcdc1c0ebb6117fe7ba3c96363045e4e1da55f331777142503ba905"
+      },
+      {
+        "suite": "appearance",
+        "script": "validate-motion.py",
+        "exit_code": 0,
+        "log": "appearance-1.log",
+        "sha256": "0d522926cb0f831d6ac50b3c0e0f02f13f7206c86899d024eb789b24c35e3dde"
+      },
+      {
+        "suite": "clipboard",
+        "script": "validate-clipboard.py",
+        "exit_code": 0,
+        "log": "clipboard-0.log",
+        "sha256": "2f2352cb3a03962aa0c1294f501eb82d77e65ee027690aa4dc197d20a9d2e787"
+      },
+      {
+        "suite": "unit",
+        "script": "-m",
+        "exit_code": 0,
+        "log": "unit-0.log",
+        "sha256": "7da59322034b1f2cf5312457e7687294b21dd63dd5488de792ba2d62f5f764e9"
+      }
+    ],
+    "physical_hardware_qualified": false,
+    "result": "passed",
+    "finished": 1793365341.8178997
+  },
+  "multitasking": {
+    "scope": "virtual-machine",
+    "boot_id": "3e2cd896-0c35-4caa-b635-18df1d12d1e0",
+    "cpus": 1,
+    "seconds_requested": 600,
+    "physical_hardware_qualified": false,
+    "result": "passed",
+    "seconds_observed": 600.2,
+    "recovery_during_multitasking": true,
+    "minimum_memory_available_kib": 330276
+  },
+  "optional_apps": {
+    "result": "passed",
+    "started": 1793363949.4116254,
+    "boot_id": "3e2cd896-0c35-4caa-b635-18df1d12d1e0",
+    "account_sign_in_tested": false,
+    "apps": [
+      "com.brave.Browser",
+      "org.equicord.equibop"
+    ],
+    "windows": [
+      {
+        "class": "equibop",
+        "title": "Equibop Setup"
+      },
+      {
+        "class": "brave-browser",
+        "title": "Untitled - Brave"
+      }
+    ]
+  },
+  "nvidia_build": {
+    "result": "passed",
+    "revision": "1f0bae4259163b1c6192e4460c80699e69e9cee6",
+    "kernel": "7.2.11-arch1-1",
+    "packages": [
+      "linux 7.2.11.arch1-1",
+      "linux-headers 7.2.11.arch1-1",
+      "nvidia-open-dkms 615.78.08-1",
+      "nvidia-utils 615.78.08-1",
+      "nvidia-prime 1.0-6",
+      "egl-wayland 4:1.1.24-1",
+      "dkms 3.4.4-1"
+    ],
+    "modules": [
+      {
+        "name": "nvidia",
+        "vermagic": "7.2.11-arch1-1 SMP preempt mod_unload",
+        "file": "/lib/modules/7.2.11-arch1-1/updates/dkms/nvidia.ko.zst"
+      },
+      {
+        "name": "nvidia_drm",
+        "vermagic": "7.2.11-arch1-1 SMP preempt mod_unload",
+        "file": "/lib/modules/7.2.11-arch1-1/updates/dkms/nvidia-drm.ko.zst"
+      },
+      {
+        "name": "nvidia_modeset",
+        "vermagic": "7.2.11-arch1-1 SMP preempt mod_unload",
+        "file": "/lib/modules/7.2.11-arch1-1/updates/dkms/nvidia-modeset.ko.zst"
+      },
+      {
+        "name": "nvidia_uvm",
+        "vermagic": "7.2.11-arch1-1 SMP preempt mod_unload",
+        "file": "/lib/modules/7.2.11-arch1-1/updates/dkms/nvidia-uvm.ko.zst"
+      }
+    ],
+    "services_available": [
+      "nvidia-suspend.service",
+      "nvidia-resume.service",
+      "nvidia-hibernate.service"
+    ],
+    "module_loading_attempted": false,
+    "physical_hardware_qualified": false
+  },
+  "nvidia_build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41057470912",
+  "foreign_partitions_preserved": "whole-partition-SHA256-and-identities-unchanged-for-FAT-MSR-NTFS-fixtures",
+  "real_Windows_boot_tested": false,
+  "physical_hardware_qualified": false,
+  "virtualizer_limitation": "two-vCPU-VirtualBox-under-Windows-NEM-soft-locked-in-VBoxService-TLB-shootdown; one-vCPU-retest-passed",
+  "pending": [
+    "final-rebuilt-ISO-smoke-test",
+    "physical-NVIDIA-and-gaming",
+    "physical-HDMI-120Hz-and-internal-monitor",
+    "physical-suspend-resume-lid-and-peripherals",
+    "real-Windows-dual-boot",
+    "extended-daily-use"
+  ]
+}
