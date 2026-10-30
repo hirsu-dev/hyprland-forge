@@ -138,8 +138,13 @@ with tempfile.TemporaryDirectory(prefix="forge-native-qemu-") as directory:
         vm.screenshot("firmware-reduced-b")
         assert (RESULTS / "firmware-reduced-a.png").read_bytes() == (RESULTS / "firmware-reduced-b.png").read_bytes()
         vm.key("x")
-        vm.screenshot("firmware-reduced-input")
-        assert (RESULTS / "firmware-reduced-a.png").read_bytes() != (RESULTS / "firmware-reduced-input.png").read_bytes()
+        deadline = time.monotonic() + 3
+        while True:
+            vm.screenshot("firmware-reduced-input")
+            if (RESULTS / "firmware-reduced-a.png").read_bytes() != (RESULTS / "firmware-reduced-input.png").read_bytes():
+                break
+            assert time.monotonic() < deadline, "Static-mode input did not repaint within three seconds"
+            time.sleep(.05)
         vm.key("esc"); vm.key("f2")
         vm.key("down"); vm.key("ret")
         assert b"FORGE:SELECTOR" not in vm.log
