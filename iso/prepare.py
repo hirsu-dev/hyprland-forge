@@ -59,7 +59,7 @@ def prepare(source, profile, repository):
         action = {"forgeguard": "guard", "forgebase": "base", "forgefinish": "finish"}[name]
         (target / "main.py").write_text('import sys\nsys.path.insert(0, "/opt/hyprland-forge")\nfrom forge.iso_install import calamares_job\n\ndef run():\n    return calamares_job("' + action + '")\n')
     system = root / "etc/systemd/system"
-    for name in ("systemd-networkd.service", "systemd-resolved.service", "iwd.service", "sshd.service"):
+    for name in ("systemd-networkd.service", "systemd-networkd.socket", "systemd-resolved.service", "iwd.service", "sshd.service"):
         target = system / name
         if target.is_symlink():
             target.unlink()

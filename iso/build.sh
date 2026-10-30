@@ -18,4 +18,11 @@ python "$forge_source/iso/prepare.py" "$forge_source" "$forge_work/profile" "$fo
 mkarchiso -v -w "$forge_work/mkarchiso" -o "$forge_output" "$forge_work/profile"
 cd -- "$forge_output"
 sha256sum -- ./*.iso > SHA256SUMS
-pacman -Q > build-packages.txt
+cp -- "$forge_work/mkarchiso/iso/arch/pkglist.x86_64.txt" build-packages.txt
+python - build-packages.txt <<'PY'
+import pathlib, sys
+packages = {line.split()[0] for line in pathlib.Path(sys.argv[1]).read_text().splitlines() if line.strip()}
+required = {'calamares', 'networkmanager', 'wpa_supplicant', 'pyside6', 'plymouth', 'xorg-xset', 'openbox'}
+if not required <= packages:
+    raise SystemExit('The live ISO package inventory is incomplete: ' + ', '.join(sorted(required - packages)))
+PY

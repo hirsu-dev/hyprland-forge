@@ -42,6 +42,8 @@ def main():
         report['failed_services'] = command(['systemctl', '--failed', '--plain', '--no-legend', '--no-pager'])
         report['failed_units'] = [line.split()[0] for line in report['failed_services']['stdout'].splitlines() if line.strip()]
         report['kernel'] = command(['uname', '-r'])['stdout']
+        report['live_packages'] = command(['pacman', '-Q', 'calamares', 'networkmanager', 'wpa_supplicant', 'pyside6', 'plymouth', 'xorg-xset', 'openbox'])
+        assert report['live_packages']['exit_code'] == 0, report['live_packages']
         with urllib.request.urlopen('https://archlinux.org/', timeout=30) as response:
             report['HTTPS_access'] = response.status
         assert report['screen']['exit_code'] == 0, report['screen']
