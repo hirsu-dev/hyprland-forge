@@ -80,12 +80,23 @@
     "native_linux_unit_tests": 261,
     "nvidia_driver_build": "four-NVIDIA-open-615.78.08-modules-built-for-Arch-7.2.11; no-hardware-or-module-loading-test",
     "nvidia_build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41057470912",
-    "evidence": "iso/qualification.json"
+    "evidence": "iso/qualification.json",
+    "animated_login": {
+      "revision": "cdf1343",
+      "ci_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083466430",
+      "native_Qt_controls": "passed-first-login-default-user-session-popup-duplicate-submit-password-clearing-motion-and-static-mode",
+      "installed_VM_authentication": "wrong-password-rejected-correct-password-opened-Hyprland",
+      "physical_hardware_tested": false
+    }
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",
   "experimental_native_picker": {
     "branch": "codex/boot-experience",
-    "integrated": false
+    "integrated": false,
+    "source_revision": "12981c5",
+    "motion": "Redline-split-wordmark-sparks-orbital-tracers-reactive-password-reversible-selection-and-diagonal-handoff",
+    "uefi_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083471859",
+    "physical_activation": false
   }
 }
