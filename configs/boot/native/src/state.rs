@@ -94,6 +94,9 @@ pub struct State {
     failed: u8,
     authenticated: bool,
     motion: bool,
+    selection_from: i32,
+    selection_elapsed: u32,
+    input_elapsed: u32,
 }
 
 impl Default for State {
@@ -108,6 +111,9 @@ impl Default for State {
             failed: 0,
             authenticated: false,
             motion: true,
+            selection_from: 0,
+            selection_elapsed: 220,
+            input_elapsed: 220,
         }
     }
 }
@@ -131,6 +137,22 @@ impl State {
     pub fn motion(&self) -> bool {
         self.motion
     }
+    pub fn selection_position(&self) -> i32 {
+        let target = if self.selected == Target::Forge {
+            0
+        } else {
+            1024
+        };
+        if !self.motion {
+            return target;
+        }
+        let progress = self.selection_elapsed.min(220) as i32 * 1024 / 220;
+        let eased = 1024 - (1024 - progress).pow(3) / 1_048_576;
+        self.selection_from + (target - self.selection_from) * eased / 1024
+    }
+    pub fn input_age(&self) -> u32 {
+        self.input_elapsed
+    }
 
     fn change(&mut self, phase: Phase) {
         self.phase = phase;
@@ -144,6 +166,8 @@ impl State {
     pub fn tick(&mut self, milliseconds: u32) -> Action {
         self.elapsed = self.elapsed.saturating_add(milliseconds);
         self.time = self.time.wrapping_add(milliseconds);
+        self.selection_elapsed = self.selection_elapsed.saturating_add(milliseconds);
+        self.input_elapsed = self.input_elapsed.saturating_add(milliseconds);
         match self.phase {
             Phase::Intro if self.elapsed >= if self.motion { 2200 } else { 0 } => {
                 self.change(Phase::Password)
@@ -167,6 +191,12 @@ impl State {
     pub fn key(&mut self, key: Key) -> Action {
         if let Key::Motion = key {
             self.motion = !self.motion;
+            self.selection_from = if self.selected == Target::Forge {
+                0
+            } else {
+                1024
+            };
+            self.selection_elapsed = 220;
             return Action::None;
         }
         match self.phase {
@@ -181,10 +211,12 @@ impl State {
                 {
                     self.password[self.length] = byte;
                     self.length += 1;
+                    self.input_elapsed = 0;
                 }
                 Key::Backspace if self.length > 0 => {
                     self.length -= 1;
                     self.password[self.length] = 0;
+                    self.input_elapsed = 0;
                 }
                 Key::Escape => self.clear(),
                 Key::Enter if self.length > 0 => {
@@ -195,6 +227,8 @@ impl State {
             },
             Phase::Selector if self.authenticated => match key {
                 Key::Next => {
+                    self.selection_from = self.selection_position();
+                    self.selection_elapsed = 0;
                     self.selected = if self.selected == Target::Forge {
                         Target::Windows
                     } else {
@@ -251,6 +285,40 @@ impl Drop for State {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn selection_reverses_from_its_current_position_and_reduced_motion_settles() {
+        let mut state = State::default();
+        state.authenticated = true;
+        state.change(Phase::Selector);
+        state.key(Key::Next);
+        assert_eq!(state.selection_position(), 0);
+        state.tick(90);
+        let middle = state.selection_position();
+        assert!(middle > 0 && middle < 1024);
+        state.key(Key::Next);
+        assert_eq!(state.selection_position(), middle);
+        state.tick(220);
+        assert_eq!(state.selection_position(), 0);
+        for _ in 0..100 {
+            state.key(Key::Next);
+            state.tick(7);
+            assert!((0..=1024).contains(&state.selection_position()));
+        }
+        state.key(Key::Motion);
+        state.key(Key::Next);
+        assert_eq!(
+            state.selection_position(),
+            if state.target() == Target::Forge {
+                0
+            } else {
+                1024
+            }
+        );
+        let settled = state.selection_position();
+        state.key(Key::Motion);
+        assert_eq!(state.selection_position(), settled);
+    }
 
     fn config() -> Config {
         let mut bytes = [1; CONFIG_SIZE];

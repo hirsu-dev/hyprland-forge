@@ -121,6 +121,8 @@ jobs:
           path: |
             test-results/native-startup/preview/*.png
             test-results/native-startup/intro.gif
+            test-results/native-startup/preview/startup.gif
+            test-results/native-startup/preview/sequence.json
             test-results/native-startup/*.png
             test-results/native-startup/*.log
   publish:

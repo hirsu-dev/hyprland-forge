@@ -19,21 +19,28 @@ fn save(frame: &Frame, path: &Path) {
     file.write_all(&rgb).unwrap();
 }
 
+fn segment(state: &mut State, frame: &mut Frame, destination: &Path, name: &str, frames: usize) {
+    for index in 0..frames {
+        frame.draw(state);
+        save(frame, &destination.join(format!("{name}-{index:03}.ppm")));
+        state.tick(40);
+    }
+}
+
 fn main() {
     let destination = std::env::args_os().nth(1).expect("Output folder required");
     let destination = Path::new(&destination);
     fs::create_dir_all(destination).unwrap();
     let mut state = State::default();
     let mut frame = Frame::new(1280, 720).unwrap();
-    for index in 0..56 {
-        frame.draw(&state);
-        save(&frame, &destination.join(format!("intro-{index:03}.ppm")));
-        state.tick(40);
-    }
+    segment(&mut state, &mut frame, destination, "intro", 56);
     frame.draw(&state);
     save(&frame, &destination.join("password.ppm"));
-    for byte in b"ephemeral-preview-password" {
+    for (index, byte) in b"ephemeral-preview-password".iter().enumerate() {
         state.key(Key::Char(*byte));
+        frame.draw(&state);
+        save(&frame, &destination.join(format!("typing-{index:03}.ppm")));
+        state.tick(40);
     }
     frame.draw(&state);
     save(&frame, &destination.join("masked.ppm"));
@@ -48,10 +55,15 @@ fn main() {
     );
     state.key(Key::Enter);
     state.verify(&Config::parse(&bytes).unwrap());
-    state.tick(650);
+    segment(&mut state, &mut frame, destination, "unlock", 17);
+    segment(&mut state, &mut frame, destination, "selection", 12);
     frame.draw(&state);
     save(&frame, &destination.join("selector.ppm"));
     state.key(Key::Next);
+    segment(&mut state, &mut frame, destination, "switch", 8);
     frame.draw(&state);
     save(&frame, &destination.join("windows.ppm"));
+    state.key(Key::Enter);
+    segment(&mut state, &mut frame, destination, "launch", 13);
+    fs::write(destination.join("sequence.json"), "{\"frame_duration_ms\":40,\"segments\":[\"intro\",\"typing\",\"unlock\",\"selection\",\"switch\",\"launch\"]}\n").unwrap();
 }

@@ -13,7 +13,7 @@ from .boot import source_assets
 from .manifest import ForgeError
 
 
-SOURCES = ("Cargo.toml", "Cargo.lock", "src/lib.rs", "src/state.rs", "src/visual.rs", "src/main.rs", "src/preview.rs")
+SOURCES = ("Cargo.toml", "Cargo.lock", "src/lib.rs", "src/glyph.rs", "src/state.rs", "src/visual.rs", "src/main.rs", "src/preview.rs")
 ROUNDS = 600000
 
 
@@ -52,16 +52,33 @@ def preview(output, runner=subprocess.run):
             runner(["cargo", "run", "--locked", "--release", "--features", "preview", "--bin", "forge-preview", "--", str(images.resolve())], cwd=project, env=environment, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as exc:
             raise ForgeError("Native preview failed:\n" + (exc.stderr or "")[-8000:]) from exc
-        frames = []
         for path in sorted(images.glob("*.ppm")):
             with Image.open(path) as image:
                 image.save(path.with_suffix(".png"))
-                if path.name.startswith("intro-"):
-                    frames.append(image.convert("RGB"))
             path.unlink()
-        if not frames:
+        intro = sorted(images.glob("intro-*.png"))
+        if not intro:
             raise ForgeError("Native renderer did not produce preview frames")
-        frames[0].save(images / "intro.gif", save_all=True, append_images=frames[1:], duration=40, loop=0)
+        manifest = images / 'sequence.json'
+        segments = json.loads(manifest.read_text())['segments'] if manifest.is_file() else ['intro']
+        sample = Image.new('RGB', (320 * len(segments), 180))
+        for index, name in enumerate(segments):
+            paths = sorted(images.glob(name + '-*.png'))
+            if not paths:
+                raise ForgeError('Native renderer did not produce segment: ' + name)
+            with Image.open(paths[len(paths) // 2]) as image:
+                sample.paste(image.resize((320, 180)), (index * 320, 0))
+        palette = sample.quantize(colors=128)
+        def animation(paths, name):
+            frames = []
+            for path in paths:
+                with Image.open(path) as image:
+                    frames.append(image.convert('RGB').quantize(palette=palette, dither=Image.Dither.NONE))
+            frames[0].save(images / name, save_all=True, append_images=frames[1:], duration=40, loop=0, optimize=False)
+            for frame in frames:
+                frame.close()
+        animation(intro, 'intro.gif')
+        animation([path for name in segments for path in sorted(images.glob(name + '-*.png'))], 'startup.gif')
         os.rename(images, output)
     return output
 

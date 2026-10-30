@@ -9,7 +9,7 @@
     "builder": "forge-boot --engine native",
     "target": "x86_64-UEFI-GPT",
     "flow": ["animated-local-startup", "password-only-gate", "Forge-or-Windows-picker", "existing-OS-loader", "OS-account-sign-in"],
-    "pre_os_motion": "Redline-inspired-2200ms-diagonal-neon-split-gate-sparks-perimeter-tracers-logo-reveal-staggered-picker-and-reduced-motion",
+    "pre_os_motion": "Redline-2200ms-clipped-vector-wordmark-diagonal-split-gates-72-sparks-optical-tracers-keystroke-pulses-unlock-sweep-reversible-picker-and-colored-launch-wipe",
     "forge_login_motion": "animated-SDDM",
     "authentication": "PBKDF2-HMAC-SHA256-600000-random-salt-constant-time-compare-secret-clearing-bounded-input-and-backoff",
     "provisioning": "machine-specific-GPT-PARTUUIDs-and-hash-embedded-in-local-build-no-default-password",
@@ -31,6 +31,7 @@
       "physical_boot": "not-tested",
       "full_windows_and_linux_boot": "not-tested",
       "boot_speed": "not-benchmarked-on-hardware"
+      ,"motion_refresh": {"local_rust_tests": 9, "local_python_tests": 225, "local_preview": "exact-Rust-renderer-executed-through-WASI", "firmware_regression": "pending-new-QEMU-run", "motion_toggle": "immediate-static-layout-without-replaying-old-selection-animation", "font": "original-five-by-seven-bitmap-glyphs", "preview": "full-intro-password-unlock-selector-and-launch-sequence"}
     }
   },
   "gaming_wallpaper": {"launcher": ["NVIDIA-offload-on-physical-hardware", "GameMode", "optional-MangoHud", "optional-Gamescope", "1920x1080-120-FPS-Gamescope-default", "tracked-game-lifetime"], "wallpaper": ["optional-community-linux-wallpaperengine", "Steam-library-detection", "assets-and-project-picker", "30-FPS-muted-default", "game-aware-unload-and-restore", "fullscreen-pause", "static-fallback"], "lifecycle_fixture_validation": "passed-game-pause-exit-restore-preset-pause-disable", "renderer_validation": "requires-user-owned-Steam-assets-and-physical-GPU", "performance_benchmarks": "pending-on-device"},

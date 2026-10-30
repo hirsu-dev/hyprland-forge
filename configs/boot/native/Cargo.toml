@@ -10,7 +10,6 @@ firmware-test = ["firmware"]
 preview = []
 
 [dependencies]
-font8x8 = { version = "0.3.1", default-features = false, features = ["unicode"] }
 pbkdf2 = { version = "0.13.0", default-features = false, features = ["hmac", "sha2"] }
 subtle = { version = "2.6.1", default-features = false }
 zeroize = { version = "1.8.2", default-features = false }
