@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "status": "hardware-test-candidate-verification-pending",
+  "status": "hardware-test-prerelease-published",
   "build_enabled": true,
   "disk_execution_enabled": true,
-  "last_built_run": 41089238948,
-  "last_built_artifact": 12994520093,
-  "last_built_revision": "219f859",
+  "last_built_run": 41092758876,
+  "last_built_artifact": 12995650204,
+  "last_built_revision": "c61952bde441d949ff6ff617968ea52d946a2720",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
@@ -28,9 +28,9 @@
     "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "finish-independent-installer-readiness-check",
-    "verify-installable-hardware-test-ISO-and-publish-prerelease",
-    "complete-physical-laptop-and-real-Windows-dual-boot-qualification"
+    "complete-physical-laptop-and-real-Windows-dual-boot-qualification",
+    "verify-owned-Wallpaper-Engine-assets-and-gaming-on-physical-GPU",
+    "qualify-experimental-native-picker-separately-before-integration"
   ],
   "qualification": {
     "iso_built": true,
@@ -41,8 +41,9 @@
     "boot_environment": "VirtualBox-7.2.20-UEFI-2304MiB-VMSVGA-software-Qt",
     "live_welcome_rendered": true,
     "live_graphical_installer_opened": true,
-    "local_iso_sha256": null,
-    "download_integrity": "50c6b50-local-download-unapproved; transfer-limit-HTTP503-before-final-ZIP-CRC-and-SHA256; partial-file-removed",
+    "local_iso_sha256": "4b8f487848a48ac0e152741175355a9c8b539ac48506c9bb1f604236848819bb",
+    "download_integrity": "c61952b-local-ZIP-CRC-and-ISO-SHA256-passed; published-GitHub-asset-digest-and-size-match",
+    "previous_download_failure": "50c6b50-transfer-limit-HTTP503-before-final-ZIP-CRC-and-SHA256; partial-file-removed",
     "ci_boot_harness": "standard-VGA-UEFI-boot-passed-and-welcome-screenshot-reviewed",
     "ci_boot_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41015592584",
     "ci_live_welcome_rendered": true,
@@ -74,8 +75,10 @@
     "login_theme_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41010146250",
     "password_authentication_tested": true,
     "password_authentication_result": "native-SDDM-Wayland-rejected-wrong-password-and-accepted-correct-VM-password",
-    "last_full_local_tests": 267,
-    "latest_focused_installation_tests": 29,
+    "last_full_local_tests": 272,
+    "last_full_local_skips": 11,
+    "latest_focused_installation_tests": 31,
+    "latest_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41094256248",
     "virtualizer_limitation": "two-vCPU-VirtualBox-Windows-NEM-soft-lockup-in-VBoxService-TLB-shootdown; one-vCPU-retest-passed",
     "native_linux_unit_tests": 261,
     "nvidia_driver_build": "four-NVIDIA-open-615.78.08-modules-built-for-Arch-7.2.11; no-hardware-or-module-loading-test",
@@ -92,9 +95,9 @@
       "revision": "b0f252b",
       "sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f"
     },
-    "final_live_check": "219f859-in-guest-boot-network-inhibitor-and-installer-checks-passed; full-artifact-reverification-and-installer-navigation-check-pending",
+    "final_live_check": "c61952b-in-guest-UEFI-network-HTTPS-sleep-inhibitor-package-inventory-and-all-mandatory-Calamares-readiness-checks-passed; no-failed-units; no-installation-executed-in-final-smoke-test",
     "physical_installation": "enabled-for-explicitly-reviewed-Calamares-installation; hardware-runtime-remains-unqualified",
-    "installer_readiness_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41091611132"
+    "installer_readiness_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41092758876"
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",
@@ -106,5 +109,13 @@
     "uefi_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083471859",
     "physical_activation": false
   },
-  "release_channel": "hardware-test-prerelease"
+  "release_channel": "hardware-test-prerelease",
+  "release": {
+    "tag": "forge-iso-2026.10.30-rc1",
+    "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.10.30-rc1",
+    "source_revision": "c61952bde441d949ff6ff617968ea52d946a2720",
+    "published": "2026-10-30T17:07:18Z",
+    "prerelease": true,
+    "ready_for_daily_use": false
+  }
 }

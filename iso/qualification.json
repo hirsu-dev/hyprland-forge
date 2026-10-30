@@ -190,11 +190,47 @@
   "physical_hardware_qualified": false,
   "virtualizer_limitation": "two-vCPU-VirtualBox-under-Windows-NEM-soft-locked-in-VBoxService-TLB-shootdown; one-vCPU-retest-passed",
   "pending": [
-    "final-rebuilt-ISO-smoke-test",
     "physical-NVIDIA-and-gaming",
     "physical-HDMI-120Hz-and-internal-monitor",
     "physical-suspend-resume-lid-and-peripherals",
     "real-Windows-dual-boot",
-    "extended-daily-use"
-  ]
+    "extended-daily-use",
+    "Wallpaper-Engine-rendering-with-owned-assets-and-physical-GPU"
+  ],
+  "hardware_test_release": {
+    "tag": "forge-iso-2026.10.30-rc1",
+    "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.10.30-rc1",
+    "source_revision": "c61952bde441d949ff6ff617968ea52d946a2720",
+    "build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41092758876",
+    "artifact_id": 12995650204,
+    "iso_bytes": 2143322112,
+    "iso_sha256": "4b8f487848a48ac0e152741175355a9c8b539ac48506c9bb1f604236848819bb",
+    "local_zip_crc_valid": true,
+    "local_iso_sha256_valid": true,
+    "published_asset_digest_matches": true,
+    "published": "2026-10-30T17:07:18Z",
+    "prerelease": true,
+    "installer_backend_matches_clean_VM_install": true,
+    "installer_backend_sha256": "fe810658a23c5d31c3d662195cb6d44cc9baad691e73bc7655f510b6349e431a",
+    "live_smoke_test": {
+      "result": "passed",
+      "environment": "QEMU-TCG-UEFI-2304MiB",
+      "image_revision_verified": true,
+      "disk_execution_enabled": true,
+      "network_connected": true,
+      "https_status": 200,
+      "sleep_and_lid_inhibited": true,
+      "screen_blanking_disabled": true,
+      "live_package_inventory_verified": true,
+      "failed_units": [],
+      "mandatory_Calamares_requirements": ["partitions", "ram", "internet", "root"],
+      "all_mandatory_requirements_satisfied": true,
+      "graphical_installer_opened": true,
+      "installation_executed": false,
+      "target_disk_mounted": false,
+      "physical_hardware_tested": false
+    },
+    "native_password_first_picker_integrated": false,
+    "ready_for_daily_use": false
+  }
 }
