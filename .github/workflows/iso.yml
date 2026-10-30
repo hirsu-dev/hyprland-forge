@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 35
     container: archlinux:base-devel
     steps:
-      - run: pacman -Syu --noconfirm --needed git cmake ninja extra-cmake-modules qt6-base qt6-declarative qt6-svg qt6-tools yaml-cpp kcoreaddons kconfig kpmcore polkit-qt6 python python-yaml boost boost-libs libpwquality icu hwinfo pyside6 python-pillow xorg-server-xvfb xorg-xauth dbus ttf-jetbrains-mono-nerd archiso scrot
+      - run: pacman -Syu --noconfirm --needed git cmake ninja extra-cmake-modules qt6-base qt6-declarative qt6-svg qt6-tools yaml-cpp kcoreaddons kconfig kpmcore polkit-qt6 python python-yaml boost boost-libs libpwquality icu hwinfo pyside6 python-pillow xorg-server-xvfb xorg-xauth dbus ttf-jetbrains-mono-nerd archiso scrot sddm
       - uses: actions/checkout@v4
       - run: python -m unittest discover -s tests -p 'test_iso*.py' -v
       - uses: actions/cache@v4
@@ -51,7 +51,7 @@ jobs:
           path: |
             iso/calamares/calamares-[0-9]*.pkg.tar.zst
             test-results/iso-*.png
-            test-results/iso-calamares.log
+            test-results/iso-*.log
   image:
     if: contains(github.event.head_commit.message, '[build-iso]')
     needs: installer

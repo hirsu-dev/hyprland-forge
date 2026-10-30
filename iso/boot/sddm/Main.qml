@@ -8,6 +8,7 @@ Rectangle {
     property bool busy: false
     property string notice: "WELCOME BACK"
     property real reveal: 0
+    property bool restartRequested: false
     readonly property real unit: Math.max(0.7, Math.min(width / 1280, height / 800))
     readonly property bool motion: String(config.Motion).toLowerCase() !== "false"
     Component.onCompleted: { reveal = 1; password.forceActiveFocus(); }
@@ -47,5 +48,16 @@ Rectangle {
         ComboBox { id: sessions; Layout.fillWidth: true; model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex; enabled: !root.busy; palette.button: "#253740"; palette.buttonText: "#e1edf0"; font.pixelSize: 14 * root.unit }
         Button { text: root.busy ? "SIGNING IN..." : "ENTER FORGE  →"; Layout.fillWidth: true; padding: 18 * root.unit; enabled: !root.busy; onClicked: root.login(); palette.button: "#94dce5"; palette.buttonText: "#10191f"; font.bold: true; font.pixelSize: 16 * root.unit }
     }
-    Text { anchors { right: parent.right; bottom: parent.bottom; margins: 40 * root.unit }; text: "LOCAL SESSION / SIGN IN"; color: "#a3b9c1"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 12 * root.unit }
+    Row {
+        anchors { right: parent.right; bottom: parent.bottom; margins: 40 * root.unit }
+        spacing: 16 * root.unit
+        Button { text: "RESTART"; enabled: !root.busy; palette.button: "#253740"; palette.buttonText: "#e1edf0"; onClicked: { root.restartRequested = true; powerConfirm.open(); } }
+        Button { text: "POWER OFF"; enabled: !root.busy; palette.button: "#253740"; palette.buttonText: "#e1edf0"; onClicked: { root.restartRequested = false; powerConfirm.open(); } }
+    }
+    Dialog {
+        id: powerConfirm; anchors.centerIn: parent; modal: true
+        title: root.restartRequested ? "Restart this computer?" : "Power off this computer?"
+        standardButtons: Dialog.Yes | Dialog.Cancel
+        onAccepted: { if (root.restartRequested) sddm.reboot(); else sddm.powerOff(); }
+    }
 }
