@@ -20,7 +20,7 @@ def main(argv=None):
         parser.error('Screenshots require preview mode.')
     os.environ.setdefault('QT_QUICK_CONTROLS_STYLE', 'Basic')
     from PySide6.QtCore import QObject, Property, QProcess, QTimer, QUrl, Signal, Slot
-    from PySide6.QtGui import QGuiApplication
+    from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine
     from PySide6.QtQuick import QQuickWindow
 
@@ -91,6 +91,11 @@ def main(argv=None):
                 QProcess.startDetached('systemctl', ['reboot'])
 
     app = QGuiApplication(sys.argv[:1])
+    if args.preview and platform.system() == 'Windows':
+        font_path = Path(os.environ.get('WINDIR', 'C:/Windows')) / 'Fonts/consola.ttf'
+        if font_path.is_file():
+            QFontDatabase.addApplicationFont(str(font_path))
+        app.setFont(QFont('Consolas', 11))
     app.setApplicationName('Forge Setup')
     app.setOrganizationName('Hyprland Forge')
     engine = QQmlApplicationEngine()

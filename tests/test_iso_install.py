@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from forge.iso_apps import flatpak_commands, selection
-from forge.iso_install import finish, guard, mounted_target, options, package_plan, windows_menu
+from forge.iso_install import base, finish, guard, mounted_target, options, package_plan, windows_menu
 from forge.manifest import ForgeError, load_manifest
 
 
@@ -13,6 +13,18 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_existing_system_is_refused_before_installing_packages(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'etc').mkdir()
+            sentinel = root / 'etc/passwd'
+            sentinel.write_text('existing-account')
+            with patch('forge.iso_install.subprocess.run') as run:
+                with self.assertRaises(ForgeError):
+                    base(root, ROOT, {'gaming': False, 'motion': True, 'apps': []}, {'virtual': 'qemu'})
+                run.assert_not_called()
+            self.assertEqual(sentinel.read_text(), 'existing-account')
+
     def test_guard_denies_non_live_hosts_without_running_commands(self):
         with patch('forge.iso_install.platform.system', return_value='Linux'), patch('forge.iso_install.os.geteuid', return_value=0, create=True), patch('forge.iso_install.Path.is_file', return_value=False), patch('forge.iso_install.subprocess.run') as run:
             with self.assertRaises(ForgeError):

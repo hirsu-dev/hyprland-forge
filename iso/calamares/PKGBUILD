@@ -27,6 +27,8 @@ build() {
 
 package() {
     DESTDIR="$pkgdir" cmake --install build
+    install -d "$pkgdir/usr/share/licenses/calamares"
+    cp -a "$srcdir/calamares-$pkgver/LICENSES/." "$pkgdir/usr/share/licenses/calamares/"
     install -Dm644 "$srcdir/calamares-$pkgver.tar.gz" "$pkgdir/usr/share/hyprland-forge/sources/calamares-$pkgver.tar.gz"
     install -Dm644 "$startdir/PKGBUILD" "$pkgdir/usr/share/hyprland-forge/sources/PKGBUILD"
 }

@@ -29,7 +29,8 @@ def prepare(source, profile, repository):
     with tarfile.open(fileobj=io.BytesIO(archive)) as stream:
         stream.extractall(destination, filter="data")
     revision = subprocess.run(["git", "-C", str(source), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
-    (destination / "build.json").write_text(json.dumps({"revision": revision, "channel": "experimental-iso"}) + "\n")
+    manifest = json.loads((source / 'project.json').read_text())
+    (destination / "build.json").write_text(json.dumps({"name": manifest['name'], "version": manifest['release'], "revision": revision, "channel": "experimental-iso", "hardware_validation": "pending-on-device"}) + "\n")
     modules = root / "etc/calamares/modules"
     for name in ("forgeguard", "forgebase", "forgefinish"):
         target = modules / name
@@ -47,6 +48,13 @@ def prepare(source, profile, repository):
         target = system / "multi-user.target.wants" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         target.symlink_to("/usr/lib/systemd/system/" + name)
+    resolver = root / 'etc/resolv.conf'
+    if resolver.is_symlink():
+        resolver.unlink()
+    resolver.write_text('')
+    network = root / 'etc/NetworkManager/conf.d/forge-live.conf'
+    network.parent.mkdir(parents=True, exist_ok=True)
+    network.write_text('[main]\ndns=default\nrc-manager=file\n')
     for path in profile.glob("grub/*.cfg"):
         text = path.read_text().replace("Arch Linux install medium", "Forge graphical installer")
         path.write_text(text)

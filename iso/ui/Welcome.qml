@@ -20,7 +20,7 @@ ApplicationWindow {
     readonly property color accent: "#94dce5"
     readonly property color ink: "#e1edf0"
     readonly property color dim: "#a3b9c1"
-    font.family: "JetBrainsMono Nerd Font"
+    font.family: Qt.platform.os === "windows" ? "Consolas" : "JetBrainsMono Nerd Font"
     font.pixelSize: Math.round(14 * unit)
     palette.window: "#19262e"
     palette.windowText: ink
@@ -138,25 +138,35 @@ ApplicationWindow {
                     rowSpacing: 16 * root.unit
                     Repeater {
                         model: installer.apps
-                        delegate: Rectangle {
+                        delegate: CheckBox {
+                            id: appCheck
                             required property var modelData
                             Layout.fillWidth: true; Layout.preferredWidth: 370 * root.unit
                             implicitHeight: 94 * root.unit
-                            color: appCheck.checked ? "#253740" : "#10191f"
-                            border.color: appCheck.checked ? "#94dce5" : "#344b57"
-                            CheckBox {
-                                id: appCheck
-                                anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 12 * root.unit }
-                                checked: root.selectedApps.indexOf(modelData.id) >= 0
-                                onToggled: root.toggleApp(modelData.id, checked)
+                            leftPadding: 58 * root.unit
+                            rightPadding: 18 * root.unit
+                            checked: root.selectedApps.indexOf(modelData.id) >= 0
+                            onToggled: root.toggleApp(modelData.id, checked)
+                            Accessible.name: modelData.name
+                            indicator: Rectangle {
+                                implicitWidth: 24 * root.unit; implicitHeight: 24 * root.unit
+                                x: 18 * root.unit; y: (appCheck.height - height) / 2
+                                color: appCheck.checked ? root.accent : "transparent"
+                                border.color: appCheck.checked ? root.accent : "#536d78"
+                                ForgeText { anchors.centerIn: parent; text: appCheck.checked ? "✓" : ""; color: "#10191f"; font.pixelSize: 18 * root.unit }
                             }
-                            Column {
-                                anchors { left: appCheck.right; right: parent.right; verticalCenter: parent.verticalCenter; margins: 12 * root.unit }
-                                spacing: 8 * root.unit
-                                ForgeText { text: modelData.name; color: root.ink; font.pixelSize: 15 * root.unit; font.bold: true }
-                                ForgeText { text: modelData.description; color: root.dim; font.pixelSize: 11 * root.unit; width: parent.width; wrapMode: Text.WordWrap }
+                            background: Rectangle {
+                                color: appCheck.checked ? "#253740" : "#10191f"
+                                border.color: appCheck.checked ? "#94dce5" : "#344b57"
                             }
-                            TapHandler { onTapped: root.toggleApp(modelData.id, !appCheck.checked) }
+                            contentItem: Item {
+                                Column {
+                                    width: parent.width; anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 8 * root.unit
+                                    ForgeText { text: modelData.name; color: root.ink; font.pixelSize: 15 * root.unit; font.bold: true }
+                                    ForgeText { text: modelData.description; color: root.dim; font.pixelSize: 11 * root.unit; width: parent.width; wrapMode: Text.WordWrap }
+                                }
+                            }
                         }
                     }
                 }

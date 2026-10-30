@@ -15,8 +15,18 @@ jobs:
       - run: pacman -Syu --noconfirm --needed git cmake ninja extra-cmake-modules qt6-base qt6-declarative qt6-svg qt6-tools yaml-cpp kcoreaddons kconfig kpmcore polkit-qt6 python python-yaml boost boost-libs libpwquality icu hwinfo pyside6 python-pillow xorg-server-xvfb xorg-xauth dbus ttf-jetbrains-mono-nerd
       - uses: actions/checkout@v4
       - run: python -m unittest discover -s tests -p 'test_iso*.py' -v
-      - run: |
-          QT_QUICK_BACKEND=software xvfb-run -a -s '-screen 0 1280x800x24' python -m forge.iso_welcome --preview --screenshot test-results/iso-welcome.png
+      - uses: actions/cache@v4
+        id: calamares-cache
+        with:
+          path: iso/calamares/*.pkg.tar.zst
+          key: forge-calamares-${{ hashFiles('iso/calamares/PKGBUILD') }}
+      - name: Render welcome and app picker
+        run: |
+          QT_QUICK_BACKEND=software timeout 30 xvfb-run -a -s '-screen 0 1280x800x24' python -m forge.iso_welcome --preview --screenshot test-results/iso-welcome.png
+          QT_QUICK_BACKEND=software timeout 30 xvfb-run -a -s '-screen 0 1280x800x24' python -m forge.iso_welcome --preview --preview-page apps --screenshot test-results/iso-app-picker.png
+      - name: Build Calamares package
+        if: steps.calamares-cache.outputs.cache-hit != 'true'
+        run: |
           useradd -m forgebuild
           chown -R forgebuild:forgebuild iso/calamares
           cd iso/calamares
@@ -40,13 +50,23 @@ jobs:
       image: archlinux:base
       options: --privileged
     steps:
-      - run: pacman -Syu --noconfirm --needed archiso git python
+      - run: pacman -Syu --noconfirm --needed archiso git python python-pillow qemu-system-x86 qemu-img edk2-ovmf
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: forge-installer-components
           path: /tmp/forge-components
       - run: bash iso/build.sh /tmp/forge-components/iso/calamares/*.pkg.tar.zst /tmp/forge-iso-work /tmp/forge-iso-output
+      - name: Boot the ISO in a disposable UEFI VM
+        run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-boot
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-iso-boot-captures
+          path: |
+            /tmp/forge-iso-boot/*.png
+            /tmp/forge-iso-boot/*.log
+            /tmp/forge-iso-boot/result.json
       - uses: actions/upload-artifact@v4
         with:
           name: forge-experimental-iso

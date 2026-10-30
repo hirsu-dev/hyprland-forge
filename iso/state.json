@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "status": "in-progress",
-  "build_enabled": false,
+  "build_enabled": true,
   "disk_execution_enabled": false,
   "calamares": {
     "version": "3.4.3",
@@ -18,12 +18,11 @@
     "GRUB-OS-menu-configuration"
   ],
   "resume_first": [
-    "implement-forge.iso_install-guard-base-and-finish-jobs",
-    "implement-forge.iso_welcome-and-original-animated-QML",
-    "add-Calamares-branding-GRUB-theme-Plymouth-and-SDDM",
     "validate-upstream-module-configuration-and-package-build",
     "build-ISO-in-isolated-Arch-CI-environment",
-    "qualify-live-boot-installation-Windows-preservation-and-OS-selection-in-VM"
+    "qualify-live-boot-installation-Windows-preservation-and-OS-selection-in-VM",
+    "qualify-selected-native-and-Flatpak-app-installation",
+    "integrate-generic-hardware-profile-with-desktop-upgrades"
   ],
   "qualification": {
     "iso_built": false,

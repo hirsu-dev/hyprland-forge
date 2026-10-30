@@ -136,6 +136,9 @@ def find_windows():
 
 
 def base(root, source, settings, device):
+    allowed = {'lost+found', 'boot', 'home', 'proc', 'sys', 'dev', 'run'}
+    if any(path.name not in allowed for path in root.iterdir()):
+        raise ForgeError('The installation filesystem contains existing files. Review the partition choices before continuing.')
     manifest = load_manifest(source)
     packages = package_plan(manifest, device, settings['gaming'], settings['apps'])
     with tempfile.TemporaryDirectory(prefix='forge-pacman-') as directory:
