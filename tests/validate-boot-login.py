@@ -70,12 +70,20 @@ password = root.findChild(QObject, "forgePassword")
 picker = root.findChild(QObject, "forgeSessions")
 assert username.property("text") == "forge-test"
 assert picker.property("currentIndex") == 0
+popup = picker.property("popup")
+QMetaObject.invokeMethod(popup, "open")
+QTest.qWait(100)
+assert popup.property("visible"), "The session picker did not open"
+picker.setProperty("currentIndex", 1)
+QMetaObject.invokeMethod(popup, "close")
+assert picker.property("currentIndex") == 1
 QMetaObject.invokeMethod(root, "login")
 assert not proxy.calls, "Empty passwords must not be submitted"
 password.setProperty("text", "ephemeral-fixture-password")
 QMetaObject.invokeMethod(root, "login")
 QMetaObject.invokeMethod(root, "login")
 assert len(proxy.calls) == 1 and root.property("busy"), "Duplicate submission was not blocked"
+assert proxy.calls[0][2] == 1, "The selected session was not passed to SDDM"
 proxy.loginFailed.emit()
 QTest.qWait(50)
 assert not root.property("busy") and password.property("text") == ""

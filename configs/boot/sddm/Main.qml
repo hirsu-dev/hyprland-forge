@@ -171,7 +171,7 @@ Rectangle {
             }
         }
         Text { x: 96; y: 852; width: 760; text: root.notice; color: root.denied ? "#ff4264" : root.cyan; font.pixelSize: 18; font.family: root.typeface; wrapMode: Text.Wrap }
-        Text { x: 96; y: 902; text: "BOOT PASSWORD AND ACCOUNT PASSWORD ARE SEPARATE"; color: "#839ba8"; font.pixelSize: 16; font.family: root.typeface }
+        Text { x: 96; y: 902; text: String(config.BootGate).toLowerCase() === "true" ? "BOOT PASSWORD AND ACCOUNT PASSWORD ARE SEPARATE" : "YOUR LOCAL ACCOUNT / YOUR ENVIRONMENT"; color: "#839ba8"; font.pixelSize: 16; font.family: root.typeface }
         Rectangle { x: 96; y: 972; width: 1728; height: 2; color: "#263b48" }
         Row {
             x: 96
