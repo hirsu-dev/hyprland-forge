@@ -100,6 +100,16 @@ assert 0 < root.property("reveal") < 1, "The intro must animate through intermed
 assert view.grabWindow().save(str(results / "login-transition.png"))
 QTest.qWait(800)
 assert root.property("reveal") == 1
+region = view.grabWindow().rect()
+region.setLeft(region.width() // 2)
+moving = view.grabWindow().copy(region)
+QTest.qWait(240)
+assert moving != view.grabWindow().copy(region), "Optical tracers must animate"
+root.setProperty("motion", False)
+QTest.qWait(120)
+still = view.grabWindow().copy(region)
+QTest.qWait(240)
+assert still == view.grabWindow().copy(region), "Reduced motion must leave the optical field static"
 view.close()
 command = ["sddm-greeter-qt6", "--test-mode", "--theme", str(Path("configs/boot/sddm").resolve())]
 try:
