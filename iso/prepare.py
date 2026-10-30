@@ -23,12 +23,13 @@ def prepare(source, profile, repository):
         stream.write(f'\niso_name="forge-experimental"\niso_label="FORGE_{stamp}"\niso_publisher="Hirsu <https://github.com/hirsu-dev/hyprland-forge>"\niso_application="Forge Graphical Installer"\niso_version="{stamp}"\nfile_permissions+=(\n["/usr/local/bin/forge-live-session"]="0:0:0755"\n)\n')
     destination = root / "opt/hyprland-forge"
     destination.mkdir(parents=True)
-    archive = subprocess.run(["git", "-C", str(source), "archive", "HEAD"], check=True, capture_output=True).stdout
+    git = ['git', '-c', 'safe.directory=' + str(source), '-C', str(source)]
+    archive = subprocess.run([*git, "archive", "HEAD"], check=True, capture_output=True).stdout
     import io
     import tarfile
     with tarfile.open(fileobj=io.BytesIO(archive)) as stream:
         stream.extractall(destination, filter="data")
-    revision = subprocess.run(["git", "-C", str(source), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+    revision = subprocess.run([*git, "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
     manifest = json.loads((source / 'project.json').read_text())
     (destination / "build.json").write_text(json.dumps({"name": manifest['name'], "version": manifest['release'], "revision": revision, "channel": "experimental-iso", "hardware_validation": "pending-on-device"}) + "\n")
     sys.path.insert(0, str(source))

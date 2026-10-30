@@ -8,3 +8,7 @@ __pycache__/
 *.key
 configs/boot/native/target/
 test-results/
+iso/calamares/src/
+iso/calamares/pkg/
+iso/calamares/*.pkg.tar.zst
+iso/calamares/calamares-*.tar.gz

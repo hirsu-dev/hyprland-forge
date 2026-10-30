@@ -2,9 +2,9 @@
 set -euo pipefail
 [[ $(uname -s) == Linux && $EUID == 0 && -f /etc/arch-release ]] || { printf '%s\n' 'Build the ISO as root inside an Arch Linux build environment.' >&2; exit 1; }
 [[ $# == 3 ]] || { printf '%s\n' 'Usage: bash iso/build.sh CALAMARES_PACKAGE NEW_WORK_DIRECTORY OUTPUT_DIRECTORY' >&2; exit 1; }
-forge_source=$(git rev-parse --show-toplevel)
+forge_source=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python -c 'import json,sys; state=json.load(open(sys.argv[1])); sys.exit(0 if state.get("build_enabled") is True else "The experimental ISO is incomplete. Building is disabled until its installer and live session are verified.")' "$forge_source/iso/state.json"
-[[ -z $(git -C "$forge_source" status --porcelain) ]] || { printf '%s\n' 'Commit the ISO source before building.' >&2; exit 1; }
+[[ -z $(git -c safe.directory="$forge_source" -C "$forge_source" status --porcelain) ]] || { printf '%s\n' 'Commit the ISO source before building.' >&2; exit 1; }
 forge_package=$(realpath -- "$1")
 forge_work=$(realpath -m -- "$2")
 forge_output=$(realpath -m -- "$3")

@@ -15,6 +15,28 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_desktop_installation_records_deployment_and_protected_boot_entry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'etc').mkdir()
+            (root / 'etc/passwd').write_text('forge:x:1000:1000:Forge:/home/forge:/bin/bash\n')
+            home = root / 'home/forge'
+            home.mkdir(parents=True)
+            settings = {'gaming': True, 'motion': False, 'apps': ['brave', 'equicord']}
+            device = {'virtual': 'qemu', 'gpus': set(), 'cpu': ''}
+            with patch('forge.iso_install.subprocess.run') as run, patch('forge.iso_install.os.chown', create=True) as chown, patch('forge.iso_install.find_windows', return_value=['ABCD-1234']), patch('forge.iso_assets.install_boot_assets'):
+                finish(root, ROOT, settings, device, 'forge')
+            state = json.loads((home / '.local/state/hyprland-forge/setup.json').read_text())
+            self.assertEqual(state['profile'], 'virtual-machine')
+            self.assertEqual(state['apps'], settings['apps'])
+            self.assertFalse(json.loads((home / '.config/forge/interface.json').read_text())['motion'])
+            self.assertTrue((home / '.local/bin/forge-session').is_file())
+            self.assertTrue((home / '.local/state/hyprland-forge/transactions' / state['transaction'] / 'files.json').is_file())
+            self.assertIn('ABCD-1234', (root / 'etc/grub.d/41_forge_windows').read_text())
+            self.assertTrue(all(call.args[1:] == (1000, 1000) for call in chown.call_args_list))
+            self.assertTrue(all(str(path).startswith(str(root)) for call in chown.call_args_list for path in call.args[:1]))
+            self.assertTrue(all(call.args[0][:3] == ['systemctl', '--root', str(root)] for call in run.call_args_list))
+
     def test_intel_iso_upgrade_preserves_matching_driver_selection(self):
         plan = {'stages': ['hardware'], 'packages': ['amd-ucode', 'nvidia-open-dkms', 'nvidia-utils', 'vulkan-radeon', 'mesa']}
         device = {'gpus': [{'vendor': '0x8086'}], 'kernels': ['linux'], 'secure_boot': False, 'cpu': 'intel'}
