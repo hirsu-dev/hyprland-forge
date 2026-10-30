@@ -219,7 +219,7 @@ def finish(root, source, settings, device, username, keyboard=None):
     subprocess.run(['systemctl', '--root', str(root), 'set-default', 'graphical.target'], check=True)
     atomic_write(root / 'etc/grub.d/41_forge_windows', windows_menu(find_windows()).encode(), 0o755)
     from .iso_assets import install_boot_assets
-    install_boot_assets(root, source)
+    install_boot_assets(root, source, settings['motion'])
     write_json(root / 'var/lib/hyprland-forge/iso-install.json', {'phase': 'desktop-complete', 'release': manifest['release'], 'username': username, 'settings': settings, 'keyboard': keyboard})
 
 

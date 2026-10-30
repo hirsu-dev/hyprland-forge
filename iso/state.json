@@ -7,7 +7,8 @@
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
     "sha256": "144cbbf6bdcebfb21685950db4f0777218519df095f62f4aa392f28348110d18",
-    "build_verified": false
+    "build_verified": true,
+    "verified_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41009225954"
   },
   "prepared": [
     "archiso-profile-generator",
@@ -15,20 +16,37 @@
     "graphical-wizard-module-sequence",
     "explicit-partition-confirmation",
     "separate-Forge-EFI-entry",
-    "GRUB-OS-menu-configuration"
+    "GRUB-OS-menu-configuration",
+    "guarded-base-and-desktop-installation-jobs",
+    "animated-Qt-welcome-and-optional-app-picker",
+    "Plymouth-startup-and-SDDM-login-themes",
+    "keyboard-selection-persistence",
+    "automatic-hardware-profile-for-desktop-upgrades",
+    "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "validate-upstream-module-configuration-and-package-build",
-    "build-ISO-in-isolated-Arch-CI-environment",
+    "inspect-latest-experimental-iso-image-build-and-QEMU-captures",
     "qualify-live-boot-installation-Windows-preservation-and-OS-selection-in-VM",
-    "qualify-selected-native-and-Flatpak-app-installation",
-    "integrate-generic-hardware-profile-with-desktop-upgrades"
+    "qualify-selected-native-and-Flatpak-app-installation"
   ],
   "qualification": {
     "iso_built": false,
     "iso_booted": false,
     "installer_executed": false,
     "windows_dual_boot_tested": false,
-    "physical_hardware_tested": false
+    "physical_hardware_tested": false,
+    "graphical_installer_loaded": true,
+    "graphical_installer_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41009967111",
+    "login_theme_rendered_in_test_mode": true,
+    "login_theme_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41010146250",
+    "password_authentication_tested": false,
+    "last_full_local_tests": 252,
+    "latest_focused_installation_tests": 16
+  },
+  "optional_apps": "forge/iso_apps.py",
+  "network": "required-for-online-package-installation",
+  "experimental_native_picker": {
+    "branch": "codex/boot-experience",
+    "integrated": false
   }
 }

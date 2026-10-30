@@ -46,8 +46,9 @@ class IsoInstallationTests(unittest.TestCase):
             home.mkdir(parents=True)
             settings = {'gaming': True, 'motion': False, 'apps': ['brave', 'equicord']}
             device = {'virtual': 'qemu', 'gpus': set(), 'cpu': ''}
-            with patch('forge.iso_install.subprocess.run') as run, patch('forge.iso_install.os.chown', create=True) as chown, patch('forge.iso_install.find_windows', return_value=['ABCD-1234']), patch('forge.iso_assets.install_boot_assets'):
+            with patch('forge.iso_install.subprocess.run') as run, patch('forge.iso_install.os.chown', create=True) as chown, patch('forge.iso_install.find_windows', return_value=['ABCD-1234']), patch('forge.iso_assets.install_boot_assets') as boot_assets:
                 finish(root, ROOT, settings, device, 'forge', keyboard_settings('fr', 'oss'))
+            boot_assets.assert_called_once_with(root, ROOT, False)
             state = json.loads((home / '.local/state/hyprland-forge/setup.json').read_text())
             self.assertEqual(state['profile'], 'virtual-machine')
             self.assertEqual(state['apps'], settings['apps'])
