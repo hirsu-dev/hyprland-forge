@@ -55,8 +55,13 @@ class SessionTests(unittest.TestCase):
                     time.sleep(0.05)
                 self.assertNotEqual(int((root / "quickshell.pid").read_text()), previous)
                 self.assertFalse(self.running(child))
-                status = json.loads((root / "hyprland-forge-session.json").read_text())
-                shell = next(item for item in status["components"] if item["name"] == "shell")
+                while True:
+                    status = json.loads((root / "hyprland-forge-session.json").read_text())
+                    shell = next(item for item in status["components"] if item["name"] == "shell")
+                    if shell['restarts'] >= 1 and shell['running'] or time.monotonic() >= deadline:
+                        break
+                    self.assertIsNone(process.poll())
+                    time.sleep(0.05)
                 self.assertEqual(shell["restarts"], 1)
                 self.assertTrue(shell["running"])
                 child = int((root / "child-process").read_text())
