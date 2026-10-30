@@ -17,7 +17,7 @@ def prepare(source, profile, repository):
     with (profile / "pacman.conf").open("a") as stream:
         stream.write(f"\n[forge]\nSigLevel = Optional\nServer = file://{repository}\n")
     packages = set((profile / "packages.x86_64").read_text().splitlines())
-    packages.update("calamares xorg-server xorg-xinit openbox pyside6 qt6-wayland qt6-svg networkmanager network-manager-applet nm-connection-editor python-yaml arch-install-scripts rsync grub os-prober efibootmgr gptfdisk dosfstools btrfs-progs e2fsprogs squashfs-tools ttf-jetbrains-mono-nerd noto-fonts plymouth python-pillow".split())
+    packages.update("calamares xorg-server xorg-xinit xorg-xset openbox pyside6 qt6-wayland qt6-svg networkmanager network-manager-applet nm-connection-editor python-yaml arch-install-scripts rsync grub os-prober efibootmgr gptfdisk dosfstools btrfs-progs e2fsprogs squashfs-tools ttf-jetbrains-mono-nerd noto-fonts plymouth python-pillow".split())
     (profile / "packages.x86_64").write_text("\n".join(sorted(packages)) + "\n")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     with (profile / "profiledef.sh").open("a") as stream:

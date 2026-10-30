@@ -4,5 +4,7 @@ set -euo pipefail
 export PYTHONPATH=/opt/hyprland-forge
 export QT_QUICK_CONTROLS_STYLE=Basic
 export QT_QUICK_BACKEND=software
+xset s off
+xset -dpms || true
 openbox &
-exec python -m forge.iso_welcome
+exec systemd-inhibit --what=sleep:idle:handle-lid-switch --mode=block --who='Forge Setup' --why='Installing the operating system' python -m forge.iso_welcome
