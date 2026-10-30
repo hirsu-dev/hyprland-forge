@@ -3,9 +3,9 @@
   "status": "VM-qualified-final-image-verification-pending",
   "build_enabled": true,
   "disk_execution_enabled": false,
-  "last_built_run": 41048861021,
-  "last_built_artifact": 12973488811,
-  "last_built_revision": "b0f252b",
+  "last_built_run": 41083930693,
+  "last_built_artifact": 12990233994,
+  "last_built_revision": "50c6b50",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
@@ -41,8 +41,8 @@
     "boot_environment": "VirtualBox-7.2.20-UEFI-2304MiB-VMSVGA-software-Qt",
     "live_welcome_rendered": true,
     "live_graphical_installer_opened": true,
-    "local_iso_sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f",
-    "download_integrity": "independent-ZIP-CRC-and-SHA256-passed; replaced-failing-CI-extraction",
+    "local_iso_sha256": null,
+    "download_integrity": "50c6b50-local-download-unapproved; transfer-limit-HTTP503-before-final-ZIP-CRC-and-SHA256; partial-file-removed",
     "ci_boot_harness": "standard-VGA-UEFI-boot-passed-and-welcome-screenshot-reviewed",
     "ci_boot_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41015592584",
     "ci_live_welcome_rendered": true,
@@ -87,7 +87,12 @@
       "native_Qt_controls": "passed-first-login-default-user-session-popup-duplicate-submit-password-clearing-motion-and-static-mode",
       "installed_VM_authentication": "wrong-password-rejected-correct-password-opened-Hyprland",
       "physical_hardware_tested": false
-    }
+    },
+    "previous_local_iso": {
+      "revision": "b0f252b",
+      "sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f"
+    },
+    "final_live_check": "pending-expanded-QEMU-network-screen-inhibitor-installer-and-service-checks"
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",

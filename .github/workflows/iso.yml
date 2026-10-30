@@ -79,7 +79,7 @@ jobs:
           compression-level: 0
           retention-days: 7
       - name: Boot the ISO in a disposable UEFI VM
-        run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-boot
+        run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-boot --expected-revision "${{ github.sha }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -99,13 +99,24 @@ jobs:
       - run: pacman -Syu --noconfirm --needed git python python-pillow qemu-system-x86 qemu-img qemu-hw-display-virtio-vga edk2-ovmf
       - uses: actions/checkout@v4
       - id: source
-        run: python -c 'import json,os; run=json.load(open("iso/state.json"))["last_built_run"]; assert type(run) is int and run>0; open(os.environ["GITHUB_OUTPUT"],"a").write("run="+str(run)+"\n")'
+        run: |
+          python - <<'PY'
+          import json, os, re
+          state = json.load(open('iso/state.json'))
+          run, revision = state['last_built_run'], state['last_built_revision']
+          assert type(run) is int and run > 0
+          assert re.fullmatch('[a-f0-9]{7,40}', revision)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('run=' + str(run) + '\nrevision=' + revision + '\n')
+          PY
       - run: python iso/fetch_artifact.py "$FORGE_SOURCE_RUN" /tmp/forge-existing-iso
         env:
           GH_TOKEN: ${{ github.token }}
           FORGE_SOURCE_RUN: ${{ steps.source.outputs.run }}
       - run: cd /tmp/forge-existing-iso && sha256sum -c SHA256SUMS
-      - run: python iso/boot_vm.py /tmp/forge-existing-iso/*.iso /tmp/forge-iso-boot
+      - run: python iso/boot_vm.py /tmp/forge-existing-iso/*.iso /tmp/forge-iso-boot --expected-revision "$FORGE_SOURCE_REVISION"
+        env:
+          FORGE_SOURCE_REVISION: ${{ steps.source.outputs.revision }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
