@@ -142,6 +142,26 @@ class IsoInstallationTests(unittest.TestCase):
                 guard(ROOT)
             run.assert_not_called()
 
+    def test_enabled_physical_installer_keeps_secure_boot_and_live_UEFI_guards(self):
+        settings = {'gaming': True, 'motion': True, 'apps': ['brave', 'equicord']}
+        for payload, permitted in ((b'\x07\0\0\0\0', True), (b'\x07\0\0\0\x01', False), (b'', False)):
+            with self.subTest(payload=payload), patch('forge.iso_install.platform.system', return_value='Linux'), patch('forge.iso_install.os.geteuid', return_value=0, create=True), patch('forge.iso_install.Path.is_file', return_value=True), patch('forge.iso_install.Path.is_mount', return_value=True), patch('forge.iso_install.Path.is_dir', return_value=True), patch('forge.iso_install.Path.glob', return_value=[SimpleNamespace(read_bytes=lambda: payload)]), patch('forge.iso_install.Path.read_text', return_value='{"disk_execution_enabled": true}'), patch('forge.iso_install.options', return_value=settings) as selected, patch('forge.iso_install.subprocess.run') as run:
+                if permitted:
+                    self.assertEqual(guard(ROOT), settings)
+                    selected.assert_called_once_with()
+                else:
+                    with self.assertRaisesRegex(ForgeError, 'Secure Boot'):
+                        guard(ROOT)
+                    selected.assert_not_called()
+                run.assert_not_called()
+
+    def test_enabled_physical_installer_refuses_legacy_boot_before_selection(self):
+        with patch('forge.iso_install.platform.system', return_value='Linux'), patch('forge.iso_install.os.geteuid', return_value=0, create=True), patch('forge.iso_install.Path.is_file', return_value=True), patch('forge.iso_install.Path.is_mount', return_value=True), patch('forge.iso_install.Path.is_dir', return_value=False), patch('forge.iso_install.options') as selected, patch('forge.iso_install.subprocess.run') as run:
+            with self.assertRaisesRegex(ForgeError, 'UEFI'):
+                guard(ROOT)
+            selected.assert_not_called()
+            run.assert_not_called()
+
     def test_target_rejects_host_paths_and_unmounted_directories(self):
         for value in (None, '/', '/home/forge', '/tmp', '/tmp/../', '/tmp/calamares-root-nonexistent', 'C:/Windows', '/mnt/windows'):
             with self.subTest(value=value), self.assertRaises(ForgeError):

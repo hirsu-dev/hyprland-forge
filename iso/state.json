@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "status": "VM-qualified-final-image-verification-pending",
+  "status": "hardware-test-candidate-verification-pending",
   "build_enabled": true,
-  "disk_execution_enabled": false,
+  "disk_execution_enabled": true,
   "last_built_run": 41089238948,
   "last_built_artifact": 12994520093,
   "last_built_revision": "219f859",
@@ -28,8 +28,8 @@
     "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "verify-final-rebuilt-ISO-live-awake-and-session-choices",
-    "prepare-explicitly-labelled-hardware-pilot-after-final-image-check",
+    "finish-independent-installer-readiness-check",
+    "verify-installable-hardware-test-ISO-and-publish-prerelease",
     "complete-physical-laptop-and-real-Windows-dual-boot-qualification"
   ],
   "qualification": {
@@ -92,7 +92,9 @@
       "revision": "b0f252b",
       "sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f"
     },
-    "final_live_check": "219f859-in-guest-boot-network-inhibitor-and-installer-checks-passed; full-artifact-reverification-and-installer-navigation-check-pending"
+    "final_live_check": "219f859-in-guest-boot-network-inhibitor-and-installer-checks-passed; full-artifact-reverification-and-installer-navigation-check-pending",
+    "physical_installation": "enabled-for-explicitly-reviewed-Calamares-installation; hardware-runtime-remains-unqualified",
+    "installer_readiness_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41091611132"
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",
@@ -103,5 +105,6 @@
     "motion": "Redline-split-wordmark-sparks-orbital-tracers-reactive-password-reversible-selection-and-diagonal-handoff",
     "uefi_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41083471859",
     "physical_activation": false
-  }
+  },
+  "release_channel": "hardware-test-prerelease"
 }

@@ -9,10 +9,10 @@ navigation: widget
 strings:
   productName: Forge
   shortProductName: Forge
-  version: Experimental
-  shortVersion: Preview
-  versionedName: Forge Experimental
-  shortVersionedName: Forge Preview
+  version: Hardware Test
+  shortVersion: RC1
+  versionedName: Forge Hardware Test
+  shortVersionedName: Forge RC1
   bootloaderEntryName: Forge
   productUrl: https://github.com/hirsu-dev/hyprland-forge
   supportUrl: https://github.com/hirsu-dev/hyprland-forge/issues
