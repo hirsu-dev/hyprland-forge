@@ -1,0 +1,32 @@
+pkgname=calamares
+pkgver=3.4.3
+pkgrel=1
+pkgdesc='Graphical installation framework for the experimental Forge ISO'
+arch=('x86_64')
+url='https://calamares.codeberg.page/'
+license=('GPL-3.0-or-later')
+depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'yaml-cpp' 'kcoreaddons' 'kconfig' 'kpmcore' 'polkit-qt6' 'python' 'python-yaml' 'libpwquality' 'icu' 'hwinfo')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'boost')
+source=("https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz")
+sha256sums=('144cbbf6bdcebfb21685950db4f0777218519df095f62f4aa392f28348110d18')
+
+build() {
+    local module skip=''
+    for module in "$srcdir/calamares-$pkgver/src/modules/"*; do
+        case "${module##*/}" in
+            welcome|locale|keyboard|partition|users|summary|finished|mount|machineid|localecfg|fstab|initcpiocfg|initcpio|networkcfg|hwclock|grubcfg|bootloader|umount) ;;
+            *) skip+="${module##*/};" ;;
+        esac
+    done
+    cmake -S "calamares-$pkgver" -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+        -DWITH_QT6=ON -DINSTALL_CONFIG=ON -DBUILD_TESTING=OFF \
+        -DBUILD_SCHEMA_TESTING=OFF -DBUILD_CRASH_REPORTING=OFF -DSKIP_MODULES="$skip"
+    cmake --build build --parallel 2
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+    install -Dm644 "$srcdir/calamares-$pkgver.tar.gz" "$pkgdir/usr/share/hyprland-forge/sources/calamares-$pkgver.tar.gz"
+    install -Dm644 "$startdir/PKGBUILD" "$pkgdir/usr/share/hyprland-forge/sources/PKGBUILD"
+}

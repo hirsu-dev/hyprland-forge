@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ -f /etc/forge-live && -d /run/archiso ]] || exit 1
+export PYTHONPATH=/opt/hyprland-forge
+export QT_QUICK_CONTROLS_STYLE=Basic
+openbox &
+exec python -m forge.iso_welcome
