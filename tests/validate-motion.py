@@ -36,13 +36,16 @@ try:
     for name, command in (("launcher", "launcher"), ("controls", "controls"), ("settings", "settings"), ("power", "power"), ("overview", "overview"), ("hub", "hub")):
         ipc("forge", "close")
         wait("forgeMotion", lambda states: not any(state["shown"] for state in states))
+        before = next(state for state in json.loads(ipc("forgeMotion", "status")) if state["name"] == name)
         ipc("forge", command, *(["hardware"] if name == "hub" else []))
-        wait("forgeMotion", lambda states: any(state["name"] == name and state["opened"] and state["shown"] and state["moving"] and 0 < state["reveal"] < 1 for state in states))
-        wait("forgeMotion", lambda states: any(state["name"] == name and state["reveal"] == 1 and not state["moving"] for state in states))
+        opened = wait("forgeMotion", lambda states: any(state["name"] == name and state["opened"] and state["shown"] and state["reveal"] == 1 and not state["moving"] for state in states))
+        opened = next(state for state in opened if state["name"] == name)
+        assert opened["entryFrames"] > before["entryFrames"], opened
         ipc("forge", "close")
-        closing = wait("forgeMotion", lambda states: not any(state["focusable"] for state in states))
-        assert any(state["name"] == name and state["shown"] and state["moving"] and 0 < state["reveal"] < 1 for state in closing), closing
-        wait("forgeMotion", lambda states: not any(state["shown"] or state["moving"] for state in states))
+        assert not any(state["focusable"] for state in json.loads(ipc("forgeMotion", "status")))
+        closed = wait("forgeMotion", lambda states: not any(state["shown"] or state["moving"] for state in states))
+        closed = next(state for state in closed if state["name"] == name)
+        assert closed["exitFrames"] > opened["exitFrames"], closed
     for _ in range(3):
         ipc("forge", "launcher")
         ipc("forge", "close")

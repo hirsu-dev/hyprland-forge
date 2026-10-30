@@ -5,7 +5,15 @@ PanelWindow {
     id: root
     property bool opened: false
     property real reveal: opened ? 1 : 0
+    property int entryFrames: 0
+    property int exitFrames: 0
     readonly property bool transitioning: travel.running
+    onRevealChanged: {
+        if (reveal > 0 && reveal < 1) {
+            if (opened) entryFrames++;
+            else exitFrames++;
+        }
+    }
     visible: opened || reveal > 0.001
     focusable: opened
     color: "transparent"
@@ -16,5 +24,5 @@ PanelWindow {
             easing.type: root.opened ? Easing.OutQuint : Easing.InCubic
         }
     }
-    function motionState(name) { return { name: name, opened: opened, shown: visible, reveal: reveal, moving: transitioning, focusable: focusable } }
+    function motionState(name) { return { name: name, opened: opened, shown: visible, reveal: reveal, moving: transitioning, focusable: focusable, entryFrames: entryFrames, exitFrames: exitFrames } }
 }
