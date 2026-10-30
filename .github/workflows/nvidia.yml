@@ -1,0 +1,28 @@
+name: nvidia-driver-build
+on:
+  push:
+    branches: [ main, codex/graphical-iso ]
+    paths: [ 'forge/hardware.py', 'forge/iso_install.py', '.github/workflows/nvidia.yml', 'tests/validate-nvidia-build.py' ]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  driver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    container: archlinux:base-devel
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python linux linux-headers dkms
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p /etc/dkms/framework.conf.d
+          printf 'parallel_jobs=2\nmodprobe_on_install=no\n' > /etc/dkms/framework.conf.d/forge-ci.conf
+          pacman -S --noconfirm --needed nvidia-open-dkms nvidia-utils nvidia-prime egl-wayland
+      - run: python tests/validate-nvidia-build.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nvidia-driver-build
+          path: |
+            test-results/nvidia-driver.json
+            /var/lib/dkms/*/*/build/make.log

@@ -25,7 +25,8 @@ def render_assets(destination):
     background.save(destination / 'background.png')
     logo = Image.new('RGBA', (440, 180))
     draw = ImageDraw.Draw(logo)
-    draw.text((20, 45), 'FORGE_', font=font, fill='#b4d9de')
+    left, top, right, bottom = draw.textbbox((0, 0), 'FORGE_', font=font)
+    draw.text(((440 - right + left) / 2 - left, (180 - bottom + top) / 2 - top), 'FORGE_', font=font, fill='#b4d9de')
     logo.save(destination / 'logo.png')
     Image.new('RGBA', (100, 3), '#94dce5').save(destination / 'beam.png')
 

@@ -21,7 +21,16 @@ output = source / "test-results/qualification"
 output.mkdir(parents=True, exist_ok=True)
 processes = []
 classes = {"firefox", "thunar", "mpv"}
-report = {"scope": "virtual-machine", "seconds_requested": args.seconds, "samples": [], "physical_hardware_qualified": False, "result": "running"}
+report = {"scope": "virtual-machine", "boot_id": Path('/proc/sys/kernel/random/boot_id').read_text().strip(), "cpus": os.cpu_count(), "seconds_requested": args.seconds, "samples": [], "physical_hardware_qualified": False, "result": "running"}
+
+
+def checkpoint():
+    temporary = output / 'soak.json.partial'
+    temporary.write_text(json.dumps(report, indent=2) + '\n')
+    temporary.replace(output / 'soak.json')
+
+
+checkpoint()
 
 
 def clients():
@@ -42,8 +51,9 @@ def stop_apps():
                 process.wait(timeout=5)
 
 
-baseline = {(item["address"], item["pid"]) for item in clients()}
+baseline = set()
 try:
+    baseline = {(item["address"], item["pid"]) for item in clients()}
     with tempfile.TemporaryDirectory(prefix="forge-session-vm-") as directory:
         root = Path(directory)
         profile = root / "browser"
@@ -76,6 +86,7 @@ try:
                 available = next(int(line.split()[1]) for line in Path("/proc/meminfo").read_text().splitlines() if line.startswith("MemAvailable:"))
                 elapsed = time.monotonic() - started
                 report["samples"].append({"seconds": round(elapsed, 1), "memory_available_kib": available, "applications": sorted(present)})
+                checkpoint()
                 if elapsed >= args.seconds / 2 and not recovered:
                     subprocess.run([sys.executable, str(source / "tests/validate-supervision-vm.py"), "--disposable-vm"], stdout=errors, stderr=subprocess.STDOUT, check=True, timeout=60)
                     recovered = True
@@ -83,10 +94,14 @@ try:
             screenshot = output / "multitasking.png"
             subprocess.run(["grim", str(screenshot)], check=True, capture_output=True, timeout=15)
             report.update(result="passed", seconds_observed=round(time.monotonic() - started, 1), recovery_during_multitasking=recovered, minimum_memory_available_kib=min(sample["memory_available_kib"] for sample in report["samples"]))
-            stop_apps()
 finally:
-    stop_apps()
-    if report["result"] == "running":
-        report["result"] = "failed"
-    (output / "soak.json").write_text(json.dumps(report, indent=2) + "\n")
+    try:
+        stop_apps()
+    except BaseException as error:
+        report.update(result='failed', cleanup_error=str(error))
+        raise
+    finally:
+        if report["result"] == "running":
+            report["result"] = "failed"
+        checkpoint()
 print(json.dumps(report, indent=2))
