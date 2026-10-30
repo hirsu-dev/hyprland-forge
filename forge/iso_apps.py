@@ -3,7 +3,7 @@ from .manifest import ForgeError
 
 CATALOGUE = (
     {'id': 'brave', 'name': 'Brave', 'description': 'Browser · Flatpak', 'flatpak': 'com.brave.Browser'},
-    {'id': 'equicord', 'name': 'Discord + Equicord', 'description': 'Equibop · Discord client with Equicord included', 'flatpak': 'io.github.equicord.equibop'},
+    {'id': 'equicord', 'name': 'Discord + Equicord', 'description': 'Equibop · Discord client with Equicord included', 'flatpak': 'org.equicord.equibop'},
     {'id': 'discord', 'name': 'Discord', 'description': 'Official desktop client', 'package': 'discord'},
     {'id': 'spotify', 'name': 'Spotify', 'description': 'Music · Flatpak', 'flatpak': 'com.spotify.Client'},
     {'id': 'obs', 'name': 'OBS Studio', 'description': 'Recording and streaming', 'package': 'obs-studio'},

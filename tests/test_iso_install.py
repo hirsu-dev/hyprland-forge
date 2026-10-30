@@ -181,7 +181,7 @@ class IsoInstallationTests(unittest.TestCase):
 
     def test_app_installation_uses_only_catalogue_commands(self):
         commands = flatpak_commands(['brave', 'equicord', 'spotify'])
-        self.assertEqual(commands[-1][-3:], ['com.brave.Browser', 'io.github.equicord.equibop', 'com.spotify.Client'])
+        self.assertEqual(commands[-1][-3:], ['com.brave.Browser', 'org.equicord.equibop', 'com.spotify.Client'])
         self.assertEqual(flatpak_commands(['obs']), [])
         for values in (['brave; touch /tmp/bad'], ['https://example.com/unknown.flatpakref'], ['discord', 'equicord']):
             with self.assertRaises(ForgeError):

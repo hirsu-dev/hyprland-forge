@@ -3,9 +3,9 @@
   "status": "in-progress",
   "build_enabled": true,
   "disk_execution_enabled": false,
-  "last_built_run": 41011986956,
-  "last_built_artifact": 12957707627,
-  "last_built_revision": "3f19800",
+  "last_built_run": 41048861021,
+  "last_built_artifact": 12973488811,
+  "last_built_revision": "b0f252b",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
@@ -28,9 +28,9 @@
     "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "finish-guided-installation-and-reboot-on-disposable-VirtualBox-disk",
-    "qualify-live-boot-installation-Windows-preservation-and-OS-selection-in-VM",
-    "qualify-selected-native-and-Flatpak-app-installation"
+    "qualify-clean-installed-reboot-login-and-desktop-on-VirtualBox-GUI-with-3D",
+    "repeat-monitor-hotplug-regression-after-3D-disabled-failure",
+    "verify-Brave-and-Equibop-launch-and-final-live-awake-build"
   ],
   "qualification": {
     "iso_built": true,
@@ -41,14 +41,19 @@
     "boot_environment": "VirtualBox-7.2.20-UEFI-2304MiB-VMSVGA-software-Qt",
     "live_welcome_rendered": true,
     "live_graphical_installer_opened": true,
-    "local_iso_sha256": "7c8e8b6eaebaefdeb8085de56cf5f0d04e1df36b09d63ff0b168505925ad4840",
+    "local_iso_sha256": "feb602b6a593e9ab16186d5b22b1a5613841d0e041e8edf118636a75c1d1b43f",
     "download_integrity": "independent-ZIP-CRC-and-SHA256-passed; replaced-failing-CI-extraction",
     "ci_boot_harness": "standard-VGA-UEFI-boot-passed-and-welcome-screenshot-reviewed",
     "ci_boot_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41015592584",
     "ci_live_welcome_rendered": true,
-    "installer_executed": false,
+    "installer_executed": true,
     "installation_attempted": true,
-    "last_installation_result": "stopped-before-bootloader; mounted-EFI-detection-fixed-pending-clean-repeat",
+    "last_installation_result": "clean-guided-installation-succeeded-at-b0f252b; VM-only-authorization-in-live-overlay",
+    "foreign_partition_fixture_preserved": "three-original-FAT-MSR-NTFS-partitions-and-identities-byte-identical-after-installation",
+    "windows_menu_entry_generated": true,
+    "optional_app_installation_tested": ["com.brave.Browser", "org.equicord.equibop"],
+    "clean_installed_login_tested": false,
+    "diagnostic_desktop_regression": "runtime-recovery-lock-apps-system-controls-and-tiling-passed; virtual-monitor-add-failed-with-3D-disabled",
     "efi_fixture_test": "mounted-and-unmounted-FAT-EFI-sentinel-preserved; not-real-Windows-boot",
     "diagnostic_installed_boot": "passed-after-explicit-test-repair; clean-wizard-repeat-required",
     "windows_dual_boot_tested": false,
