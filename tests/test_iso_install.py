@@ -2,10 +2,11 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from forge.iso_apps import flatpak_commands, selection
-from forge.iso_install import base, finish, guard, keyboard_settings, mounted_target, options, package_plan, windows_menu
+from forge.iso_install import base, find_windows, finish, guard, keyboard_settings, mounted_target, options, package_plan, windows_menu
 from forge.manifest import ForgeError, load_manifest
 from forge.hardware import resolve_plan
 from forge.setup import with_gaming
@@ -16,6 +17,28 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_existing_efi_mount_is_inspected_without_remounting_or_writing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            loader = root / 'EFI/Microsoft/Boot/bootmgfw.efi'
+            loader.parent.mkdir(parents=True)
+            loader.write_bytes(b'windows-boot-sentinel')
+            node = {'path': '/dev/sda1', 'type': 'part', 'fstype': 'vfat', 'uuid': 'ABCD-1234', 'parttype': 'c12a7328-f81f-11d2-ba4b-00a0c93ec93b', 'mountpoints': [str(root)]}
+            tree = {'blockdevices': [{'type': 'disk', 'children': [node, {**node, 'fstype': 'ntfs', 'path': '/dev/sda3'}]}]}
+            with patch('forge.iso_install.Path.is_mount', return_value=True), patch('forge.iso_install.subprocess.run', return_value=SimpleNamespace(stdout=json.dumps(tree))) as run:
+                self.assertEqual(find_windows(), ['ABCD-1234'])
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(loader.read_bytes(), b'windows-boot-sentinel')
+            self.assertEqual(list(root.rglob('*')), [root / 'EFI', root / 'EFI/Microsoft', root / 'EFI/Microsoft/Boot', loader])
+
+    def test_unmounted_efi_is_opened_read_only_and_always_unmounted(self):
+        node = {'path': '/dev/sda1', 'type': 'part', 'fstype': 'vfat', 'uuid': 'ABCD-1234', 'parttype': 'c12a7328-f81f-11d2-ba4b-00a0c93ec93b', 'mountpoints': [None]}
+        tree = {'blockdevices': [node]}
+        with patch('forge.iso_install.Path.is_file', return_value=True), patch('forge.iso_install.subprocess.run', side_effect=[SimpleNamespace(stdout=json.dumps(tree)), SimpleNamespace(returncode=0), SimpleNamespace(returncode=0)]) as run:
+            self.assertEqual(find_windows(), ['ABCD-1234'])
+        self.assertEqual(run.call_args_list[1].args[0][:5], ['mount', '-o', 'ro,nosuid,nodev,noexec', '--', '/dev/sda1'])
+        self.assertEqual(run.call_args_list[2].args[0][:2], ['umount', '--'])
+
     def test_reduced_motion_is_applied_to_boot_and_login(self):
         try:
             import PIL

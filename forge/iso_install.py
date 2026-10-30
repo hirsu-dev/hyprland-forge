@@ -74,7 +74,7 @@ def hardware():
 def package_plan(manifest, device, gaming, apps=None):
     packages = set(make_plan(manifest, None)['packages'])
     packages.difference_update({'amd-ucode', 'nvidia-open-dkms', 'nvidia-utils', 'nvidia-prime', 'egl-wayland', 'vulkan-radeon'})
-    packages.update({'base', 'linux', 'linux-firmware', 'sudo', 'sddm', 'weston', 'ttf-dejavu', 'grub', 'efibootmgr', 'dosfstools', 'btrfs-progs', 'plymouth', 'python-pillow'})
+    packages.update({'base', 'linux', 'linux-firmware', 'sudo', 'sddm', 'weston', 'ttf-dejavu', 'grub', 'efibootmgr', 'dosfstools', 'btrfs-progs', 'plymouth', 'python-pillow', 'which'})
     virtual = bool(device['virtual'])
     if virtual:
         packages.add('vulkan-swrast')
@@ -111,7 +111,7 @@ def windows_menu(entries):
 
 
 def find_windows():
-    tree = json.loads(subprocess.run(['lsblk', '--json', '--paths', '--output', 'PATH,TYPE,FSTYPE,UUID,PARTTYPE'], check=True, capture_output=True, text=True).stdout)
+    tree = json.loads(subprocess.run(['lsblk', '--json', '--paths', '--output', 'PATH,TYPE,FSTYPE,UUID,PARTTYPE,MOUNTPOINTS'], check=True, capture_output=True, text=True).stdout)
     found = []
     def visit(nodes):
         for node in nodes:
@@ -123,10 +123,18 @@ def find_windows():
         device = node['path']
         if not re.fullmatch(r'/dev/[a-zA-Z0-9_/-]+', device):
             raise ForgeError('Unexpected EFI partition device.')
+        mounts = [Path(value) for value in node.get('mountpoints', []) if value]
+        if mounts:
+            for path in mounts:
+                if not path.is_absolute() or path.is_symlink() or not path.is_mount():
+                    raise ForgeError('An existing EFI mount could not be verified.')
+                if (path / 'EFI/Microsoft/Boot/bootmgfw.efi').is_file():
+                    found.append(node['uuid'])
+            continue
         with tempfile.TemporaryDirectory(prefix='forge-efi-') as directory:
             result = subprocess.run(['mount', '-o', 'ro,nosuid,nodev,noexec', '--', device, directory], capture_output=True, text=True)
             if result.returncode:
-                raise ForgeError('Could not inspect an EFI partition; Windows boot detection needs review.')
+                raise ForgeError('Could not inspect an EFI partition; Windows boot detection needs review. ' + result.stderr.strip()[:600])
             try:
                 if (Path(directory) / 'EFI/Microsoft/Boot/bootmgfw.efi').is_file():
                     found.append(node['uuid'])
