@@ -143,6 +143,7 @@ Rectangle {
                     contentItem: Text { text: sessionOption.text; font: sessionOption.font; color: root.ink; leftPadding: 12; verticalAlignment: Text.AlignVCenter }
                 }
                 popup: Popup {
+                    objectName: "forgeSessionPopup"
                     y: sessions.height + 4; width: sessions.width
                     implicitHeight: contentItem.implicitHeight + 8
                     padding: 4
