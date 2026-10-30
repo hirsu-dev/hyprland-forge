@@ -2,7 +2,7 @@ name: experimental-iso
 on:
   push:
     branches: [ codex/graphical-iso ]
-    paths: [ 'iso/**', 'forge/iso_*.py', 'tests/test_iso*.py', '.github/workflows/iso.yml' ]
+    paths: [ 'iso/**', 'forge/iso_*.py', 'tests/test_iso*.py', 'tests/validate-iso*.py', '.github/workflows/iso.yml' ]
   workflow_dispatch:
 permissions:
   contents: read
@@ -45,6 +45,8 @@ jobs:
           mkdir -p /opt
           ln -s "$PWD" /opt/hyprland-forge
           QT_QUICK_BACKEND=software xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- python tests/validate-iso-calamares.py
+      - name: Verify animated login and account controls
+        run: QT_QUICK_BACKEND=software QT_QUICK_CONTROLS_STYLE=Basic timeout 45 xvfb-run -a -s '-screen 0 1920x1080x24' python tests/validate-iso-login.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -53,6 +55,7 @@ jobs:
             iso/calamares/calamares-[0-9]*.pkg.tar.zst
             test-results/iso-*.png
             test-results/iso-*.log
+            test-results/iso-login/
   image:
     if: contains(github.event.head_commit.message, '[build-iso]')
     needs: installer
