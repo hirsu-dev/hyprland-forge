@@ -1,13 +1,16 @@
 import argparse
+import http.client
 import hashlib
 import io
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 
@@ -48,10 +51,36 @@ class RemoteArchive(io.RawIOBase):
         if size <= 0:
             return b''
         request = urllib.request.Request(self.url, headers={'Range': f'bytes={self.position}-{self.position + size - 1}'})
-        with urllib.request.urlopen(request, timeout=60) as response:
-            if response.status != 206 or not response.headers.get('Content-Range', '').startswith(f'bytes {self.position}-'):
-                raise ValueError('The artifact server returned an unexpected byte range')
-            data = response.read(size)
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(request, timeout=60) as response:
+                    expected = f'bytes {self.position}-{self.position + size - 1}/{self.size}'
+                    if response.status != 206 or response.headers.get('Content-Range') != expected:
+                        raise ValueError('The artifact server returned an unexpected byte range')
+                    data = response.read(size)
+                    if len(data) != size:
+                        raise http.client.IncompleteRead(data, size - len(data))
+                break
+            except (urllib.error.HTTPError, TimeoutError, ConnectionResetError, http.client.IncompleteRead) as error:
+                if isinstance(error, urllib.error.HTTPError) and error.code not in (429, 500, 502, 503, 504):
+                    raise
+                if attempt == 5:
+                    raise
+                delay = 2 ** attempt
+                if isinstance(error, urllib.error.HTTPError):
+                    header = error.headers.get('Retry-After', '0')
+                    try:
+                        requested = float(header)
+                    except (TypeError, ValueError):
+                        try:
+                            requested = parsedate_to_datetime(header).timestamp() - time.time()
+                        except (TypeError, ValueError, OverflowError):
+                            requested = 0
+                    delay = max(delay, requested)
+                if delay > 60:
+                    raise
+                print(f'Artifact transfer interrupted; retrying the same range in {delay:g}s', flush=True)
+                time.sleep(delay)
         self.position += len(data)
         return data
 
