@@ -53,6 +53,7 @@ def prepare(source, profile, repository):
         target = modules / name
         target.mkdir(parents=True)
         (target / "module.desc").write_text(f"---\ntype: job\nname: {name}\ninterface: python\nscript: main.py\n")
+        (modules / (name + '.conf')).write_text('---\n{}\n')
         action = {"forgeguard": "guard", "forgebase": "base", "forgefinish": "finish"}[name]
         (target / "main.py").write_text('import sys\nsys.path.insert(0, "/opt/hyprland-forge")\nfrom forge.iso_install import calamares_job\n\ndef run():\n    return calamares_job("' + action + '")\n')
     system = root / "etc/systemd/system"

@@ -102,10 +102,10 @@ def package_plan(manifest, device, gaming, apps=None):
 
 
 def windows_menu(entries):
+    if not isinstance(entries, list) or any(not isinstance(value, str) or not re.fullmatch(r'[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}', value) for value in entries):
+        raise ForgeError('Windows EFI filesystem identity is invalid.')
     lines = []
     for identifier in sorted(set(entries)):
-        if not re.fullmatch(r'[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}', identifier):
-            raise ForgeError('Windows EFI filesystem identity is invalid.')
         lines.extend(['menuentry "Windows Boot Manager" {', '    insmod part_gpt', '    insmod fat', f'    search --no-floppy --fs-uuid --set=root {identifier}', '    chainloader /EFI/Microsoft/Boot/bootmgfw.efi', '}'])
     return '#!/bin/sh\nexec cat <<\'FORGE_WINDOWS\'\n' + '\n'.join(lines) + '\nFORGE_WINDOWS\n'
 
@@ -191,9 +191,8 @@ def finish(root, source, settings, device, username):
         if path.is_symlink():
             raise ForgeError('Unexpected symlink in the new account home.')
         os.chown(path, uid, gid)
-    services = ['NetworkManager', 'bluetooth', 'power-profiles-daemon', 'fstrim.timer', 'sddm']
-    if device['virtual'] == 'oracle':
-        services.append('vboxservice')
+    from .hardware import profile_services
+    services = [*profile_services('virtual-machine', device['virtual']), 'sddm'] if device['virtual'] else ['NetworkManager', 'bluetooth', 'power-profiles-daemon', 'fstrim.timer', 'sddm']
     if not device['virtual'] and '0x10de' in device['gpus']:
         services.extend(['nvidia-suspend', 'nvidia-hibernate', 'nvidia-resume'])
     subprocess.run(['systemctl', '--root', str(root), 'enable', *services], check=True)
