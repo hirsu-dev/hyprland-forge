@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 
-def boot(image, output, seconds=240):
+def boot(image, output, seconds=240, memory=1536):
     image, output = image.resolve(), output.resolve()
     if not image.is_file() or image.suffix != '.iso' or output.exists():
         raise ValueError('Supply an ISO and a new directory for this disposable VM.')
@@ -20,9 +20,8 @@ def boot(image, output, seconds=240):
     shutil.copyfile(firmware.with_name(firmware.name.replace('CODE', 'VARS')), variables)
     disk = output / 'disposable.qcow2'
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', str(disk), '64G'], check=True)
-    accelerated = Path('/dev/kvm').exists()
-    command = ['qemu-system-x86_64', '-enable-kvm'] if accelerated else ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
-    command += ['-machine', 'q35', '-m', '3072', '-smp', '2', '-cpu', 'host' if accelerated else 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'virtio', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
+    command = ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
+    command += ['-machine', 'q35', '-m', str(memory), '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'virtio', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
     with (output / 'qemu.log').open('wb') as log:
         with subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT) as process:
             try:
@@ -33,14 +32,18 @@ def boot(image, output, seconds=240):
                         raise RuntimeError('The disposable VM could not start: ' + (output / 'qemu.log').read_text(errors='replace')[:2000])
                     time.sleep(0.1)
                 with socket.socket(socket.AF_UNIX) as connection:
-                    connection.settimeout(10)
+                    connection.settimeout(60)
                     connection.connect(str(monitor))
                     stream = connection.makefile('rwb', buffering=0)
-                    stream.readline()
+                    if not stream.readline():
+                        raise RuntimeError('The VM monitor closed before its greeting.')
                     def qmp(name, arguments=None):
                         stream.write((json.dumps({'execute': name, 'arguments': arguments or {}}) + '\n').encode())
                         while True:
-                            value = json.loads(stream.readline())
+                            line = stream.readline()
+                            if not line:
+                                raise RuntimeError('The VM monitor connection closed.')
+                            value = json.loads(line)
                             if 'error' in value:
                                 raise RuntimeError(str(value['error']))
                             if 'return' in value:
@@ -58,9 +61,19 @@ def boot(image, output, seconds=240):
                         with Image.open(target) as capture:
                             capture.save(target.with_suffix('.png'))
                         target.unlink()
-                    (output / 'result.json').write_text(json.dumps({'uefi_boot_observed_seconds': seconds, 'guest_status': qmp('query-status'), 'installation_executed': False, 'windows_dual_boot_tested': False}, indent=2))
+                    (output / 'result.json').write_text(json.dumps({'uefi_boot_observed_seconds': seconds, 'memory_mb': memory, 'acceleration': 'tcg', 'guest_status': qmp('query-status'), 'installation_executed': False, 'windows_dual_boot_tested': False}, indent=2))
                     qmp('quit')
                 process.wait(timeout=20)
+            except BaseException as error:
+                memory_info = {}
+                for name in ('memory.max', 'memory.events', 'memory.peak'):
+                    path = Path('/sys/fs/cgroup') / name
+                    if path.is_file():
+                        memory_info[name] = path.read_text()
+                data = {'error': str(error), 'qemu_returncode': process.poll(), 'memory_mb': memory, 'memory_info': memory_info}
+                (output / 'failure.json').write_text(json.dumps(data, indent=2))
+                print(json.dumps(data), flush=True)
+                raise
             finally:
                 if process.poll() is None:
                     process.terminate()
@@ -71,5 +84,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('image', type=Path)
     parser.add_argument('output', type=Path)
+    parser.add_argument('--memory', type=int, default=1536)
     args = parser.parse_args()
-    boot(args.image, args.output)
+    if not 1024 <= args.memory <= 8192:
+        parser.error('The test VM needs between 1024 and 8192 MiB of RAM.')
+    boot(args.image, args.output, memory=args.memory)

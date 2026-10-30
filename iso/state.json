@@ -3,6 +3,9 @@
   "status": "in-progress",
   "build_enabled": true,
   "disk_execution_enabled": false,
+  "last_built_run": 41011986956,
+  "last_built_artifact": 12957707627,
+  "last_built_revision": "3f19800",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",
