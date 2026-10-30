@@ -28,9 +28,9 @@
     "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "qualify-clean-installed-reboot-login-and-desktop-on-VirtualBox-GUI-with-3D",
-    "repeat-monitor-hotplug-regression-after-3D-disabled-failure",
-    "verify-Brave-and-Equibop-launch-and-final-live-awake-build"
+    "finish-extended-multitasking-retest-after-VirtualBox-SMP-soft-lockup",
+    "collect-serial-kernel-and-memory-evidence-in-one-vCPU-VM",
+    "verify-final-live-awake-build-and-default-accelerated-session"
   ],
   "qualification": {
     "iso_built": true,
@@ -52,8 +52,12 @@
     "foreign_partition_fixture_preserved": "three-original-FAT-MSR-NTFS-partitions-and-identities-byte-identical-after-installation",
     "windows_menu_entry_generated": true,
     "optional_app_installation_tested": ["com.brave.Browser", "org.equicord.equibop"],
-    "clean_installed_login_tested": false,
-    "diagnostic_desktop_regression": "runtime-recovery-lock-apps-system-controls-and-tiling-passed; virtual-monitor-add-failed-with-3D-disabled",
+    "clean_installed_login_tested": true,
+    "clean_installed_boot_animation_tested": true,
+    "desktop_regression": "all-12-suites-passed-after-default-accelerated-startup-fix-14100f9",
+    "optional_app_windows_tested": ["Brave-Arch-Linux-webpage", "Equibop-setup-window"],
+    "extended_multitasking": "failed-with-VirtualBox-two-vCPU-SMP-TLB-shootdown-soft-lockup-in-VBoxService; diagnostic-retest-pending",
+    "vm_filesystem_recovery": "journal-replayed-and-read-only-e2fsck-passed-after-forced-VM-shutdown",
     "efi_fixture_test": "mounted-and-unmounted-FAT-EFI-sentinel-preserved; not-real-Windows-boot",
     "diagnostic_installed_boot": "passed-after-explicit-test-repair; clean-wizard-repeat-required",
     "windows_dual_boot_tested": false,
