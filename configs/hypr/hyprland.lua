@@ -101,6 +101,8 @@ hl.on("hyprland.start", function() hl.exec_cmd("~/.local/bin/forge-session") end
 
 local colors = io.open(directory .. "forge/colors.lua", "r")
 if colors then colors:close(); dofile(directory .. "forge/colors.lua") end
+local installation = io.open(directory .. "forge/installation.lua", "r")
+if installation then installation:close(); dofile(directory .. "forge/installation.lua") end
 local preferences = io.open(directory .. "forge/preferences.lua", "r")
 if preferences then preferences:close(); dofile(directory .. "forge/preferences.lua") end
 local override = directory .. "user.lua"

@@ -160,7 +160,22 @@ def base(root, source, settings, device):
     write_json(root / 'var/lib/hyprland-forge/iso-install.json', {'phase': 'base-complete', 'settings': settings, 'packages': packages, 'hardware': {**device, 'gpus': sorted(device['gpus'])}})
 
 
-def finish(root, source, settings, device, username):
+def keyboard_settings(layout='us', variant='', additional='', additional_variant='', switcher=''):
+    values = (layout, variant, additional, additional_variant)
+    if any(not isinstance(value, str) or not re.fullmatch(r'[a-zA-Z0-9_-]*', value) for value in values) or not layout:
+        raise ForgeError('The chosen keyboard layout is invalid.')
+    if not isinstance(switcher, str) or not re.fullmatch(r'[a-zA-Z0-9_:,+-]*', switcher):
+        raise ForgeError('The keyboard layout switcher is invalid.')
+    result = {'kb_layout': layout, 'kb_variant': variant}
+    if additional:
+        result['kb_layout'] += ',' + additional
+        result['kb_variant'] += ',' + additional_variant
+    if switcher:
+        result['kb_options'] = switcher
+    return result
+
+
+def finish(root, source, settings, device, username, keyboard=None):
     if not isinstance(username, str) or not re.fullmatch(r'[a-z_][a-z0-9_-]{0,31}', username):
         raise ForgeError('The installed account is invalid.')
     users = [line.split(':') for line in (root / 'etc/passwd').read_text().splitlines() if line.split(':')[0] == username]
@@ -170,6 +185,8 @@ def finish(root, source, settings, device, username):
     home = root / 'home' / username
     if not home.is_dir() or home.is_symlink() or not home.resolve().is_relative_to(root):
         raise ForgeError('The account home directory is unsafe.')
+    if any(path.is_symlink() for path in home.rglob('*')):
+        raise ForgeError('The selected account home contains symlinks. Choose a fresh account home for this installation.')
     manifest = load_manifest(source)
     plan = make_plan(manifest, None)
     if device['virtual']:
@@ -187,6 +204,9 @@ def finish(root, source, settings, device, username):
     values = json.loads(interface.read_text())
     values['motion'] = settings['motion']
     write_json(interface, values)
+    from .desktop_settings import lua
+    keyboard = keyboard or keyboard_settings()
+    atomic_write(home / '.config/hypr/forge/installation.lua', ('hl.config(' + lua({'input': keyboard}) + ')\n').encode(), 0o644)
     for path in [home, *home.rglob('*')]:
         if path.is_symlink():
             raise ForgeError('Unexpected symlink in the new account home.')
@@ -200,7 +220,7 @@ def finish(root, source, settings, device, username):
     atomic_write(root / 'etc/grub.d/41_forge_windows', windows_menu(find_windows()).encode(), 0o755)
     from .iso_assets import install_boot_assets
     install_boot_assets(root, source)
-    write_json(root / 'var/lib/hyprland-forge/iso-install.json', {'phase': 'desktop-complete', 'release': manifest['release'], 'username': username, 'settings': settings})
+    write_json(root / 'var/lib/hyprland-forge/iso-install.json', {'phase': 'desktop-complete', 'release': manifest['release'], 'username': username, 'settings': settings, 'keyboard': keyboard})
 
 
 def calamares_job(action):
@@ -214,7 +234,9 @@ def calamares_job(action):
         if action == 'base':
             base(root, SOURCE, settings, device)
         elif action == 'finish':
-            finish(root, SOURCE, settings, device, libcalamares.globalstorage.value('username'))
+            gs = libcalamares.globalstorage
+            keyboard = keyboard_settings(gs.value('keyboardLayout') or 'us', gs.value('keyboardVariant') or '', gs.value('keyboardAdditionalLayout') or '', gs.value('keyboardAdditionalVariant') or '', gs.value('keyboardGroupSwitcher') or '')
+            finish(root, SOURCE, settings, device, gs.value('username'), keyboard)
         else:
             raise ForgeError('Unknown installation task.')
     except (ForgeError, OSError, ValueError, subprocess.SubprocessError) as error:

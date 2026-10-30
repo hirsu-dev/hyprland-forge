@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from forge.iso_apps import flatpak_commands, selection
-from forge.iso_install import base, finish, guard, mounted_target, options, package_plan, windows_menu
+from forge.iso_install import base, finish, guard, keyboard_settings, mounted_target, options, package_plan, windows_menu
 from forge.manifest import ForgeError, load_manifest
 from forge.hardware import resolve_plan
 from forge.setup import with_gaming
@@ -15,6 +15,13 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_keyboard_layouts_and_variants_are_preserved(self):
+        value = keyboard_settings('fr', 'oss', 'us', '', 'grp:alt_shift_toggle')
+        self.assertEqual(value, {'kb_layout': 'fr,us', 'kb_variant': 'oss,', 'kb_options': 'grp:alt_shift_toggle'})
+        for values in (('us\");os.execute("id")', ''), ('', ''), ('us', None)):
+            with self.assertRaises(ForgeError):
+                keyboard_settings(*values)
+
     def test_desktop_installation_records_deployment_and_protected_boot_entry(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -25,7 +32,7 @@ class IsoInstallationTests(unittest.TestCase):
             settings = {'gaming': True, 'motion': False, 'apps': ['brave', 'equicord']}
             device = {'virtual': 'qemu', 'gpus': set(), 'cpu': ''}
             with patch('forge.iso_install.subprocess.run') as run, patch('forge.iso_install.os.chown', create=True) as chown, patch('forge.iso_install.find_windows', return_value=['ABCD-1234']), patch('forge.iso_assets.install_boot_assets'):
-                finish(root, ROOT, settings, device, 'forge')
+                finish(root, ROOT, settings, device, 'forge', keyboard_settings('fr', 'oss'))
             state = json.loads((home / '.local/state/hyprland-forge/setup.json').read_text())
             self.assertEqual(state['profile'], 'virtual-machine')
             self.assertEqual(state['apps'], settings['apps'])
@@ -33,6 +40,8 @@ class IsoInstallationTests(unittest.TestCase):
             self.assertTrue((home / '.local/bin/forge-session').is_file())
             self.assertTrue((home / '.local/state/hyprland-forge/transactions' / state['transaction'] / 'files.json').is_file())
             self.assertIn('ABCD-1234', (root / 'etc/grub.d/41_forge_windows').read_text())
+            self.assertIn('"fr"', (home / '.config/hypr/forge/installation.lua').read_text())
+            self.assertIn('"oss"', (home / '.config/hypr/forge/installation.lua').read_text())
             self.assertTrue(all(call.args[1:] == (1000, 1000) for call in chown.call_args_list))
             self.assertTrue(all(str(path).startswith(str(root)) for call in chown.call_args_list for path in call.args[:1]))
             self.assertTrue(all(call.args[0][:3] == ['systemctl', '--root', str(root)] for call in run.call_args_list))
