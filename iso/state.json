@@ -28,7 +28,7 @@
     "reduced-motion-preference-through-boot-login-and-desktop"
   ],
   "resume_first": [
-    "inspect-latest-experimental-iso-image-build-and-QEMU-captures",
+    "finish-guided-installation-and-reboot-on-disposable-VirtualBox-disk",
     "qualify-live-boot-installation-Windows-preservation-and-OS-selection-in-VM",
     "qualify-selected-native-and-Flatpak-app-installation"
   ],
@@ -43,7 +43,9 @@
     "live_graphical_installer_opened": true,
     "local_iso_sha256": "7c8e8b6eaebaefdeb8085de56cf5f0d04e1df36b09d63ff0b168505925ad4840",
     "download_integrity": "independent-ZIP-CRC-and-SHA256-passed; replaced-failing-CI-extraction",
-    "ci_boot_harness": "QEMU-11.1.2-exited-SIGSEGV-before-greeting; retry-with-standard-VGA",
+    "ci_boot_harness": "standard-VGA-UEFI-boot-passed-and-welcome-screenshot-reviewed",
+    "ci_boot_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41015592584",
+    "ci_live_welcome_rendered": true,
     "installer_executed": false,
     "windows_dual_boot_tested": false,
     "physical_hardware_tested": false,

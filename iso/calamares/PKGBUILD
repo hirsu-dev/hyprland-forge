@@ -1,6 +1,6 @@
 pkgname=calamares
 pkgver=3.4.3
-pkgrel=1
+pkgrel=2
 pkgdesc='Graphical installation framework for the experimental Forge ISO'
 arch=('x86_64')
 url='https://calamares.codeberg.page/'
@@ -8,8 +8,12 @@ license=('GPL-3.0-or-later')
 options=('!debug')
 depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'yaml-cpp' 'kcoreaddons' 'kconfig' 'kpmcore' 'polkit-qt6' 'python' 'python-yaml' 'boost-libs' 'libpwquality' 'icu' 'hwinfo')
 makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'boost')
-source=("https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz")
-sha256sums=('144cbbf6bdcebfb21685950db4f0777218519df095f62f4aa392f28348110d18')
+source=("https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz" 'ui-readability.patch')
+sha256sums=('144cbbf6bdcebfb21685950db4f0777218519df095f62f4aa392f28348110d18' '1f6c73460f4d0d2fcb21a1df4bb041b06128a6105f75f93395b2b007eda4383c')
+
+prepare() {
+    patch -d "calamares-$pkgver" -Np1 -i "$srcdir/ui-readability.patch"
+}
 
 build() {
     local module skip=''
@@ -32,4 +36,5 @@ package() {
     cp -a "$srcdir/calamares-$pkgver/LICENSES/." "$pkgdir/usr/share/licenses/calamares/"
     install -Dm644 "$srcdir/calamares-$pkgver.tar.gz" "$pkgdir/usr/share/hyprland-forge/sources/calamares-$pkgver.tar.gz"
     install -Dm644 "$startdir/PKGBUILD" "$pkgdir/usr/share/hyprland-forge/sources/PKGBUILD"
+    install -Dm644 "$srcdir/ui-readability.patch" "$pkgdir/usr/share/hyprland-forge/sources/ui-readability.patch"
 }

@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -76,7 +77,7 @@ def prepare(source, profile, repository):
     network.write_text('[main]\ndns=default\nrc-manager=file\n')
     for path in profile.glob("grub/*.cfg"):
         text = path.read_text().replace("Arch Linux install medium", "Forge graphical installer")
-        lines = [line + ' quiet splash' if line.lstrip().startswith(('linux ', 'linuxefi ')) else line for line in text.splitlines()]
+        lines = [line + ' quiet splash' if re.match(r'^\s*(linux|linuxefi)\s+', line) else line for line in text.splitlines()]
         path.write_text('\n'.join(lines) + '\n')
 
 

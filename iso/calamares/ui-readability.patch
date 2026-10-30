@@ -1,0 +1,43 @@
+--- a/src/modules/partition/gui/PartitionLabelsView.cpp
++++ b/src/modules/partition/gui/PartitionLabelsView.cpp
+@@ -373,7 +373,7 @@
+                                 const QPoint& pos,
+                                 bool selected )
+ {
+-    painter->setPen( Qt::black );
++    painter->setPen( palette().text().color() );
+     int vertOffset = 0;
+     int width = 0;
+     for ( const QString& textLine : text )
+@@ -382,7 +382,7 @@
+         painter->drawText(
+             pos.x() + LABEL_PARTITION_SQUARE_MARGIN, pos.y() + vertOffset + textSize.height() / 2, textLine );
+         vertOffset += textSize.height();
+-        painter->setPen( Qt::gray );
++        painter->setPen( palette().text().color() );
+         width = qMax( width, textSize.width() );
+     }
+ 
+@@ -395,7 +395,7 @@
+         drawSelectionSquare( painter, partitionSquareRect.adjusted( 2, 2, -2, -2 ), color );
+     }
+ 
+-    painter->setPen( Qt::black );
++    painter->setPen( palette().text().color() );
+ }
+ 
+ QModelIndex
+--- a/src/modules/keyboard/keyboardwidget/keyboardpreview.cpp
++++ b/src/modules/keyboard/keyboardwidget/keyboardpreview.cpp
+@@ -84,9 +84,11 @@
+ 
+     if ( !loadCodes() )
+     {
++        hide();
+         return;
+     }
+ 
++    show();
+     loadInfo();
+     repaint();
+ }
