@@ -4,8 +4,13 @@ import subprocess
 import sys
 
 environment = dict(os.environ)
+arguments = sys.argv[1:]
+software = arguments[:1] == ['--software']
+if software:
+    arguments = arguments[1:]
 virtual = subprocess.run(['systemd-detect-virt', '--vm', '--quiet'], timeout=5)
-if virtual.returncode == 0:
-    environment['LIBGL_ALWAYS_SOFTWARE'] = '1'
+if virtual.returncode == 0 or software:
     environment['QT_QUICK_BACKEND'] = 'software'
-os.execve('/usr/bin/start-hyprland', ['start-hyprland', *sys.argv[1:]], environment)
+if software:
+    environment['LIBGL_ALWAYS_SOFTWARE'] = '1'
+os.execve('/usr/bin/start-hyprland', ['start-hyprland', *arguments], environment)

@@ -35,6 +35,7 @@ def install_boot_assets(root, source, motion=True, username=''):
         raise ValueError('The default login account is invalid.')
     atomic_write(root / 'usr/local/bin/forge-start', (source / 'iso/boot/forge-start').read_bytes(), 0o755)
     atomic_write(root / 'usr/share/wayland-sessions/forge.desktop', (source / 'iso/boot/forge.desktop').read_bytes(), 0o644)
+    atomic_write(root / 'usr/share/wayland-sessions/forge-software.desktop', (source / 'iso/boot/forge-software.desktop').read_bytes(), 0o644)
     theme = root / 'boot/grub/themes/forge'
     render_assets(theme)
     shutil.copyfile(source / 'iso/boot/grub-theme.txt', theme / 'theme.txt')

@@ -1,6 +1,7 @@
 import json
 import os
 import runpy
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,14 +20,15 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
-    def test_login_starts_software_graphics_only_inside_a_vm(self):
+    def test_login_keeps_gpu_rendering_and_has_an_explicit_software_fallback(self):
         for virtual in (True, False):
-            with self.subTest(virtual=virtual), patch('subprocess.run', return_value=SimpleNamespace(returncode=0 if virtual else 1)), patch('os.execve') as execute, patch.dict(os.environ, {'LIBGL_ALWAYS_SOFTWARE': '0', 'QT_QUICK_BACKEND': 'rhi'}):
-                runpy.run_path(str(ROOT / 'iso/boot/forge-start'))
-            self.assertEqual(execute.call_args.args[0], '/usr/bin/start-hyprland')
-            environment = execute.call_args.args[2]
-            self.assertEqual(environment['LIBGL_ALWAYS_SOFTWARE'], '1' if virtual else '0')
-            self.assertEqual(environment['QT_QUICK_BACKEND'], 'software' if virtual else 'rhi')
+            for software in (True, False):
+                with self.subTest(virtual=virtual, software=software), patch('subprocess.run', return_value=SimpleNamespace(returncode=0 if virtual else 1)), patch('os.execve') as execute, patch.object(sys, 'argv', ['forge-start', *(['--software'] if software else [])]), patch.dict(os.environ, {'LIBGL_ALWAYS_SOFTWARE': '0', 'QT_QUICK_BACKEND': 'rhi'}):
+                    runpy.run_path(str(ROOT / 'iso/boot/forge-start'))
+                self.assertEqual(execute.call_args.args[:2], ('/usr/bin/start-hyprland', ['start-hyprland']))
+                environment = execute.call_args.args[2]
+                self.assertEqual(environment['LIBGL_ALWAYS_SOFTWARE'], '1' if software else '0')
+                self.assertEqual(environment['QT_QUICK_BACKEND'], 'software' if virtual or software else 'rhi')
 
     def test_existing_efi_mount_is_inspected_without_remounting_or_writing(self):
         with tempfile.TemporaryDirectory() as directory:
