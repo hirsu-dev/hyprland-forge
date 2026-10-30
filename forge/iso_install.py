@@ -181,7 +181,7 @@ def finish(root, source, settings, device, username):
     Deployment(home, journal).apply(plan['files'], source)
     write_json(journal / 'transaction.json', {'id': transaction, 'status': 'complete', 'plan': plan, 'commands_completed': [], 'services_enabled': []})
     write_json(state / 'latest.json', {'id': transaction})
-    write_json(state / 'setup.json', {'status': 'complete', 'release': manifest['release'], 'profile': 'virtual-machine' if device['virtual'] else 'iso-hardware', 'gaming': settings['gaming'], 'apps': settings['apps'], 'transaction': transaction, 'installer': '/opt/hyprland-forge'})
+    write_json(state / 'setup.json', {'status': 'complete', 'release': manifest['release'], 'profile': 'virtual-machine' if device['virtual'] else 'auto', 'gaming': settings['gaming'], 'apps': settings['apps'], 'transaction': transaction, 'installer': '/opt/hyprland-forge'})
     atomic_write(state / 'setup-complete', (manifest['release'] + '\n').encode())
     interface = home / '.config/forge/interface.json'
     values = json.loads(interface.read_text())

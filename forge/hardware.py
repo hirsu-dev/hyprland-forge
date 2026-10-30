@@ -42,7 +42,10 @@ def inventory(sys_root=Path("/sys"), runner=subprocess.run):
         value = variable.read_bytes()
         secure_boot = secure_boot or len(value) >= 5 and value[4] == 1
     installed = runner(["pacman", "-Qq"], capture_output=True, text=True, check=True, timeout=10).stdout.splitlines()
-    return {"gpus": devices, "kernels": [k for k in KERNELS if k in installed], "secure_boot": secure_boot}
+    cpuinfo = Path('/proc/cpuinfo')
+    text = cpuinfo.read_text() if cpuinfo.is_file() else ''
+    cpu = 'amd' if 'AuthenticAMD' in text else 'intel' if 'GenuineIntel' in text else ''
+    return {"gpus": devices, "kernels": [k for k in KERNELS if k in installed], "secure_boot": secure_boot, "cpu": cpu}
 
 
 def hardware_packages(data):
@@ -72,6 +75,8 @@ def verify_services(runner=subprocess.run, services=SERVICES, conflicts=CONFLICT
 
 
 def resolve_plan(plan, apply=False, profile="laptop"):
+    if profile == 'auto':
+        return resolve_auto(plan, apply)
     if profile not in ("laptop", "virtual-machine"):
         raise ForgeError("Unknown hardware profile")
     plan["profile"] = profile
@@ -104,6 +109,41 @@ def resolve_plan(plan, apply=False, profile="laptop"):
     plan["commands"] = [["sudo", "pacman", "-Syu", "--needed", "--", *plan["packages"]]]
     plan["services"] = profile_services(profile, hypervisor)
     plan["reboot_required"] = True
+    return plan
+
+
+def resolve_auto(plan, apply=False):
+    if 'hardware' not in plan['stages']:
+        plan['profile'] = 'auto'
+        return plan
+    native = platform.system() == 'Linux' and Path('/etc/arch-release').is_file()
+    if apply and not native:
+        raise ForgeError('Automatic hardware setup requires a running Arch Linux system')
+    hypervisor = virtualization(subprocess.run) if native else None
+    if hypervisor:
+        return resolve_plan(plan, apply, 'virtual-machine')
+    if apply and hypervisor is None:
+        raise ForgeError('Could not determine whether this machine is virtual or physical')
+    data = inventory() if native else {'gpus': [], 'kernels': ['linux'], 'secure_boot': False, 'cpu': '', 'preview_only': True}
+    if not data['kernels']:
+        raise ForgeError('Install a supported Arch kernel before automatic hardware setup')
+    vendors = {gpu['vendor'] for gpu in data['gpus']}
+    packages = set(plan['packages']) - {'amd-ucode', 'intel-ucode', 'nvidia-open-dkms', 'nvidia-utils', 'nvidia-prime', 'egl-wayland', 'vulkan-radeon', 'vulkan-intel'}
+    if data.get('cpu') in ('amd', 'intel'):
+        packages.add(data['cpu'] + '-ucode')
+    if '0x1002' in vendors:
+        packages.add('vulkan-radeon')
+    if '0x8086' in vendors:
+        packages.add('vulkan-intel')
+    services = list(SERVICES[:4])
+    if '0x10de' in vendors:
+        packages.update(hardware_packages(data))
+        packages.update({'nvidia-open-dkms', 'nvidia-utils', 'nvidia-prime', 'egl-wayland'})
+        services.extend(SERVICES[4:])
+    if apply:
+        verify_services(services=services)
+    plan.update({'profile': 'auto', 'hardware': data, 'packages': sorted(packages), 'services': services, 'reboot_required': True})
+    plan['commands'] = [['sudo', 'pacman', '-Syu', '--needed', '--', *plan['packages']]]
     return plan
 
 

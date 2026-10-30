@@ -23,7 +23,7 @@ def main(argv=None):
     parser.add_argument("--stage", action="append")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--login", choices=("auto", "sddm", "keep"), default="auto")
-    parser.add_argument("--profile", choices=("laptop", "virtual-machine"))
+    parser.add_argument("--profile", choices=("laptop", "virtual-machine", "auto"))
     args = parser.parse_args(argv)
     source_root = Path(__file__).resolve().parent.parent
     try:

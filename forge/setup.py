@@ -34,6 +34,12 @@ def with_gaming(plan, source_root):
     packages = [p for p in GAMING if plan["profile"] != "virtual-machine" or p not in ("lib32-nvidia-utils", "lib32-vulkan-radeon")]
     if plan["profile"] == "virtual-machine":
         packages.extend(("vulkan-swrast", "lib32-vulkan-swrast"))
+    if plan['profile'] == 'auto':
+        vendors = {gpu['vendor'] for gpu in plan.get('hardware', {}).get('gpus', [])}
+        optional = {'lib32-nvidia-utils': '0x10de', 'lib32-vulkan-radeon': '0x1002'}
+        packages = [package for package in packages if package not in optional or optional[package] in vendors]
+        if '0x8086' in vendors:
+            packages.append('lib32-vulkan-intel')
     plan["packages"] = list(dict.fromkeys([*plan["packages"], *packages]))
     plan["commands"] = [
         ["sudo", sys.executable, str(source_root / "forge/bootstrap.py"), "--multilib"],
@@ -106,7 +112,7 @@ def run(source_root, profile=None, login="auto"):
     if not sys.stdin.isatty():
         raise ForgeError("Guided setup needs an interactive terminal")
     preflight()
-    profile = profile or ("virtual-machine" if virtualization() else "laptop")
+    profile = profile or ("virtual-machine" if virtualization() else "auto" if Path('/var/lib/hyprland-forge/iso-install.json').is_file() else "laptop")
     manifest = load_manifest(source_root)
     plan = resolve_login(resolve_plan(make_plan(manifest, None), apply=True, profile=profile), mode=login, apply=True)
     home = Path.home()
@@ -123,7 +129,7 @@ def run(source_root, profile=None, login="auto"):
     print("Cyberpunk desktop, apps, audio, networking, display controls and hardware drivers.")
     print("Arch will receive a full update. Existing managed configs are backed up.")
     print("Your interface, palette, taskbar, display profiles and personal overrides are kept.")
-    print("Hardware: " + ("virtual machine" if profile == "virtual-machine" else "AMD / NVIDIA laptop"))
+    print("Hardware: " + ("virtual machine" if profile == "virtual-machine" else "detected hardware" if profile == 'auto' else "AMD / NVIDIA laptop"))
     print("Login: " + ("SDDM" if plan.get("login", {}).get("action") == "enable-sddm" else "keep current login"))
     if not confirm("Install Forge on this Arch system?"):
         print("Setup cancelled.")

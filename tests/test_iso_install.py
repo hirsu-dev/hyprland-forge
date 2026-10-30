@@ -7,12 +7,33 @@ from unittest.mock import patch
 from forge.iso_apps import flatpak_commands, selection
 from forge.iso_install import base, finish, guard, mounted_target, options, package_plan, windows_menu
 from forge.manifest import ForgeError, load_manifest
+from forge.hardware import resolve_plan
+from forge.setup import with_gaming
 
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 class IsoInstallationTests(unittest.TestCase):
+    def test_intel_iso_upgrade_preserves_matching_driver_selection(self):
+        plan = {'stages': ['hardware'], 'packages': ['amd-ucode', 'nvidia-open-dkms', 'nvidia-utils', 'vulkan-radeon', 'mesa']}
+        device = {'gpus': [{'vendor': '0x8086'}], 'kernels': ['linux'], 'secure_boot': False, 'cpu': 'intel'}
+        with patch('forge.hardware.platform.system', return_value='Linux'), patch('forge.hardware.Path.is_file', return_value=True), patch('forge.hardware.virtualization', return_value=''), patch('forge.hardware.inventory', return_value=device), patch('forge.hardware.verify_services'):
+            result = resolve_plan(plan, apply=True, profile='auto')
+        self.assertIn('intel-ucode', result['packages'])
+        self.assertIn('vulkan-intel', result['packages'])
+        self.assertNotIn('nvidia-utils', result['packages'])
+        self.assertFalse(any('nvidia' in service for service in result['services']))
+        with_gaming(result, ROOT)
+        self.assertIn('lib32-vulkan-intel', result['packages'])
+        self.assertNotIn('lib32-nvidia-utils', result['packages'])
+        self.assertNotIn('lib32-vulkan-radeon', result['packages'])
+
+    def test_auto_profile_denies_unknown_environment(self):
+        with patch('forge.hardware.platform.system', return_value='Linux'), patch('forge.hardware.Path.is_file', return_value=True), patch('forge.hardware.virtualization', return_value=None):
+            with self.assertRaises(ForgeError):
+                resolve_plan({'stages': ['hardware'], 'packages': []}, apply=True, profile='auto')
+
     def test_existing_system_is_refused_before_installing_packages(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
