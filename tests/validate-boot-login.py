@@ -70,7 +70,8 @@ password = root.findChild(QObject, "forgePassword")
 picker = root.findChild(QObject, "forgeSessions")
 assert username.property("text") == "forge-test"
 assert picker.property("currentIndex") == 0
-popup = picker.property("popup")
+popup = root.findChild(QObject, "forgeSessionPopup")
+assert popup is not None
 QMetaObject.invokeMethod(popup, "open")
 QTest.qWait(100)
 assert popup.property("visible"), "The session picker did not open"
