@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "optional-app-fix-boot-verification-pending",
+  "status": "hardware-test-prerelease-published",
   "build_enabled": true,
   "disk_execution_enabled": true,
   "last_built_run": 41391818051,
@@ -41,7 +41,7 @@
     "boot_environment": "VirtualBox-7.2.20-UEFI-2304MiB-VMSVGA-software-Qt",
     "live_welcome_rendered": true,
     "live_graphical_installer_opened": true,
-    "local_iso_sha256": "08b33bcf4e5a3598427736557ae45966e15974b9030b489f1e3b72a01d9ccf8f",
+    "local_iso_sha256": "837fe1d430ad9524f3e55beb29d88846aa6d468b64232bbf585dd863c17a274d",
     "download_integrity": "ZIP-CRC-ISO-SHA256-and-USB-copy-SHA256-passed",
     "previous_download_failure": "50c6b50-transfer-limit-HTTP503-before-final-ZIP-CRC-and-SHA256; partial-file-removed",
     "ci_boot_harness": "standard-VGA-UEFI-boot-passed-and-welcome-screenshot-reviewed",
@@ -75,10 +75,10 @@
     "login_theme_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41010146250",
     "password_authentication_tested": true,
     "password_authentication_result": "native-SDDM-Wayland-rejected-wrong-password-and-accepted-correct-VM-password",
-    "last_full_local_tests": 273,
+    "last_full_local_tests": 278,
     "last_full_local_skips": 11,
-    "latest_focused_installation_tests": 34,
-    "latest_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41387388476",
+    "latest_focused_installation_tests": 39,
+    "latest_validation_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41391818037",
     "virtualizer_limitation": "two-vCPU-VirtualBox-Windows-NEM-soft-lockup-in-VBoxService-TLB-shootdown; one-vCPU-retest-passed",
     "native_linux_unit_tests": 261,
     "nvidia_driver_build": "four-NVIDIA-open-615.78.08-modules-built-for-Arch-7.2.11; no-hardware-or-module-loading-test",
@@ -97,7 +97,9 @@
     },
     "final_live_check": "optical-and-USB-UEFI-boots-passed; USB-copy-to-RAM-active-and-bootmnt-unmounted; configured-installer-guard-and-all-mandatory-Calamares-requirements-passed; no-failed-units; no-installation-executed-in-regression",
     "physical_installation": "enabled-for-explicitly-reviewed-Calamares-installation; hardware-runtime-remains-unqualified",
-    "installer_readiness_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41387388282"
+    "installer_readiness_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41393214894",
+    "optional_app_service": "passed-real-VM-Brave-Equicord-Spotify-automatic-retry-repeat-start-and-reboot; selected-Flatpaks-download-after-installed-OS-boot",
+    "optional_app_service_revision": "b33bf89611e685392ade413995e4e26d9d539982"
   },
   "optional_apps": "forge/iso_apps.py",
   "network": "required-for-online-package-installation",
@@ -111,26 +113,27 @@
   },
   "release_channel": "hardware-test-prerelease",
   "release": {
+    "tag": "forge-iso-2026.11.02-rc2",
+    "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.11.02-rc2",
+    "source_revision": "b33bf89611e685392ade413995e4e26d9d539982",
+    "prerelease": true,
+    "ready_for_daily_use": false,
+    "published": "2026-11-02T05:34:27Z"
+  },
+  "previous_release": {
     "tag": "forge-iso-2026.11.01-rc1",
     "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.11.01-rc1",
     "source_revision": "4aaf8e1449fcec8b75595502c1642084e2324ebd",
     "prerelease": true,
     "ready_for_daily_use": false
   },
-  "previous_release": {
-    "tag": "forge-iso-2026.10.30-rc1",
-    "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.10.30-rc1",
-    "source_revision": "c61952bde441d949ff6ff617968ea52d946a2720",
-    "published": "2026-10-30T17:07:18Z",
-    "prerelease": true,
-    "ready_for_daily_use": false
-  },
   "USB_copy_to_RAM_regression": {
-    "source_revision": "4aaf8e1449fcec8b75595502c1642084e2324ebd",
-    "build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41387388282",
-    "artifact_id": 13116436059,
+    "source_revision": "b33bf89611e685392ade413995e4e26d9d539982",
+    "build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41391818051",
+    "artifact_id": 13117273137,
+    "boot_verification_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41393214894",
     "iso_bytes": 1824358400,
-    "iso_sha256": "08b33bcf4e5a3598427736557ae45966e15974b9030b489f1e3b72a01d9ccf8f",
+    "iso_sha256": "837fe1d430ad9524f3e55beb29d88846aa6d468b64232bbf585dd863c17a274d",
     "optical_boot": "passed",
     "USB_boot": "passed",
     "USB_copy_to_RAM": {
