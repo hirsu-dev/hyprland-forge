@@ -19,7 +19,8 @@ def main():
     report = {'scope': 'live-ISO-in-disposable-QEMU', 'installation_executed': False, 'physical_hardware_tested': False, 'result': 'running'}
     try:
         assert os.geteuid() == 0 and Path('/etc/forge-live').is_file()
-        assert Path('/run/archiso/bootmnt').is_mount()
+        assert Path('/run/archiso/airootfs').is_mount()
+        report['live_mounts'] = {name: Path('/run/archiso', name).is_mount() for name in ('airootfs', 'bootmnt', 'copytoram')}
         virtual = command(['systemd-detect-virt', '--vm'])
         assert virtual['stdout'] in ('qemu', 'kvm'), virtual
         source = Path('/opt/hyprland-forge')
@@ -60,8 +61,20 @@ def main():
             guard()
         except ForgeError as error:
             report['unconfigured_installation_guard'] = str(error)
+            assert str(error) == 'Return to the Forge welcome screen and choose your installation options.', str(error)
         else:
             raise AssertionError('Installation accepted a missing setup selection')
+        from forge.storage import write_json
+        options = Path('/run/forge-installer/options.json')
+        options.parent.mkdir(mode=0o700, exist_ok=True)
+        assert not options.exists()
+        settings = {'gaming': False, 'motion': True, 'apps': []}
+        try:
+            write_json(options, settings)
+            assert guard() == settings
+            report['configured_installation_guard'] = 'passed'
+        finally:
+            options.unlink()
         with Path('/tmp/forge-live-calamares.log').open('w') as stream:
             process = subprocess.Popen(['calamares', '-d'], env=environment, stdout=stream, stderr=subprocess.STDOUT)
             try:

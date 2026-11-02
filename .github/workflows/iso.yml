@@ -80,6 +80,8 @@ jobs:
           retention-days: 7
       - name: Boot the ISO in a disposable UEFI VM
         run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-boot --expected-revision "${{ github.sha }}"
+      - name: Boot from USB with automatic copy-to-RAM
+        run: python iso/boot_vm.py /tmp/forge-iso-output/*.iso /tmp/forge-iso-usb-boot --media usb --memory 4608 --expected-revision "${{ github.sha }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -88,6 +90,9 @@ jobs:
             /tmp/forge-iso-boot/*.png
             /tmp/forge-iso-boot/*.log
             /tmp/forge-iso-boot/*.json
+            /tmp/forge-iso-usb-boot/*.png
+            /tmp/forge-iso-usb-boot/*.log
+            /tmp/forge-iso-usb-boot/*.json
   boot-existing:
     if: contains(github.event.head_commit.message, '[boot-iso]')
     runs-on: ubuntu-latest

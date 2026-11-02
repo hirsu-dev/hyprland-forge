@@ -142,6 +142,19 @@ class IsoInstallationTests(unittest.TestCase):
                 guard(ROOT)
             run.assert_not_called()
 
+    def test_live_guard_accepts_RAM_copy_and_requires_the_live_root_mount(self):
+        settings = {'gaming': False, 'motion': True, 'apps': []}
+        for mounts, permitted in (({'/run/archiso/airootfs', '/run/archiso/bootmnt'}, True), ({'/run/archiso/airootfs', '/run/archiso/copytoram'}, True), ({'/run/archiso/bootmnt'}, False), (set(), False)):
+            with self.subTest(mounts=mounts), patch('forge.iso_install.platform.system', return_value='Linux'), patch('forge.iso_install.os.geteuid', return_value=0, create=True), patch('forge.iso_install.Path.is_file', return_value=True), patch.object(Path, 'is_mount', autospec=True, side_effect=lambda path: path.as_posix() in mounts), patch('forge.iso_install.Path.is_dir', return_value=True), patch('forge.iso_install.Path.glob', return_value=[]), patch('forge.iso_install.Path.read_text', return_value='{"disk_execution_enabled": true}'), patch('forge.iso_install.options', return_value=settings) as selected, patch('forge.iso_install.subprocess.run') as run:
+                if permitted:
+                    self.assertEqual(guard(ROOT), settings)
+                    selected.assert_called_once_with()
+                else:
+                    with self.assertRaisesRegex(ForgeError, 'Boot the Forge USB'):
+                        guard(ROOT)
+                    selected.assert_not_called()
+                run.assert_not_called()
+
     def test_enabled_physical_installer_keeps_secure_boot_and_live_UEFI_guards(self):
         settings = {'gaming': True, 'motion': True, 'apps': ['brave', 'equicord']}
         for payload, permitted in ((b'\x07\0\0\0\0', True), (b'\x07\0\0\0\x01', False), (b'', False)):

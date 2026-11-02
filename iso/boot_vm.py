@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 
-def boot(image, output, seconds=240, memory=2304, expected_revision=None):
+def boot(image, output, seconds=240, memory=2304, expected_revision=None, media='optical'):
     image, output = image.resolve(), output.resolve()
     if not image.is_file() or image.suffix != '.iso' or output.exists():
         raise ValueError('Supply an ISO and a new directory for this disposable VM.')
@@ -21,7 +21,12 @@ def boot(image, output, seconds=240, memory=2304, expected_revision=None):
     disk = output / 'disposable.qcow2'
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', str(disk), '64G'], check=True)
     command = ['qemu-system-x86_64', '-accel', 'tcg,thread=multi']
-    command += ['-machine', 'q35', '-m', str(memory), '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}', '-cdrom', str(image), '-boot', 'd', '-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'std', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
+    command += ['-machine', 'q35', '-m', str(memory), '-smp', '2', '-cpu', 'max', '-drive', f'if=pflash,format=raw,readonly=on,file={firmware}', '-drive', f'if=pflash,format=raw,file={variables}']
+    if media == 'usb':
+        command += ['-device', 'qemu-xhci,id=usb', '-drive', f'if=none,id=live,format=raw,readonly=on,file={image}', '-device', 'usb-storage,bus=usb.0,drive=live,removable=on,bootindex=1']
+    else:
+        command += ['-cdrom', str(image), '-boot', 'd']
+    command += ['-drive', f'file={disk},format=qcow2,if=virtio', '-netdev', 'user,id=forge', '-device', 'virtio-net-pci,netdev=forge', '-vga', 'std', '-display', 'none', '-qmp', f'unix:{monitor},server=on,wait=off', '-serial', 'file:' + str(output / 'serial.log')]
     probe = Path(__file__).resolve().parents[1] / 'tests/validate-live-iso.py'
     command += ['-fw_cfg', 'name=opt/forge,file=' + str(probe)]
     with (output / 'qemu.log').open('wb') as log:
@@ -109,7 +114,9 @@ def boot(image, output, seconds=240, memory=2304, expected_revision=None):
                         raise RuntimeError('Live ISO check failed: ' + guest.get('error', 'unknown failure'))
                     if expected_revision and not guest['build']['revision'].startswith(expected_revision):
                         raise RuntimeError('The tested ISO has an unexpected source revision')
-                    (output / 'result.json').write_text(json.dumps({'uefi_boot_observed_seconds': seconds, 'memory_mb': memory, 'acceleration': 'tcg', 'guest_status': qmp('query-status'), 'installation_executed': False, 'windows_dual_boot_tested': False, 'live_check': guest['result'], 'image_revision': guest['build']['revision']}, indent=2))
+                    if media == 'usb' and (not guest['live_mounts']['copytoram'] or guest['live_mounts']['bootmnt']):
+                        raise RuntimeError('The USB regression did not exercise copy-to-RAM with the boot media unmounted')
+                    (output / 'result.json').write_text(json.dumps({'uefi_boot_observed_seconds': seconds, 'memory_mb': memory, 'acceleration': 'tcg', 'boot_media': media, 'guest_status': qmp('query-status'), 'installation_executed': False, 'windows_dual_boot_tested': False, 'live_check': guest['result'], 'image_revision': guest['build']['revision']}, indent=2))
                     qmp('quit')
                 process.wait(timeout=20)
             except BaseException as error:
@@ -134,7 +141,8 @@ if __name__ == '__main__':
     parser.add_argument('output', type=Path)
     parser.add_argument('--memory', type=int, default=2304)
     parser.add_argument('--expected-revision')
+    parser.add_argument('--media', choices=('optical', 'usb'), default='optical')
     args = parser.parse_args()
     if not 1024 <= args.memory <= 8192:
         parser.error('The test VM needs between 1024 and 8192 MiB of RAM.')
-    boot(args.image, args.output, memory=args.memory, expected_revision=args.expected_revision)
+    boot(args.image, args.output, memory=args.memory, expected_revision=args.expected_revision, media=args.media)

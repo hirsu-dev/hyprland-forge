@@ -31,7 +31,7 @@ def options(path=OPTIONS):
 def guard(source=SOURCE):
     if platform.system() != 'Linux' or os.geteuid() != 0:
         raise ForgeError('The graphical installer runs only from the Forge live USB.')
-    if not Path('/etc/forge-live').is_file() or not Path('/run/archiso/bootmnt').is_mount():
+    if not Path('/etc/forge-live').is_file() or not Path('/run/archiso/airootfs').is_mount():
         raise ForgeError('Boot the Forge USB before installing.')
     if not Path('/sys/firmware/efi').is_dir():
         raise ForgeError('Restart the USB in UEFI mode before installing.')
