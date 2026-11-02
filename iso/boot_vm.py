@@ -57,8 +57,8 @@ def boot(image, output, seconds=240, memory=2304, expected_revision=None, media=
                                 return value['return']
                     qmp('qmp_capabilities')
                     def key(*names):
-                        qmp('send-key', {'keys': [{'type': 'qcode', 'data': name} for name in names], 'hold-time': 30})
-                        time.sleep(.08)
+                        qmp('send-key', {'keys': [{'type': 'qcode', 'data': name} for name in names], 'hold-time': 120})
+                        time.sleep(.18)
                     def type_line(text):
                         punctuation = {' ': ('spc',), '/': ('slash',), '_': ('shift', 'minus'), '-': ('minus',), '.': ('dot',), '>': ('shift', 'dot'), '&': ('shift', '7')}
                         for character in text:
@@ -76,20 +76,28 @@ def boot(image, output, seconds=240, memory=2304, expected_revision=None, media=
                         with Image.open(target) as capture:
                             capture.save(target.with_suffix('.png'))
                         target.unlink()
-                    key('ctrl', 'alt', 'f3')
-                    time.sleep(3)
-                    type_line('root')
-                    time.sleep(3)
-                    type_line('modprobe qemu_fw_cfg')
-                    time.sleep(1)
-                    type_line('python /sys/firmware/qemu_fw_cfg/by_name/opt/forge/raw >/dev/ttyS0 2>&1')
-                    deadline = time.monotonic() + 150
+                    def handoff(terminal):
+                        key('ctrl', 'alt', terminal)
+                        time.sleep(10)
+                        type_line('root')
+                        time.sleep(8)
+                        type_line('modprobe qemu_fw_cfg')
+                        time.sleep(3)
+                        type_line('python /sys/firmware/qemu_fw_cfg/by_name/opt/forge/raw >/dev/ttyS0 2>&1')
+                    handoff('f3')
+                    dispatched = time.monotonic()
+                    deadline = dispatched + 180
+                    retried = False
                     captured = False
                     guest = None
                     while time.monotonic() < deadline:
                         if process.poll() is not None:
                             raise RuntimeError('The disposable VM exited during the live check')
                         serial = (output / 'serial.log').read_text(errors='replace')
+                        if not retried and 'FORGE_ISO_PROBE_STARTED' not in serial and time.monotonic() - dispatched > 45:
+                            handoff('f4')
+                            retried = True
+                            deadline = time.monotonic() + 180
                         if 'FORGE_ISO_INSTALLER_READY' in serial and not captured:
                             target = output / 'live-installer.ppm'
                             qmp('screendump', {'filename': str(target)})

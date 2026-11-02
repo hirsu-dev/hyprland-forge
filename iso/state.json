@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "status": "hardware-test-prerelease-published",
+  "status": "optional-app-fix-boot-verification-pending",
   "build_enabled": true,
   "disk_execution_enabled": true,
-  "last_built_run": 41387388282,
-  "last_built_artifact": 13116436059,
-  "last_built_revision": "4aaf8e1449fcec8b75595502c1642084e2324ebd",
+  "last_built_run": 41391818051,
+  "last_built_artifact": 13117273137,
+  "last_built_revision": "b33bf89611e685392ade413995e4e26d9d539982",
   "calamares": {
     "version": "3.4.3",
     "source": "https://codeberg.org/Calamares/calamares/releases/download/v3.4.3/calamares-3.4.3.tar.gz",

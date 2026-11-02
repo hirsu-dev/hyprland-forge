@@ -16,6 +16,7 @@ def command(arguments, environment=None):
 
 
 def main():
+    print('FORGE_ISO_PROBE_STARTED', flush=True)
     report = {'scope': 'live-ISO-in-disposable-QEMU', 'installation_executed': False, 'physical_hardware_tested': False, 'result': 'running'}
     try:
         assert os.geteuid() == 0 and Path('/etc/forge-live').is_file()

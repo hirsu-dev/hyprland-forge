@@ -96,7 +96,7 @@ jobs:
   boot-existing:
     if: contains(github.event.head_commit.message, '[boot-iso]')
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     container:
       image: archlinux:base
       options: --privileged
@@ -122,6 +122,10 @@ jobs:
       - run: python iso/boot_vm.py /tmp/forge-existing-iso/*.iso /tmp/forge-iso-boot --expected-revision "$FORGE_SOURCE_REVISION"
         env:
           FORGE_SOURCE_REVISION: ${{ steps.source.outputs.revision }}
+      - name: Verify existing ISO USB copy-to-RAM boot
+        run: python iso/boot_vm.py /tmp/forge-existing-iso/*.iso /tmp/forge-iso-usb-boot --media usb --memory 4608 --expected-revision "$FORGE_SOURCE_REVISION"
+        env:
+          FORGE_SOURCE_REVISION: ${{ steps.source.outputs.revision }}
       - run: |
           cp /tmp/forge-existing-iso/artifact.json /tmp/forge-iso-boot/download-integrity.json
           cp /tmp/forge-existing-iso/build-packages.txt /tmp/forge-iso-boot/live-packages.txt
@@ -134,3 +138,6 @@ jobs:
             /tmp/forge-iso-boot/*.log
             /tmp/forge-iso-boot/*.json
             /tmp/forge-iso-boot/*.txt
+            /tmp/forge-iso-usb-boot/*.png
+            /tmp/forge-iso-usb-boot/*.log
+            /tmp/forge-iso-usb-boot/*.json
