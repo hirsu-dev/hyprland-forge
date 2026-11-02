@@ -11,7 +11,8 @@ from pathlib import Path
 
 from .manifest import ForgeError, load_manifest, make_plan
 from .storage import Deployment, atomic_write, write_json
-from .iso_apps import flatpak_commands, selection
+from .iso_apps import selection
+from .iso_app_setup import prepare as prepare_app_setup
 
 
 SOURCE = Path('/opt/hyprland-forge')
@@ -159,8 +160,7 @@ def base(root, source, settings, device):
     if settings['gaming']:
         from .bootstrap import enable_multilib
         enable_multilib(root / 'etc/pacman.conf', root / 'var/lib/hyprland-forge/system')
-    for command in flatpak_commands(settings['apps']):
-        subprocess.run(['arch-chroot', str(root), *command], check=True)
+    prepare_app_setup(root, settings['apps'])
     target_source = root / 'opt/hyprland-forge'
     if target_source.exists():
         raise ForgeError('The target already contains an installer. Choose an empty installation filesystem.')
@@ -223,6 +223,8 @@ def finish(root, source, settings, device, username, keyboard=None):
     services = [*profile_services('virtual-machine', device['virtual']), 'sddm'] if device['virtual'] else ['NetworkManager', 'bluetooth', 'power-profiles-daemon', 'fstrim.timer', 'sddm']
     if not device['virtual'] and '0x10de' in device['gpus']:
         services.extend(['nvidia-suspend', 'nvidia-hibernate', 'nvidia-resume'])
+    if (root / 'var/lib/hyprland-forge/optional-apps.json').is_file():
+        services.append('forge-app-setup')
     subprocess.run(['systemctl', '--root', str(root), 'enable', *services], check=True)
     subprocess.run(['systemctl', '--root', str(root), 'set-default', 'graphical.target'], check=True)
     atomic_write(root / 'etc/grub.d/41_forge_windows', windows_menu(find_windows()).encode(), 0o755)

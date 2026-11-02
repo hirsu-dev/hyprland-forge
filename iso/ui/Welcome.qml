@@ -127,7 +127,7 @@ ApplicationWindow {
         background: Rectangle { color: "#19262e"; border.color: "#536d78" }
         contentItem: ColumnLayout {
             spacing: 18 * root.unit
-            ForgeText { text: "Optional apps are installed automatically with Forge.\nYou can change your choices before the final disk review."; color: root.dim; font.pixelSize: 13 * root.unit; lineHeight: 1.4 }
+            ForgeText { text: "Selected Flatpak apps download automatically after the first boot.\nOpen Forge App Setup to view progress or retry downloads."; color: root.dim; font.pixelSize: 13 * root.unit; lineHeight: 1.4 }
             ScrollView {
                 Layout.fillWidth: true; Layout.fillHeight: true; clip: true
                 contentWidth: availableWidth

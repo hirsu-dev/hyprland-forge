@@ -10,9 +10,9 @@ strings:
   productName: Forge
   shortProductName: Forge
   version: Hardware Test
-  shortVersion: RC1
+  shortVersion: RC2
   versionedName: Forge Hardware Test
-  shortVersionedName: Forge RC1
+  shortVersionedName: Forge RC2
   bootloaderEntryName: Forge
   productUrl: https://github.com/hirsu-dev/hyprland-forge
   supportUrl: https://github.com/hirsu-dev/hyprland-forge/issues
