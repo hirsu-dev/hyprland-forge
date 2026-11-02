@@ -73,6 +73,10 @@ class DeferredAppsTests(unittest.TestCase):
             self.assertTrue(install_pending(state, log, run))
             self.assertEqual([call[-1] for call in calls if call[1] == 'install'], ['com.spotify.Client'])
             self.assertEqual(json.loads(state.read_text())['status'], 'complete')
+            calls.clear()
+            installed.clear()
+            self.assertTrue(install_pending(state, log, run))
+            self.assertEqual(calls, [])
 
     def test_remote_failure_and_timeout_preserve_selection_for_retry(self):
         for failure in (SimpleNamespace(returncode=1), subprocess.TimeoutExpired('flatpak', 120)):

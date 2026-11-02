@@ -70,6 +70,8 @@ def install_pending(path=STATE, log=LOG, run=subprocess.run):
     apps = selection(value.get('apps'))
     if any('flatpak' not in app for app in apps):
         raise ForgeError('App setup contains an unsupported selection.')
+    if value.get('status') == 'complete':
+        return True
     value.update(status='running', results={})
     save(path, value)
     log.parent.mkdir(parents=True, exist_ok=True)
