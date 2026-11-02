@@ -198,6 +198,61 @@
     "Wallpaper-Engine-rendering-with-owned-assets-and-physical-GPU"
   ],
   "hardware_test_release": {
+    "source_revision": "4aaf8e1449fcec8b75595502c1642084e2324ebd",
+    "build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41387388282",
+    "artifact_id": 13116436059,
+    "iso_bytes": 1824358400,
+    "iso_sha256": "08b33bcf4e5a3598427736557ae45966e15974b9030b489f1e3b72a01d9ccf8f",
+    "optical_boot": "passed",
+    "USB_boot": "passed",
+    "USB_copy_to_RAM": {
+      "airootfs": true,
+      "bootmnt": false,
+      "copytoram": true
+    },
+    "configured_installer_guard": "passed",
+    "installer_requirements": [
+      {
+        "name": "partitions",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "ram",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "power",
+        "satisfied": true,
+        "mandatory": false
+      },
+      {
+        "name": "internet",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "root",
+        "satisfied": true,
+        "mandatory": true
+      }
+    ],
+    "failed_units": [],
+    "installation_executed_in_regression": false,
+    "local_ZIP_CRC_valid": true,
+    "USB_copy_verified": true,
+    "physical_hardware_qualified": false,
+    "ready_for_daily_use": false,
+    "tag": "forge-iso-2026.11.01-rc1",
+    "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.11.01-rc1",
+    "prerelease": true,
+    "native_password_first_picker_integrated": false,
+    "installer_backend_matches_clean_VM_install": false,
+    "installer_backend_matches_clean_VM_install_apart_from_live_mount_guard": true,
+    "installer_backend_sha256": "a2a4d142f9b89db4896d0ce9ba09af0208986c97e4fb8f23f14eac120a87d7ae"
+  },
+  "previous_hardware_test_release": {
     "tag": "forge-iso-2026.10.30-rc1",
     "url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.10.30-rc1",
     "source_revision": "c61952bde441d949ff6ff617968ea52d946a2720",
@@ -223,7 +278,12 @@
       "screen_blanking_disabled": true,
       "live_package_inventory_verified": true,
       "failed_units": [],
-      "mandatory_Calamares_requirements": ["partitions", "ram", "internet", "root"],
+      "mandatory_Calamares_requirements": [
+        "partitions",
+        "ram",
+        "internet",
+        "root"
+      ],
       "all_mandatory_requirements_satisfied": true,
       "graphical_installer_opened": true,
       "installation_executed": false,
@@ -231,6 +291,54 @@
       "physical_hardware_tested": false
     },
     "native_password_first_picker_integrated": false,
+    "ready_for_daily_use": false
+  },
+  "USB_copy_to_RAM_regression": {
+    "source_revision": "4aaf8e1449fcec8b75595502c1642084e2324ebd",
+    "build_run": "https://github.com/hirsu-dev/hyprland-forge/actions/runs/41387388282",
+    "artifact_id": 13116436059,
+    "iso_bytes": 1824358400,
+    "iso_sha256": "08b33bcf4e5a3598427736557ae45966e15974b9030b489f1e3b72a01d9ccf8f",
+    "optical_boot": "passed",
+    "USB_boot": "passed",
+    "USB_copy_to_RAM": {
+      "airootfs": true,
+      "bootmnt": false,
+      "copytoram": true
+    },
+    "configured_installer_guard": "passed",
+    "installer_requirements": [
+      {
+        "name": "partitions",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "ram",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "power",
+        "satisfied": true,
+        "mandatory": false
+      },
+      {
+        "name": "internet",
+        "satisfied": true,
+        "mandatory": true
+      },
+      {
+        "name": "root",
+        "satisfied": true,
+        "mandatory": true
+      }
+    ],
+    "failed_units": [],
+    "installation_executed_in_regression": false,
+    "local_ZIP_CRC_valid": true,
+    "USB_copy_verified": true,
+    "physical_hardware_qualified": false,
     "ready_for_daily_use": false
   }
 }
