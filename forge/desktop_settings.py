@@ -161,6 +161,33 @@ def reload(mode_changed=False, runner=subprocess.run):
             raise ForgeError("The compositor did not accept the tiling change")
 
 
+def verify_outputs(value, runner=subprocess.run, timeout=3):
+    deadline = time.monotonic() + timeout
+    while True:
+        actual = {item["name"]: item for item in monitors(runner)}
+        errors = []
+        for expected in value["outputs"]:
+            monitor = actual.get(expected["name"])
+            if monitor is None or bool(monitor.get("disabled", False)) == expected["enabled"]:
+                errors.append(expected["name"] + ": display connection or enabled state changed")
+                continue
+            if not expected["enabled"]:
+                continue
+            if monitor.get("transform", 0) != expected["rotation"]:
+                errors.append(expected["name"] + ": orientation was not applied")
+            if abs(monitor.get("scale", 1) - expected["scale"]) > 0.01 or any(monitor.get(key, 0) != expected[key] for key in ("x", "y")):
+                errors.append(expected["name"] + ": scale or position was not applied")
+            if expected["mode"] != "preferred":
+                dimensions, rate = expected["mode"].split("@")
+                if dimensions != f"{monitor.get('width')}x{monitor.get('height')}" or abs(monitor.get("refreshRate", 0) - float(rate)) > 0.03:
+                    errors.append(expected["name"] + ": resolution or refresh rate was not applied")
+        if not errors:
+            return
+        if time.monotonic() >= deadline:
+            raise ForgeError("; ".join(errors) + ". Previous settings restored; choose another supported mode.")
+        time.sleep(0.15)
+
+
 def finish(home, transaction, keep, runner=subprocess.run):
     state, path = paths(home)
     result_path = safe_target(home, RESULT)
@@ -208,6 +235,7 @@ def apply(value, home, connected, runner=subprocess.run, spawn=subprocess.Popen)
                 raise
     try:
         reload(changed, runner)
+        verify_outputs(value, runner)
     except Exception:
         finish(home, transaction, False, runner)
         raise

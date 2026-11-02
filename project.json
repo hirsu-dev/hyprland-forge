@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "hyprland-forge",
-  "release": "0.17.0",
+  "release": "0.17.1",
   "graphical_iso": {"status": "hardware-test-prerelease-published", "branch": "codex/graphical-iso", "state": "iso/state.json", "builder": "archiso", "installer": "Calamares-3.4.3", "flow": ["animated-USB-startup", "graphical-welcome-and-app-picker", "locale-keyboard-disks-and-account", "explicit-disk-review", "installation-progress", "Windows-or-Forge-boot-menu", "Forge-startup-and-password-login"], "optional_apps": "forge/iso_apps.py", "requires_network": true, "physical_installation_enabled": true, "release_url": "https://github.com/hirsu-dev/hyprland-forge/releases/tag/forge-iso-2026.11.02-rc2", "verified_image_revision": "b33bf89611e685392ade413995e4e26d9d539982", "animated_login": {"style": "Ghostwire-cyan-optics-and-angular-controls", "source_revision": "cdf1343", "VM_password_authentication": "passed", "native_pre_OS_picker": "separate-experimental-branch-not-integrated"}, "USB_copy_to_RAM_validation": "passed", "selected_Flatpak_downloads": "automatic-after-first-installed-boot", "app_download_status": "Forge App Setup", "app_service_VM_validation": "passed-Brave-Equicord-Spotify-retry-and-reboot"},
   "guided_installer": {"entry": "install-online.sh", "default": "setup", "profiles": "automatic-laptop-or-vm", "prerequisites": "automatic", "gaming": "optional-with-multilib-backup", "accounts": "root-launch-with-normal-user-handoff", "arch_usb": "guided-archinstall-with-first-login-setup", "disk_selection": "explicit-in-archinstall"},
   "gaming_wallpaper": {"launcher": ["NVIDIA-offload-on-physical-hardware", "GameMode", "optional-MangoHud", "optional-Gamescope", "1920x1080-120-FPS-Gamescope-default", "tracked-game-lifetime"], "wallpaper": ["optional-community-linux-wallpaperengine", "Steam-library-detection", "assets-and-project-picker", "30-FPS-muted-default", "game-aware-unload-and-restore", "fullscreen-pause", "static-fallback"], "lifecycle_fixture_validation": "passed-game-pause-exit-restore-preset-pause-disable", "renderer_validation": "requires-user-owned-Steam-assets-and-physical-GPU", "performance_benchmarks": "pending-on-device"},
@@ -10,6 +10,10 @@
     "tiling_modes": ["windows-style-snap", "caelestia-style-dwindle"],
     "display_controls": ["primary", "enabled", "resolution-refresh", "scale", "rotation", "position", "vrr"],
     "confirmation_timeout_seconds": 20,
+    "refresh_selector": "advertised-rates-for-selected-resolution",
+    "orientation_controls": "four-direct-buttons",
+    "applied_output_verification": true,
+    "controls_vm_validation": {"date": "2026-11-02", "checks": ["refresh-resolution-selection", "four-orientation-buttons", "preview-and-keep", "mode-survives-reload", "four-compositor-transforms", "refresh-and-orientation-watchdog-revert"], "physical_HDMI_120Hz_tested": false},
     "hardware_validation": "pending-on-device"
   },
   "taskbar": {"implementation": "original Quickshell Wayland taskbar", "features": ["pinned-apps", "running-windows", "focus-and-cycle", "context-actions", "monitor-scope", "window-labels", "fullscreen-aware", "clipboard-access"]},

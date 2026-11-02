@@ -24,6 +24,9 @@ ForgePanel {
     property string operation: ""
     readonly property var output: draft && draft.outputs[selected] ? draft.outputs[selected] : null
     readonly property var displayModes: output ? (hardware.find(m => m.name === output.name) || { modes: ["preferred"] }).modes : []
+    readonly property string displayResolution: output ? output.mode.split("@")[0] : "preferred"
+    readonly property var displayResolutions: [...new Set(displayModes.map(mode => mode.split("@")[0]))]
+    readonly property var refreshModes: displayModes.filter(mode => mode.split("@")[0] === displayResolution)
     readonly property bool editable: !process.running && !pending
 
     function run(action, value) {
@@ -43,6 +46,17 @@ ForgePanel {
         const next = JSON.parse(JSON.stringify(draft))
         next[field] = value
         draft = next
+    }
+    function resolution(value) {
+        const choices = displayModes.filter(mode => mode.split("@")[0] === value)
+        if (!choices.length) return
+        const rate = Number(output.mode.split("@")[1])
+        const selected = choices.reduce((best, mode) => {
+            const next = Number(mode.split("@")[1])
+            const previous = Number(best.split("@")[1])
+            return Number.isFinite(rate) ? Math.abs(next - rate) < Math.abs(previous - rate) ? mode : best : next > previous ? mode : best
+        })
+        update("mode", selected)
     }
     function saveFields() {
         if (!output) return
@@ -114,7 +128,14 @@ ForgePanel {
         wrapMode: Text.WordWrap
     }
     component Choice: ComboBox {
+        id: choice
         Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        implicitHeight: ForgeTheme.px(38)
+        popup.popupType: Popup.Item
+        popup.modal: true
+        popup.dim: false
+        popup.height: Math.min(ForgeTheme.px(300), Math.max(ForgeTheme.px(80), panel.height - ForgeTheme.px(80)), popup.contentItem.implicitHeight + popup.topPadding + popup.bottomPadding)
         palette.button: ForgeTheme.surface
         palette.buttonText: ForgeTheme.text
         palette.base: ForgeTheme.surface
@@ -188,6 +209,7 @@ ForgePanel {
                 Rectangle { visible: !panel.compact; Layout.fillHeight: true; width: 1; color: ForgeTheme.line }
                 ScrollView {
                     id: settingsScroll
+                    objectName: "settingsScroll"
                     Layout.minimumWidth: 0
                     Layout.minimumHeight: 0
                     contentWidth: availableWidth
@@ -240,12 +262,42 @@ ForgePanel {
                                     ForgeButton { text: panel.output && panel.output.enabled ? "ENABLED" : "DISABLED"; selected: panel.output && panel.output.enabled; onClicked: panel.update("enabled", !panel.output.enabled) }
                                     ForgeButton { text: "MAIN DISPLAY"; selected: panel.output && panel.draft.primary === panel.output.name; onClicked: { panel.update("enabled", true); panel.choose("primary", panel.output.name) } }
                                 }
-                                Caption { text: "MODE / REFRESH" }
-                                Choice { model: panel.displayModes; currentIndex: panel.output ? Math.max(0, panel.displayModes.indexOf(panel.output.mode)) : 0; onActivated: index => panel.update("mode", panel.displayModes[index]) }
+                                Caption { text: "RESOLUTION" }
+                                Choice { objectName: "displayResolution"; model: panel.displayResolutions; displayText: currentText === "preferred" ? "Automatic / preferred" : currentText; currentIndex: Math.max(0, panel.displayResolutions.indexOf(panel.displayResolution)); onActivated: index => panel.resolution(panel.displayResolutions[index]) }
+                                Caption { text: "REFRESH RATE" }
+                                Choice {
+                                    id: refreshChoice
+                                    objectName: "displayRefresh"
+                                    model: panel.refreshModes
+                                    displayText: currentText === "preferred" ? "Automatic / preferred" : currentText.split("@")[1] + " Hz"
+                                    currentIndex: panel.output ? Math.max(0, panel.refreshModes.indexOf(panel.output.mode)) : 0
+                                    delegate: ItemDelegate {
+                                        required property string modelData
+                                        required property int index
+                                        width: ListView.view.width
+                                        text: modelData === "preferred" ? "Automatic / preferred" : modelData.split("@")[1] + " Hz"
+                                        highlighted: index === refreshChoice.highlightedIndex
+                                    }
+                                    onActivated: index => panel.update("mode", panel.refreshModes[index])
+                                }
                                 Caption { text: "SCALE FACTOR" }
                                 Field { id: scaleField; text: panel.output ? String(panel.output.scale) : "1"; inputMethodHints: Qt.ImhFormattedNumbersOnly; onEditingFinished: panel.saveFields() }
-                                Caption { text: "ROTATION" }
-                                Choice { model: ["Normal", "90°", "180°", "270°"]; currentIndex: panel.output ? panel.output.rotation : 0; onActivated: index => panel.update("rotation", index) }
+                                Caption { text: "ORIENTATION" }
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing: ForgeTheme.gap(6)
+                                    Repeater {
+                                        model: ["LANDSCAPE", "PORTRAIT / 90°", "FLIPPED / 180°", "PORTRAIT / 270°"]
+                                        ForgeButton {
+                                            required property string modelData
+                                            required property int index
+                                            objectName: "displayOrientation" + index
+                                            text: modelData
+                                            selected: panel.output !== null && panel.output.rotation === index
+                                            onClicked: panel.update("rotation", index)
+                                        }
+                                    }
+                                }
                                 Caption { text: "POSITION / X" }
                                 Field { id: xField; text: panel.output ? String(panel.output.x) : "0"; inputMethodHints: Qt.ImhFormattedNumbersOnly; onEditingFinished: panel.saveFields() }
                                 Caption { text: "POSITION / Y" }
@@ -253,7 +305,7 @@ ForgePanel {
                                 Caption { text: "VARIABLE REFRESH" }
                                 Choice { model: ["Off", "On", "Fullscreen only"]; currentIndex: panel.output ? panel.output.vrr : 0; onActivated: index => panel.update("vrr", index) }
                             }
-                            Caption { Layout.fillWidth: true; text: "Logical pixels after scaling and rotation. Negative X/Y places a display left or above. Preview reverts after 20 seconds unless confirmed."; lineHeight: 1.4 }
+                            Caption { Layout.fillWidth: true; text: "Choose a resolution to see its supported refresh rates. Select orientation, then Preview and Keep. Changes revert after 20 seconds unless confirmed. X/Y uses logical pixels after scaling and rotation."; lineHeight: 1.4 }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
@@ -290,9 +342,9 @@ ForgePanel {
                 Layout.fillWidth: true
                 Caption { visible: !panel.compact || panel.pending !== null; Layout.fillWidth: true; text: panel.pending ? "REVERTING IN " + panel.seconds + "s / KEEP THESE SETTINGS?" : process.running || appearanceProcess.running ? "SAVING / WAIT…" : panel.page === 0 ? "SUPER + I / WORKSPACE CONFIGURATION" : panel.page === 1 ? "INTERFACE / SAVED LOCALLY" : "TASKBAR / SAVED LOCALLY"; color: panel.pending ? ForgeTheme.danger : ForgeTheme.muted; font.pixelSize: ForgeTheme.fontSize(10) }
                 ForgeButton { visible: !panel.pending && panel.page === 0; text: "REFRESH"; enabled: !process.running; onClicked: panel.run("--query") }
-                ForgeButton { visible: !panel.pending && panel.page === 0; text: "PREVIEW →"; selected: true; enabled: panel.editable && panel.draft !== null; onClicked: { panel.saveFields(); panel.run("--set", JSON.stringify(panel.draft)) } }
+                ForgeButton { objectName: "previewDisplays"; visible: !panel.pending && panel.page === 0; text: "PREVIEW →"; selected: true; enabled: panel.editable && panel.draft !== null; onClicked: { panel.saveFields(); panel.run("--set", JSON.stringify(panel.draft)) } }
                 ForgeButton { visible: panel.pending !== null; text: "REVERT"; danger: true; enabled: !process.running; onClicked: panel.run("--revert", panel.pending.id) }
-                ForgeButton { visible: panel.pending !== null; text: "KEEP"; selected: true; enabled: !process.running && panel.seconds > 0; onClicked: panel.run("--confirm", panel.pending.id) }
+                ForgeButton { objectName: "keepDisplays"; visible: panel.pending !== null; text: "KEEP"; selected: true; enabled: !process.running && panel.seconds > 0; onClicked: panel.run("--confirm", panel.pending.id) }
             }
         }
     }

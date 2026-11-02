@@ -18,6 +18,7 @@ class DesktopSettingsTests(unittest.TestCase):
         self.home = Path(self.folder.name)
         self.connected = [{"name": "HDMI-A-1", "width": 1920, "height": 1080, "refreshRate": 120, "availableModes": ["1920x1080@120.00Hz", "1920x1080@60.00Hz"]}, {"name": "eDP-1", "availableModes": ["1920x1080@60.00Hz"]}]
         self.active_mode = "caelestia"
+        self.compositor_applies = True
         self.runner = Mock(side_effect=self.respond)
         self.value = settings.current(self.home, self.connected, self.runner)
         self.spawn = Mock()
@@ -29,6 +30,21 @@ class DesktopSettingsTests(unittest.TestCase):
         return settings.apply(self.value, self.home, self.connected, self.runner, self.spawn)
 
     def respond(self, command, **kwargs):
+        if command[1:] == ["-j", "monitors", "all"]:
+            monitors = copy.deepcopy(self.connected)
+            path = self.home / ".config/forge/desktop.json"
+            if self.compositor_applies and path.exists():
+                requested = {item["name"]: item for item in json.loads(path.read_text())["outputs"]}
+                for monitor in monitors:
+                    output = requested.get(monitor["name"])
+                    if not output:
+                        continue
+                    monitor.update(disabled=not output["enabled"], scale=output["scale"], x=output["x"], y=output["y"], transform=output["rotation"])
+                    if output["mode"] != "preferred":
+                        dimensions, rate = output["mode"].split("@")
+                        width, height = dimensions.split("x")
+                        monitor.update(width=int(width), height=int(height), refreshRate=float(rate))
+            return SimpleNamespace(stdout=json.dumps(monitors))
         if command[1] == "repl":
             return SimpleNamespace(stdout=self.active_mode + "\n")
         if command[1] == "reload":
@@ -110,7 +126,7 @@ class DesktopSettingsTests(unittest.TestCase):
         self.value["tiling"] = "windows"
         pending = self.apply()
         self.assertTrue(pending["mode_changed"])
-        self.assertEqual(self.runner.call_args.args[0][1], "dispatch")
+        self.assertTrue(any(call.args[0][1] == "dispatch" for call in self.runner.call_args_list))
         self.assertEqual(settings.current(self.home, self.connected, self.runner)["tiling"], "windows")
 
     def test_external_edits_are_preserved(self):
@@ -152,6 +168,49 @@ class DesktopSettingsTests(unittest.TestCase):
 
     def test_current_preserves_actual_refresh(self):
         self.assertEqual(self.value["outputs"][0]["mode"], "1920x1080@120.00")
+
+    def test_refresh_and_orientation_apply_and_persist(self):
+        self.value["outputs"][0].update(mode="1920x1080@60.00", rotation=1)
+        pending = self.apply()
+        applied = settings.monitors(self.runner)[0]
+        self.assertEqual((applied["refreshRate"], applied["transform"]), (60, 1))
+        settings.finish(self.home, pending["id"], True, self.runner)
+        stored = settings.saved_settings(self.home)["outputs"][0]
+        self.assertEqual((stored["mode"], stored["rotation"]), ("1920x1080@60.00", 1))
+
+    def test_rejected_refresh_or_orientation_restores_previous_settings(self):
+        self.compositor_applies = False
+        self.value["outputs"][0].update(mode="1920x1080@60.00", rotation=1)
+        original = self.home / ".config/hypr/monitors.local.lua"
+        original.parent.mkdir(parents=True)
+        original.write_text("return {}\n")
+        with patch.object(settings.time, "monotonic", side_effect=(0, 5)):
+            with self.assertRaisesRegex(ForgeError, "orientation.*refresh rate"):
+                self.apply()
+        self.assertEqual(original.read_text(), "return {}\n")
+        self.assertIsNone(settings.read_pending(self.home))
+        self.assertFalse((self.home / ".config/forge/desktop.json").exists())
+
+    def test_monitor_readback_waits_for_async_modeset(self):
+        self.value["outputs"][0]["rotation"] = 3
+        actual = copy.deepcopy(self.connected)
+        actual[0]["transform"] = 3
+        runner = Mock(side_effect=(SimpleNamespace(stdout=json.dumps(self.connected)), SimpleNamespace(stdout=json.dumps(actual))))
+        with patch.object(settings.time, "sleep") as sleep:
+            settings.verify_outputs(self.value, runner)
+        sleep.assert_called_once_with(0.15)
+
+    def test_monitor_readback_accepts_fractional_refresh_rounding(self):
+        actual = copy.deepcopy(self.connected)
+        actual[0]["refreshRate"] = 119.996
+        settings.verify_outputs(self.value, Mock(return_value=SimpleNamespace(stdout=json.dumps(actual))), timeout=0)
+
+    def test_monitor_readback_rejects_wrong_resolution_or_disconnected_output(self):
+        for field, invalid in (("width", 1280), ("name", "DP-9"), ("disabled", True)):
+            actual = copy.deepcopy(self.connected)
+            actual[0][field] = invalid
+            with self.subTest(field=field), self.assertRaises(ForgeError):
+                settings.verify_outputs(self.value, Mock(return_value=SimpleNamespace(stdout=json.dumps(actual))), timeout=0)
 
     def test_query_reflects_external_scale_changes(self):
         self.apply()
@@ -196,9 +255,10 @@ class DesktopSettingsTests(unittest.TestCase):
         self.assertEqual(settings.saved_settings(self.home)["tiling"], "windows")
         self.assertEqual(settings.current(self.home, self.connected, self.runner)["tiling"], "caelestia")
         self.value["tiling"] = "windows"
+        self.runner.reset_mock()
         third = self.apply()
         self.assertTrue(third["mode_changed"])
-        self.assertEqual(self.runner.call_args.args[0][1], "dispatch")
+        self.assertTrue(any(call.args[0][1] == "dispatch" for call in self.runner.call_args_list))
 
     def test_unknown_active_mode_blocks_changes(self):
         self.active_mode = "unavailable"
