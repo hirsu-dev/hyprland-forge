@@ -53,4 +53,23 @@ active_session = false
 events["config.reloaded"]()
 assert(#timers == 0)
 os.getenv = original_getenv
+local original_open, original_dofile = io.open, dofile
+io.open = function(path, mode)
+    if path:match("/hypr/monitors.local.lua$") then return { close = function() end } end
+    return original_open(path, mode)
+end
+dofile = function(path)
+    if path:match("/hypr/monitors.local.lua$") then
+        return { outputs = { ["HDMI-A-1"] = { mode = "1920x1080@120.00", transform = 1, scale = 1, position = "0x0", disabled = false } } }
+    end
+    return original_dofile(path)
+end
+package.loaded["forge.monitors"] = nil
+applied, timers = {}, {}
+require("forge.monitors")
+assert(#timers == 0)
+assert(#applied == 2)
+assert(applied[2].output == "HDMI-A-1")
+assert(applied[2].mode == "1920x1080@120.00" and applied[2].transform == 1)
+io.open, dofile = original_open, original_dofile
 print("Compositor event lifecycle scenarios passed")

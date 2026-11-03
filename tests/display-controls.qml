@@ -7,6 +7,7 @@ ShellRoot {
         id: settings
         TestCase {
             name: "DisplayControls"
+            property string stage: "loading"
             parent: settings.contentItem
             when: settings.visible && settings.draft !== null && settings.editable
             function reveal(item) {
@@ -33,13 +34,16 @@ ShellRoot {
                 const resolution = findChild(settings.contentItem, "displayResolution")
                 const refresh = findChild(settings.contentItem, "displayRefresh")
                 verify(resolution !== null && refresh !== null)
+                stage = "resolution"
                 select(resolution, "800x600")
                 compare(settings.displayResolution, "800x600")
                 verify(settings.refreshModes.every(mode => mode.startsWith("800x600@")))
                 select(resolution, "1280x800")
+                stage = "refresh"
                 select(refresh, "1280x800@59.81")
                 compare(settings.output.mode, "1280x800@59.81")
                 compare(settings.displayResolution, "1280x800")
+                stage = "orientation"
                 for (const index of [1, 2, 3, 0, 1]) {
                     const button = findChild(settings.contentItem, "displayOrientation" + index)
                     verify(button !== null)
@@ -49,12 +53,14 @@ ShellRoot {
                 }
                 wait(500)
                 grabImage(settings.contentItem).save("/tmp/forge-display-controls.png")
+                stage = "preview"
                 const preview = findChild(settings.contentItem, "previewDisplays")
                 preview.forceActiveFocus()
                 keyClick(Qt.Key_Space)
                 tryVerify(() => settings.pending !== null || settings.error !== "", 8000)
                 compare(settings.error, "")
                 verify(settings.pending !== null)
+                stage = "keep"
                 const keep = findChild(settings.contentItem, "keepDisplays")
                 tryVerify(() => keep.enabled)
                 keep.forceActiveFocus()
@@ -64,6 +70,7 @@ ShellRoot {
                 console.log("FORGE_DISPLAY_UI_PASS")
                 Qt.quit()
             }
+            function cleanup() { console.log("FORGE_DISPLAY_UI_STAGE", stage, settings.error, JSON.stringify(settings.draft), JSON.stringify(settings.pending)) }
         }
     }
     Component.onCompleted: Desktop.settingsOpen = true

@@ -24,6 +24,7 @@ assert not test.exists()
 before = settings.read_result(home)
 proof = {}
 try:
+    subprocess.run(["quickshell", "-c", "forge", "ipc", "call", "forge", "close"], check=True, capture_output=True, text=True, timeout=10)
     test.write_bytes(Path(__file__).with_name("display-controls.qml").read_bytes())
     result = subprocess.run(["quickshell", "-p", str(test)], capture_output=True, text=True, timeout=30)
     Path("/tmp/forge-display-ui.log").write_text(result.stdout + result.stderr)

@@ -31,6 +31,12 @@ local function configure(focus)
 end
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+for name, choice in pairs(options.outputs or {}) do
+    local rule = { output = name }
+    for key, value in pairs(choice) do rule[key] = value end
+    rule.output = name
+    hl.monitor(rule)
+end
 local function schedule(focus)
     if not os.getenv("HYPRLAND_INSTANCE_SIGNATURE") then return end
     hl.timer(function() configure(focus) end, { timeout = 150, type = "oneshot" })
