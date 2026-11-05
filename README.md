@@ -41,3 +41,16 @@ The live installer script is for the official Arch Linux USB only. Read it befor
 - `live.sh` — Arch live USB helper
 
 Hardware support and daily-use readiness still need testing on the target computer.
+
+
+## Build note: A coherent desktop is more than a color preset.
+
+Forge brings a personal Arch/Hyprland desktop together: a Quickshell panel, launcher, display controls, clipboard and setup tools for an AMD/NVIDIA laptop.
+
+Generate shared theme values for the shell, terminal and launcher from one palette, with bounded interface options and restore paths.
+
+The portable theme suite ran on Windows / Python 3.12.14 on November 5, 2026: 19 passed, 2 skipped. This review did not start Hyprland or run the installer.
+
+Next: Run the desktop on the target AMD/NVIDIA laptop and record display, suspend, scaling and restore behavior with an actual session screenshot.
+
+[Read the tradeoff, evidence, and reproduction steps](docs/build-note.md).

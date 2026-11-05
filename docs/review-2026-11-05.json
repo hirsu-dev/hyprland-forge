@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-05",
+  "source_commit": "88e2a25bc16ec236f014b391599225e93b5b1e1a",
+  "environment": {
+    "os": "Windows",
+    "runtime": "Python 3.12.14"
+  },
+  "command": "python -m unittest discover -s tests -p test_theme.py",
+  "passed": 19,
+  "skipped": 2,
+  "limitations": "The desktop image is an illustration. Earlier test-environment checks do not establish target-laptop hardware support or daily-use readiness."
+}
